@@ -94,24 +94,6 @@ jobs:
           echo "Outputs: ${{ toJSON(steps.create.outputs) }}"
           echo "Error: ${{ steps.create.error }}"
 
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          ref: develop
-
-      - name: Create Branch
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TICKET_NUMBER="${{ steps.create.outputs.issue }}"
-          BRANCH_INPUT=$(echo "${{ steps.extract-values.outputs.branch }}" | tr -d '\n\r' | tr -d ' ')
-          BRANCH_NAME="develop/feature/${BRANCH_INPUT}/${TICKET_NUMBER}"
-          echo "Generated Branch Name: ${BRANCH_NAME}"
-
-          git checkout develop
-          git checkout -b "${BRANCH_NAME}"
-          git push origin "${BRANCH_NAME}"
-
       - name: Add Labels to Issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
