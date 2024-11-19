@@ -13,6 +13,47 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 };
 
 const GlobalStyles = createGlobalStyle`
+  /* Roboto 폰트 설정 - 영어, 숫자, 기호용 */
+  @font-face {
+    font-family: 'Roboto';
+    src: url('/font/Roboto-Regular.woff') format('woff');
+    font-weight: 400;
+  }
+
+  @font-face {
+    font-family: 'Roboto';
+    src: url('/font/Roboto-Medium.woff') format('woff');
+    font-weight: 500;
+  }
+
+  @font-face {
+    font-family: 'Roboto';
+    src: url('/font/Roboto-Bold.woff') format('woff');
+    font-weight: 700;
+  }
+
+  /* Noto Sans KR 폰트 설정 - 한글용 */
+  @font-face {
+    font-family: 'Noto Sans KR';
+    src: url('/font/NotoSansKR-Regular.woff') format('woff');
+    font-weight: 400;
+    unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans KR';
+    src: url('/font/NotoSansKR-Medium.woff') format('woff');
+    font-weight: 500;
+    unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
+  }
+
+  @font-face {
+    font-family: 'Noto Sans KR';
+    src: url('/font/NotoSansKR-Bold.woff') format('woff');
+    font-weight: 700;
+    unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
+  }
+
   * {
     box-sizing: border-box;
     margin: 0;
@@ -26,13 +67,16 @@ const GlobalStyles = createGlobalStyle`
   body {
     margin: 0;
     padding: 0;
-    font-family: 'Arial', sans-serif;
+    /* 여기 font-family 순서 중요합니다 */
+    font-family: 'Roboto', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
     background-color: #f0f0f0;
     color: black;
     height: 100%;
     width: 100%;
     display: flex;
     justify-content: center;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   #root {
