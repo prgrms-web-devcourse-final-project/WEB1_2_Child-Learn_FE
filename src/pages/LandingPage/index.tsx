@@ -1,14 +1,15 @@
 import styled from 'styled-components';
 
-const HomePage = () => {
+const LandingPage = () => {
   return (
     <Content>
       <h1>Welcome</h1>
+      <p>This app is designed for 390x844 resolution.</p>
     </Content>
   );
 };
 
-export default HomePage;
+export default LandingPage;
 
 //styled-components
 const Content = styled.div`
