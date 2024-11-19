@@ -1,0 +1,21 @@
+# Node.js
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 환경 파일
+.env
+
+# 빌드 결과물
+/dist/
+/build/
+
+# IDE 설정 파일
+.vscode/
+.idea/
+*.sublime-workspace
+
+# OS 파일
+.DS_Store
+Thumbs.db
