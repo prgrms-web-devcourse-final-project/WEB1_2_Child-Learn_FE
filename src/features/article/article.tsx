@@ -44,6 +44,7 @@ const ContentTitle = styled.h2`
   font-size: 20px;
   font-weight: bold;
   margin: 20px;
+  color: #000000;
   line-height: 1.4;
 `;
 
