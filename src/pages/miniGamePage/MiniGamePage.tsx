@@ -1,10 +1,26 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useUserStore } from '../../app/providers/state/zustand/userStore';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 const MiniGamePage = () => {
+  const { username, points, addPoints, setUser } = useUserStore(); // Zustand에서 상태 가져오기
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+
+  useEffect(() => {
+    // 초기 사용자 데이터 설정
+    setUser({
+      loginId: 'minnie123',
+      username: 'Minnie',
+      email: 'minnie@example.com',
+      createdAt: '2024-01-01',
+      updatedAt: '2024-11-20',
+      gameCount: 5,
+      birth: '2002-05-06',
+      points: 2000,
+    });
+  }, [setUser]);
 
   const openModal = (game: string) => {
     setSelectedGame(game);
@@ -20,12 +36,12 @@ const MiniGamePage = () => {
     <PageContainer>
       <Header>
         <GreetingContainer>
-          <h1>안녕하세요, Minnie님!</h1>
+          <h1>안녕하세요, {username}님!</h1>
           <p>오늘은 어떤 게임을 즐겨보시겠어요?</p>
         </GreetingContainer>
         <PointsContainer>
         <img src="/icons/coins 1.png" alt="Coin Icon" />
-          2,000 P
+        {points} P
         </PointsContainer>
     </Header>
       <MainContent>
