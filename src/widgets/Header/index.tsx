@@ -1,31 +1,45 @@
 import styled from 'styled-components';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
-  return (
-    <HeaderContainer>
-      <Logo 
-        src="/img/logo.png" 
-        alt="Logo"
-      />
-      <IconsWrapper>
-        <IconButton>
-          <Icon 
-            src="/img/chat.png" 
-            alt="Chat"
+    const navigate = useNavigate();
+  
+    // 채팅이나 알림 클릭 시 페이지 이동을 처리하는 핸들러
+    const handleChatClick = () => {
+      navigate('/chat');
+    };
+  
+    const handleNotificationClick = () => {
+      navigate('/notifications');
+    };
+  
+    return (
+      <HeaderContainer>
+        <LogoLink to="/">
+          <Logo 
+            src="/img/logo.png" 
+            alt="Logo"
           />
-        </IconButton>
-        <IconButton>
-          <Icon 
-            src="/img/bell.png" 
-            alt="Notifications"
-          />
-        </IconButton>
-      </IconsWrapper>
-    </HeaderContainer>
-  );
-};
-
-export default Header;
+        </LogoLink>
+        <IconsWrapper>
+          <IconButton onClick={handleChatClick}>
+            <Icon 
+              src="/img/chat.png" 
+              alt="Chat"
+            />
+          </IconButton>
+          <IconButton onClick={handleNotificationClick}>
+            <Icon 
+              src="/img/bell.png" 
+              alt="Notifications"
+            />
+          </IconButton>
+        </IconsWrapper>
+      </HeaderContainer>
+    );
+  };
+  
+  export default Header;
 
 // 스타일 컴포넌트 정의
 const HeaderContainer = styled.header`
@@ -41,11 +55,17 @@ const HeaderContainer = styled.header`
   box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.05);
 `;
 
-const Logo = styled.img`
-  height: 35px;
-  width: auto;
+const LogoLink = styled(Link)`
+  text-decoration: none;
+  display: flex;
+  align-items: center;
 `;
 
+const Logo = styled.img`
+  height: 30px;
+  width: auto;
+  margin-left: -4px;
+`;
 const IconsWrapper = styled.div`
   display: flex;
   gap: 16px;
