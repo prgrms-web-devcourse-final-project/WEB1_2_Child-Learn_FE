@@ -1,17 +1,38 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
+import { useLocation } from 'react-router-dom';
+import Header from '../../widgets/Header/index';  // Header 컴포넌트 import
+import FloatingGNB from '../../widgets/Footer/index';
+
+// 헤더를 숨길 페이지 경로들
+const HIDDEN_HEADER_PATHS = [
+  '/login',
+];
+
+// GNB를 숨길 페이지 경로들
+const HIDDEN_GNB_PATHS = [
+  '/login',
+];
+
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const shouldShowHeader = !HIDDEN_HEADER_PATHS.includes(location.pathname);
+  const shouldShowGNB = !HIDDEN_GNB_PATHS.includes(location.pathname);
+
   return (
     <>
       <GlobalStyles />
       <AppWrapper>
-        <AppContainer>{children}</AppContainer>
+        <AppContainer>
+          {shouldShowHeader && <Header />}
+            {children}
+          {shouldShowGNB && <FloatingGNB />}
+        </AppContainer>
       </AppWrapper>
     </>
   );
 };
-
 const GlobalStyles = createGlobalStyle`
   /* Roboto 폰트 설정 - 영어, 숫자, 기호용 */
   @font-face {
@@ -106,8 +127,11 @@ const AppContainer = styled.div`
   height: 844px;
   background-color: white;
   border: 1px solid #ccc;
+  overflow: hidden; /* overflow-y: auto 대신 hidden으로 변경 */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   position: relative;
+  display: flex;
+  flex-direction: column;
 
   @media screen and (max-width: 390px) {
     width: 100%;

@@ -1,10 +1,44 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import dynamic from 'next/dynamic';
 
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-// ... (이전 styled components 유지)
+const GraphContainer = styled.div`
+  width: 390px;
+  background: white;
+  padding: 20px;
+  margin-bottom: 16px;
+`;
+
+const GraphHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+
+const GraphTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const StaminaIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+  font-size: 14px;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: #f4a261;
+    border-radius: 50%;
+  }
+`;
 
 const Select = styled.select`
   padding: 6px 12px;
@@ -34,11 +68,13 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
   const days = ['월', '화', '수', '목', '금', '토', '일'];
   const today = new Date().getDay();
   const adjustedToday = today === 0 ? 6 : today - 1;
-  
-  // 선택된 날짜 상태 관리
-  const [selectedDay, setSelectedDay] = useState<string>('Last 7 days');
 
-  // 선택된 날짜의 인덱스 계산
+  const [selectedDay, setSelectedDay] = React.useState('Last 7 days');
+
+  const handleDaySelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedDay(event.target.value);
+  };
+
   const selectedDayIndex = days.indexOf(selectedDay);
 
   const series = [
@@ -71,26 +107,117 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
       zoom: {
         enabled: false
       },
+      events: {
+        dataPointSelection: (event, chartContext, config) => {
+          if (selectedDay === 'Last 7 days') {
+            const selectedIndex = config.dataPointIndex;
+            const selectedDayValue = days[selectedIndex];
+            setSelectedDay(selectedDayValue);
+          }
+        }
+      }
     },
     colors: ['#FFE5D3', '#2f2e2e'],
     plotOptions: {
       bar: {
-        columnWidth: (context: any) => {
-          // 선택된 날짜의 막대는 더 넓게 표시
-          if (selectedDay !== 'Last 7 days' && context.dataPointIndex === selectedDayIndex) {
-            return '20px';
-          }
-          return '10px';
-        },
+        columnWidth: '30%',
         borderRadius: 5,
         borderRadiusApplication: 'end'
       }
     },
-    // ... (다른 옵션들은 유지)
+    stroke: {
+      width: [0, 1.5],
+      curve: 'straight',
+      colors: ['transparent', '#f4a261']
+    },
+    markers: {
+      size: [0, 6],
+      colors: ['transparent', '#ffffff'],
+      strokeColors: ['transparent', '#f4a261'],
+      strokeWidth: 2,
+    },
+    xaxis: {
+      categories: days,
+      labels: {
+        style: {
+          colors: '#666',
+          fontSize: '14px',
+        }
+      },
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      },
+      tooltip: {
+        enabled: false
+      },
+      crosshairs: {
+        show: false
+      }
+    },
+    yaxis: {
+      opposite: true,
+      min: 0,
+      max: 600,
+      tickAmount: 6,
+      labels: {
+        style: {
+          colors: '#666',
+          fontSize: '12px'
+        },
+        formatter: (value) => value.toFixed(0),
+        offsetX: -10,
+      },
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
+      }
+    },
+    grid: {
+      borderColor: '#f1f1f1',
+      xaxis: {
+        lines: {
+          show: true
+        }
+      },
+      yaxis: {
+        lines: {
+          show: true
+        }
+      },
+      padding: {
+        right: 20
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    legend: {
+      show: false
+    },
+    tooltip: {
+      enabled: true
+    },
+    states: {
+      hover: {
+        filter: {
+          type: 'none'
+        }
+      },
+      active: {
+        allowMultipleDataPointsSelection: false,
+        filter: {
+          type: 'none',
+        }
+      },
+    },
     fill: {
       opacity: 1,
       colors: [(context: { dataPointIndex: number }) => {
-        // 선택된 날짜 또는 오늘 날짜의 막대 색상 변경
         if (selectedDay !== 'Last 7 days' && context.dataPointIndex === selectedDayIndex) {
           return '#8ec3f8';
         }
@@ -100,10 +227,6 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
         return '#FFE5D3';
       }, 'transparent']
     }
-  };
-
-  const handleDaySelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedDay(event.target.value);
   };
 
   return (
