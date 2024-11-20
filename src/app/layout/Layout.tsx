@@ -1,12 +1,25 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
+import { useLocation } from 'react-router-dom';
+import Header from '../../widgets/Header/index';  // Header 컴포넌트 import
+
+// 헤더를 숨길 페이지 경로들
+const HIDDEN_HEADER_PATHS = [
+  '/login',
+];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const shouldShowHeader = !HIDDEN_HEADER_PATHS.includes(location.pathname);
+
   return (
     <>
       <GlobalStyles />
       <AppWrapper>
-        <AppContainer>{children}</AppContainer>
+        <AppContainer>
+          {shouldShowHeader && <Header />}
+          {children}
+        </AppContainer>
       </AppWrapper>
     </>
   );
