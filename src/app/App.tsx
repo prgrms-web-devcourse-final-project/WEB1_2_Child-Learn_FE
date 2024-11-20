@@ -5,6 +5,30 @@ import CharacterPage from '../pages/characterPage/CharacterPage';
 import ExchangePage from '../pages/exchangePage/ExchangePage';
 import styled from 'styled-components';
 
+
+const App = () => {
+  return (
+    <Router>
+      <AppContainer>
+        <Navigation>
+          <Link to="/">Home</Link>
+          <Link to="/minigame">Mini Game</Link>
+        </Navigation>
+        <MainContent>
+          <Routes>
+            <Route path="/" element={<h1>Welcome to Home Page</h1>} />
+            <Route path="/minigame" element={<MiniGamePage />} />
+            <Route path="/character" element={<CharacterPage />} />
+            <Route path="/exchange" element={<ExchangePage />} />
+          </Routes>
+        </MainContent>
+      </AppContainer>
+    </Router>
+  );
+};
+
+export default App;
+
 const AppContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -38,26 +62,3 @@ const Navigation = styled.nav`
     }
   }
 `;
-
-const App = () => {
-  return (
-    <Router>
-      <AppContainer>
-        <Navigation>
-          <Link to="/">Home</Link>
-          <Link to="/minigame">Mini Game</Link>
-        </Navigation>
-        <MainContent>
-          <Routes>
-            <Route path="/" element={<h1>Welcome to Home Page</h1>} />
-            <Route path="/minigame" element={<MiniGamePage />} />
-            <Route path="/character" element={<CharacterPage />} />
-            <Route path="/exchange" element={<ExchangePage />} />
-          </Routes>
-        </MainContent>
-      </AppContainer>
-    </Router>
-  );
-};
-
-export default App;

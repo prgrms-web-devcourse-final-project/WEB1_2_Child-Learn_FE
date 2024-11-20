@@ -2,15 +2,104 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+const MiniGamePage = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedGame, setSelectedGame] = useState<string | null>(null);
+
+  const openModal = (game: string) => {
+    setSelectedGame(game);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedGame(null);
+  };
+
+  return (
+    <PageContainer>
+      <Header>
+        <GreetingContainer>
+          <h1>안녕하세요, Minnie님!</h1>
+          <p>오늘은 어떤 게임을 즐겨보시겠어요?</p>
+        </GreetingContainer>
+        <PointsContainer>
+        <img src="/icons/coins 1.png" alt="Coin Icon" />
+          2,000 P
+        </PointsContainer>
+    </Header>
+      <MainContent>
+        <TopSection>
+          <div>
+            <p>획득한 포인트로 나를 꾸며볼까요?</p>
+            <StyledLink to="/character">내 캐릭터 꾸미러 가기</StyledLink>
+          </div>
+        </TopSection>
+
+        <TopSection>
+          <div>
+            <p>오늘 미니게임으로 획득한 포인트</p>
+            <h2>300 Points</h2>
+          </div>
+          <StyledLink to="/exchange">환전하러 가기</StyledLink>
+        </TopSection>
+
+        <BackgroundContainer>
+        <GameGrid>
+          <GameCard>
+          <GameButton onClick={() => openModal('낱말 퀴즈')}>낱말 퀴즈</GameButton>
+            <p>100 Point</p>
+          </GameCard>
+          <GameCard>
+            <h2>OX 퀴즈</h2>
+            <p>0~100 Point</p>
+          </GameCard>
+          <GameCard>
+            <h2>카드 뒤집기</h2>
+            <p>100 Point</p>
+          </GameCard>
+          <GameCard>
+            <h2>숫자를 맞혀라!</h2>
+            <p>10~1000 Point</p>
+          </GameCard>
+        </GameGrid>
+        </BackgroundContainer>
+      </MainContent>
+      {modalVisible && (
+        <ModalOverlay>
+          <ModalContent>
+            <CloseButton onClick={closeModal}>&times;</CloseButton>
+            <p>난이도를 선택하세요!</p>
+            <ModalButton>쉬움</ModalButton>
+            <ModalButton>보통</ModalButton>
+            <ModalButton>어려움</ModalButton>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+      <FloatingButton>≡</FloatingButton>
+    </PageContainer>
+  );
+};
+
+export default MiniGamePage;
+
 const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  justify-content: flex-start; /* 상단 콘텐츠는 위쪽에 배치 */
+  width: 100%;
+  min-height: 100vh; /* 페이지 전체 높이를 채움 */
   background-color: #f5f5f5;
+  padding: 20px;
+  position: relative; /* BackgroundContainer의 위치를 기준으로 삼음 */
 
   @media (max-width: 768px) {
     padding: 10px;
+  }
+
+  @media (max-width: 390px) {
+    padding: 5px;
   }
 `;
 
@@ -20,8 +109,75 @@ const Header = styled.header`
   padding: 10px 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
-  font-size: 1.5rem;
+  margin-bottom: 10px;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+
+    @media (max-width: 390px) {
+      font-size: 1.2rem;
+    }
+  }
+
+  p {
+    font-size: 1rem;
+
+    @media (max-width: 390px) {
+      font-size: 0.9rem;
+    }
+  }
+`;
+
+const GreetingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+
+  h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+
+    @media (max-width: 390px) {
+      font-size: 1rem;
+    }
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+
+    @media (max-width: 390px) {
+      font-size: 0.8rem;
+    }
+  }
+`;
+
+const PointsContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute; /* 위치를 절대적으로 지정 */
+  top: 55px; /* 피그마 기준 Y값 */
+  right: 20px; /* 피그마 기준 X값 */
+  width: 91px; /* 피그마 기준 너비 */
+  height: 34px; /* 피그마 기준 높이 */
+  background-color: #50B498;
+  border-radius: 20px; /* 둥근 모서리 */
   font-weight: bold;
+  color: #ffffff; /* 텍스트 색상 흰색 */
+  font-size: 11px; /* 피그마 기준 폰트 크기 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  img {
+    width: 24px;
+    height: 24px;
+    margin-right: 5px; /* 이미지와 텍스트 간격 */
+  }
 `;
 
 const MainContent = styled.main`
@@ -31,41 +187,62 @@ const MainContent = styled.main`
   flex-direction: column;
   gap: 20px;
   padding: 20px;
+  padding-bottom: 600px; /* BackgroundContainer와 겹침 방지 */
 
   @media (max-width: 768px) {
-    gap: 15px;
     padding: 10px;
+    padding-bottom: 550px; /* 모바일 화면에 맞게 조정 */
+  }
+
+  @media (max-width: 390px) {
+    padding: 5px;
+    padding-bottom: 551px; /* 모바일 환경에서 피그마 기준 */
   }
 `;
 
 const TopSection = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* 좌우로 배치 */
   align-items: center;
-  width: 100%;
-  background-color: #e8f5e9;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
+  background-color: rgba(80, 180, 152, 0.8); /* #50B498의 opacity 80% */
+  color: white; /* 텍스트 색상 흰색 */
+  border-radius: 15px; /* 모서리를 둥글게 */
+  width: 310px; /* 피그마 기준 너비 */
+  height: 107px; /* 피그마 기준 높이 */
+  padding: 15px; /* 내부 여백 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  position: relative; /* 텍스트 정렬 및 추가 요소를 위한 기준 */
 
-const StyledLink = styled(Link)`
-  display: inline-block;
-  padding: 15px 30px;
-  font-size: 16px;
-  font-weight: bold;
-  color: white;
-  background-color: #007bff;
-  border-radius: 10px;
-  text-decoration: none;
-  text-align: center;
-
-  &:hover {
-    background-color: #0056b3;
+  h2 {
+    font-size: 30px; /* 피그마 폰트 크기 */
+    font-weight: bold;
+    margin: 0;
   }
 
-  &:not(:last-child) {
-    margin-bottom: 20px;
+  p {
+    font-size: 14px; /* 피그마 폰트 크기 */
+    font-weight: normal;
+    margin: 0;
+  }
+`;
+
+
+const StyledLink = styled(Link)`
+  display: flex; /* 텍스트와 가운데 정렬을 위한 플렉스 박스 */
+  justify-content: center;
+  align-items: center;
+  width: 288px; /* 피그마 기준 너비 */
+  height: 25px; /* 피그마 기준 높이 */
+  background-color: #ffffff; /* 흰색 배경 */
+  border-radius: 15px; /* 둥근 모서리 */
+  font-size: 14px; /* 폰트 크기 */
+  font-weight: bold; /* 텍스트 굵기 */
+  color: #468585; /* 텍스트 색상 */
+  text-decoration: none; /* 링크 밑줄 제거 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+
+  &:hover {
+    background-color: #f0f0f0; /* 호버 시 약간 밝은 회색 */
   }
 `;
 
@@ -75,32 +252,63 @@ const Points = styled.div`
   color: #333;
 `;
 
+const BackgroundContainer = styled.div`
+  position: absolute;
+  bottom: 0; /* 화면의 맨 아래에 고정 */
+  left: 0;
+  right: 0;
+  height: 551px; /* 피그마 기준 높이 */
+  background-color: #DEF9C4; /* 피그마 기준 배경색 */
+  border-top-left-radius: 30px; /* 둥근 모서리 */
+  border-top-right-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+`;
+
 const GameGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(2, 179px); /* 카드 크기에 맞게 고정 */
+  gap: 20px; /* 피그마의 카드 간격에 맞게 조정 */
+  justify-content: center; /* 화면 중앙 정렬 */
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(2, 45vw); /* 작은 화면에서 반응형 크기 */
+    gap: 10px;
   }
 `;
 
 const GameCard = styled.div`
+  width: 179px;
+  height: 177px;
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 15px;
 
   h2 {
-    font-size: 1.2rem;
+    font-size: 1rem;
     margin: 10px 0;
+
+    @media (max-width: 480px) {
+      font-size: 0.9rem;
+    }
   }
 
   p {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #666;
+
+    @media (max-width: 480px) {
+      font-size: 0.7rem;
+    }
   }
 `;
 
@@ -121,9 +329,9 @@ const GameButton = styled.button`
     background-color: #0056b3;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 480px) {
+    padding: 10px;
     font-size: 14px;
-    padding: 12px;
   }
 `;
 
@@ -137,18 +345,35 @@ const ModalOverlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* z-index를 높게 설정하여 최상단에 표시되도록 수정 */
+  z-index: 1000;
+
+  @media (max-width: 768px) {
+    justify-content: flex-end; /* 모바일 화면에서 모달 위치 조정 */
+    align-items: flex-end;
+  }
 `;
 
 const ModalContent = styled.div`
+  position: relative;
   background: white;
   padding: 20px;
   border-radius: 10px;
   width: 80%;
   max-width: 400px;
   text-align: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* 더 깔끔한 효과를 위해 추가 */
-  z-index: 1010; /* 모달 콘텐츠도 명확히 최상단에 배치 */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1010;
+
+  @media (max-width: 768px) {
+    width: 95%; /* 모바일 화면에서 가로 폭을 거의 채우도록 */
+    max-width: 95%;
+    padding: 15px; /* 모바일에 적합한 패딩 */
+  }
+
+  @media (max-width: 480px) {
+    width: 100%; /* 작은 화면에서 완전한 너비 */
+    border-radius: 0; /* 테두리를 제거하여 깔끔하게 표시 */
+  }
 `;
 
 const ModalButton = styled.button`
@@ -179,15 +404,17 @@ const CloseButton = styled.button`
   border: none;
   font-size: 20px;
   cursor: pointer;
-`;
+  color: #333;
 
-const Footer = styled.footer`
-  margin-top: auto;
-  width: 100%;
-  padding: 10px;
-  text-align: center;
-  background-color: #fff;
-  border-top: 1px solid #ddd;
+  &:hover {
+    color: #000;
+  }
+
+  @media (max-width: 768px) {
+    top: 5px; /* 작은 화면에서 간격 조정 */
+    right: 5px;
+    font-size: 18px;
+  }
 `;
 
 const FloatingButton = styled.button`
@@ -210,84 +437,10 @@ const FloatingButton = styled.button`
     background-color: #45a049;
   }
 
-  /* 모바일 반응형 스타일 */
-  @media (max-width: 768px) {
-    bottom: 15px;
-    right: 15px;
+  @media (max-width: 480px) {
     width: 50px;
     height: 50px;
+    bottom: 10px;
+    right: 10px;
   }
 `;
-
-const MiniGamePage = () => {
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<string | null>(null);
-
-  const openModal = (game: string) => {
-    setSelectedGame(game);
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-    setSelectedGame(null);
-  };
-
-  return (
-    <PageContainer>
-      <Header>안녕하세요, 최주님!</Header>
-      <MainContent>
-        <TopSection>
-          <div>
-            <p>획득한 포인트로 나를 꾸며볼까요?</p>
-            <StyledLink to="/character">내 캐릭터 꾸미러 가기</StyledLink>
-          </div>
-          <Points>2000 P</Points>
-        </TopSection>
-
-        <TopSection>
-          <div>
-            <p>오늘 미니게임으로 획득한 포인트</p>
-            <h2>300 Points</h2>
-          </div>
-          <StyledLink to="/exchange">환전하러 가기</StyledLink>
-        </TopSection>
-
-        <GameGrid>
-          <GameCard>
-          <GameButton onClick={() => openModal('낱말 퀴즈')}>낱말 퀴즈</GameButton>
-            <p>100 Point</p>
-          </GameCard>
-          <GameCard>
-            <h2>OX 퀴즈</h2>
-            <p>0~100 Point</p>
-          </GameCard>
-          <GameCard>
-            <h2>카드 뒤집기</h2>
-            <p>100 Point</p>
-          </GameCard>
-          <GameCard>
-            <h2>숫자를 맞혀라!</h2>
-            <p>10~1000 Point</p>
-          </GameCard>
-        </GameGrid>
-      </MainContent>
-      {modalVisible && (
-        <ModalOverlay>
-          <ModalContent>
-            <CloseButton onClick={closeModal}>&times;</CloseButton>
-            <h2>{selectedGame}</h2>
-            <p>난이도를 선택하세요!</p>
-            <ModalButton>쉬움</ModalButton>
-            <ModalButton>보통</ModalButton>
-            <ModalButton>어려움</ModalButton>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-      <Footer>© 2024 Mini Game App</Footer>
-      <FloatingButton>≡</FloatingButton>
-    </PageContainer>
-  );
-};
-
-export default MiniGamePage;
