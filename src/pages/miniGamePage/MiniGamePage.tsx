@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useUserStore } from '../../app/providers/state/zustand/userStore';
-import { Link } from 'react-router-dom';
+import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const MiniGamePage = () => {
   const { username, points, addPoints, setUser } = useUserStore(); // Zustand에서 상태 가져오기
+  const { lotteries, setLotteries } = useLotteryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [lastPlayedDate, setLastPlayedDate] = useState<Date | null>(null);
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     // 초기 사용자 데이터 설정
@@ -20,7 +24,15 @@ const MiniGamePage = () => {
       birth: '2002-05-06',
       points: 2000,
     });
-  }, [setUser]);
+
+    // 초기 "숫자를 맞혀라" 마지막 플레이 날짜
+    setLastPlayedDate(new Date('2024-11-18')); // 예시 날짜
+
+    // 로또 데이터 초기화
+    setLotteries([
+      { roundNumber: 1, drawDate: new Date('2024-11-15'), winningNumbers: [3, 7, 12, 24, 36], status: '진행 중' },
+    ]);
+  }, [setUser, setLotteries]);
 
   const openModal = (game: string) => {
     setSelectedGame(game);
@@ -30,6 +42,20 @@ const MiniGamePage = () => {
   const closeModal = () => {
     setModalVisible(false);
     setSelectedGame(null);
+  };
+
+  const handleNumberGuessClick = () => {
+    if (isPlayable()) {
+      navigate('/lottery'); // "숫자를 맞혀라"를 누르면 로또 페이지로 이동
+    }
+  };
+
+  const isPlayable = () => {
+    if (!lastPlayedDate) return true;
+    const now = new Date();
+    const oneWeekLater = new Date(lastPlayedDate);
+    oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+    return now >= oneWeekLater;
   };
 
   return (
@@ -75,7 +101,13 @@ const MiniGamePage = () => {
             <p>100 Point</p>
           </GameCard>
           <GameCard>
-            <h2>숫자를 맞혀라!</h2>
+          <GameButton
+                onClick={handleNumberGuessClick}
+                disabled={!isPlayable()}
+                style={!isPlayable() ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
+              >
+                숫자를 맞혀라!
+              </GameButton>
             <p>10~1000 Point</p>
           </GameCard>
         </GameGrid>
