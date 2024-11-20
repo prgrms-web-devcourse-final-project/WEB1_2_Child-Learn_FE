@@ -1,7 +1,6 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import MiniGamePage from '../pages/mini-game-page/MiniGamePage';
-import FlipCardGameBeginnerPage from '../pages/mini-game-page/filp-card-game-page/FlipCardGameBeginnerPage'
+import FlipCardGamePage from '../pages/mini-game-page/filp-card-game-page/FlipCardGamePage';
 import CharacterPage from '../pages/characterPage/CharacterPage';
 import ExchangePage from '../pages/exchangePage/ExchangePage';
 import styled from 'styled-components';
@@ -18,7 +17,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<h1>Welcome to Home Page</h1>} />
             <Route path="/minigame" element={<MiniGamePage />} />
-            <Route path="/flip-card/:level" element={<FlipCardGameBeginnerPage />} />
+            <Route path="/flip-card/:level" element={<FlipCardGamePage />} />
             <Route path="/character" element={<CharacterPage />} />
             <Route path="/exchange" element={<ExchangePage />} />
           </Routes>

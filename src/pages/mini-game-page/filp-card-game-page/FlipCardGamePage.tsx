@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useFlipCardStore } from '../../../app/providers/state/zustand/useFlipCardStore';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
-const FlipCardGameMediumPage = () => {
+const FlipCardGamePage = () => {
+  const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
   const { cards, setCards } = useFlipCardStore();
   const [flippedCards, setFlippedCards] = useState<number[]>([]); // 뒤집힌 카드 상태
   const [timeLeft, setTimeLeft] = useState(3); // 첫 번째 타이머 (3초)
@@ -16,21 +17,55 @@ const FlipCardGameMediumPage = () => {
 
   useEffect(() => {
     // 초기 카드 데이터 설정
-    setCards('medium', [
-      { cardTitle: 'A', cardContent: '내용 A', category: '보통' },
-      { cardTitle: 'B', cardContent: '내용 B', category: '보통' },
-      { cardTitle: 'C', cardContent: '내용 C', category: '보통' },
-      { cardTitle: 'D', cardContent: '내용 D', category: '보통' },
-      { cardTitle: 'E', cardContent: '내용 E', category: '보통' },
-      { cardTitle: 'F', cardContent: '내용 F', category: '보통' },
-      { cardTitle: 'A', cardContent: '내용 A', category: '보통' },
-      { cardTitle: 'B', cardContent: '내용 B', category: '보통' },
-      { cardTitle: 'C', cardContent: '내용 C', category: '보통' },
-      { cardTitle: 'D', cardContent: '내용 D', category: '보통' },
-      { cardTitle: 'E', cardContent: '내용 E', category: '보통' },
-      { cardTitle: 'F', cardContent: '내용 F', category: '보통' },
-    ]);
-  }, [setCards]);
+    const defaultCards = {
+      beginner: [
+        { cardTitle: 'A', cardContent: '내용 A', category: '쉬움' },
+        { cardTitle: 'B', cardContent: '내용 B', category: '쉬움' },
+        { cardTitle: 'A', cardContent: '내용 A', category: '쉬움' },
+        { cardTitle: 'B', cardContent: '내용 B', category: '쉬움' },
+        { cardTitle: 'C', cardContent: '내용 C', category: '쉬움' },
+        { cardTitle: 'D', cardContent: '내용 D', category: '쉬움' },
+        { cardTitle: 'C', cardContent: '내용 C', category: '쉬움' },
+        { cardTitle: 'D', cardContent: '내용 D', category: '쉬움' },
+      ],
+      medium: [
+        { cardTitle: 'A', cardContent: '내용 A', category: '보통' },
+        { cardTitle: 'B', cardContent: '내용 B', category: '보통' },
+        { cardTitle: 'A', cardContent: '내용 A', category: '보통' },
+        { cardTitle: 'B', cardContent: '내용 B', category: '보통' },
+        { cardTitle: 'C', cardContent: '내용 C', category: '보통' },
+        { cardTitle: 'D', cardContent: '내용 D', category: '보통' },
+        { cardTitle: 'C', cardContent: '내용 C', category: '보통' },
+        { cardTitle: 'D', cardContent: '내용 D', category: '보통' },
+        { cardTitle: 'E', cardContent: '내용 E', category: '보통' },
+        { cardTitle: 'F', cardContent: '내용 F', category: '보통' },
+        { cardTitle: 'E', cardContent: '내용 E', category: '보통' },
+        { cardTitle: 'F', cardContent: '내용 F', category: '보통' },
+      ],
+      advanced: [
+        { cardTitle: 'A', cardContent: '내용 A', category: '어려움' },
+        { cardTitle: 'B', cardContent: '내용 B', category: '어려움' },
+        { cardTitle: 'A', cardContent: '내용 A', category: '어려움' },
+        { cardTitle: 'B', cardContent: '내용 B', category: '어려움' },
+        { cardTitle: 'C', cardContent: '내용 C', category: '어려움' },
+        { cardTitle: 'D', cardContent: '내용 D', category: '어려움' },
+        { cardTitle: 'C', cardContent: '내용 C', category: '어려움' },
+        { cardTitle: 'D', cardContent: '내용 D', category: '어려움' },
+        { cardTitle: 'E', cardContent: '내용 E', category: '어려움' },
+        { cardTitle: 'F', cardContent: '내용 F', category: '어려움' },
+        { cardTitle: 'E', cardContent: '내용 E', category: '어려움' },
+        { cardTitle: 'F', cardContent: '내용 F', category: '어려움' },
+        { cardTitle: 'G', cardContent: '내용 G', category: '어려움' },
+        { cardTitle: 'H', cardContent: '내용 H', category: '어려움' },
+        { cardTitle: 'G', cardContent: '내용 G', category: '어려움' },
+        { cardTitle: 'H', cardContent: '내용 H', category: '어려움' },
+      ],
+    };
+
+    if (level && defaultCards[level]) {
+      setCards(level, defaultCards[level]);
+    }
+  }, [level, setCards]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -51,6 +86,7 @@ const FlipCardGameMediumPage = () => {
           if (prev <= 1) {
             clearInterval(timer);
             setGamePhase('end'); // 게임 종료
+            setShowFailureModal(true);
             return 0;
           }
           return prev - 1;
@@ -61,57 +97,48 @@ const FlipCardGameMediumPage = () => {
   }, [gamePhase]);
 
   useEffect(() => {
-    if (matchedCards.length === cards.beginner.length && gamePhase === 'play') {
-      // 모든 카드가 매칭된 경우 성공 모달 표시
+    if (matchedCards.length === cards[level!]?.length && gamePhase === 'play') {
       setShowSuccessModal(true);
-      setGamePhase('end'); // 게임 종료
+      setGamePhase('end');
     }
-  }, [matchedCards, cards.beginner.length, gamePhase]);
+  }, [matchedCards, cards, gamePhase, level]);
 
   const handleCardClick = (index: number) => {
-    if (flippedCards.length === 2 || matchedCards.includes(index)) return; // 이미 매칭된 카드 또는 두 장 클릭된 경우 무시
+    if (flippedCards.length === 2 || matchedCards.includes(index)) return;
 
     setFlippedCards((prev) => [...prev, index]);
 
     if (flippedCards.length === 1) {
-      // 두 번째 카드 클릭 후 매칭 확인
       const firstIndex = flippedCards[0];
-      const firstCard = cards.beginner[firstIndex];
-      const secondCard = cards.beginner[index];
+      const firstCard = cards[level!][firstIndex];
+      const secondCard = cards[level!][index];
 
       if (firstCard.cardTitle === secondCard.cardTitle) {
         setMatchedCards((prev) => [...prev, firstIndex, index]);
         setFlippedCards([]);
       } else {
-        // 카드 뒤집기 초기화 (비매칭)
         setTimeout(() => setFlippedCards([]), 1000);
       }
     }
   };
 
-  const restartGame = () => {
-    navigate(0); // 페이지 새로고침
-  };
-
   return (
     <PageContainer>
       <Header>
-        <h1>카드 뒤집기 - 보통</h1>
+        <h1>카드 뒤집기 - {level}</h1>
         {gamePhase === 'memorize' && <Timer>카드를 살펴보세요: {timeLeft}초</Timer>}
         {gamePhase === 'play' && <Timer>남은 시간: {gameTimeLeft}초</Timer>}
       </Header>
 
-      <GameGrid>
-        {cards.beginner.map((card, index) => (
+      <GameGrid level={level}>
+        {cards[level!]?.map((card, index) => (
           <Card
             key={index}
             flipped={flippedCards.includes(index) || matchedCards.includes(index)}
             onClick={() => (gamePhase === 'play' ? handleCardClick(index) : null)}
           >
             {flippedCards.includes(index) || matchedCards.includes(index) ? (
-              <CardContent>
-                <p>{card.cardTitle}</p>
-              </CardContent>
+              <CardContent>{card.cardTitle}</CardContent>
             ) : (
               <CardBack />
             )}
@@ -119,7 +146,6 @@ const FlipCardGameMediumPage = () => {
         ))}
       </GameGrid>
 
-      {/* 성공 모달 */}
       {showSuccessModal && (
         <Modal>
           <p>🎉 성공!</p>
@@ -128,11 +154,10 @@ const FlipCardGameMediumPage = () => {
         </Modal>
       )}
 
-      {/* 실패 모달 */}
       {showFailureModal && (
         <Modal>
           <p>😢 실패!</p>
-          <p>내일 다시 도전해보세요!</p>
+          <p>다음에 다시 도전하세요!</p>
           <button onClick={() => navigate('/minigame')}>미니게임 페이지로 돌아가기</button>
         </Modal>
       )}
@@ -140,7 +165,7 @@ const FlipCardGameMediumPage = () => {
   );
 };
 
-export default FlipCardGameMediumPage;
+export default FlipCardGamePage;
 
 const PageContainer = styled.div`
   text-align: center;
@@ -156,10 +181,10 @@ const Timer = styled.div`
   font-weight: bold;
 `;
 
-const GameGrid = styled.div`
+const GameGrid = styled.div<{ level?: string }>`
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3열 */
-  grid-template-rows: repeat(4, auto); /* 4행 */
+  grid-template-columns: repeat(${(props) => (props.level === 'beginner' ? 2 : props.level === 'medium' ? 3 : 4)}, 1fr);
+  grid-template-rows: repeat(4, auto); /* 항상 4행 */
   gap: 10px;
   justify-items: center;
 `;
