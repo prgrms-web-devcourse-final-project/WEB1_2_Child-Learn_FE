@@ -106,7 +106,6 @@ const AppContainer = styled.div`
   height: 844px;
   background-color: white;
   border: 1px solid #ccc;
-  overflow-y: auto;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   position: relative;
 
