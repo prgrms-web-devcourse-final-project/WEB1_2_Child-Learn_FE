@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useUserStore } from '../../app/providers/state/zustand/userStore';
+import { useFlipCardStore } from '../../app/providers/state/zustand/useFlipCardStore';
 import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const MiniGamePage = () => {
-  const { username, points, addPoints, setUser } = useUserStore(); // Zustand에서 상태 가져오기
-  const { lotteries, setLotteries } = useLotteryStore();
+  const { username, points, setUser } = useUserStore();
+  const { setCards, isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed } = useFlipCardStore();
+  const { setLotteries, isPlayable: isLotteryPlayable, setLastPlayedDate: setLotteryLastPlayedDate } = useLotteryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
-  const [lastPlayedDate, setLastPlayedDate] = useState<Date | null>(null);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     // 초기 사용자 데이터 설정
@@ -25,14 +26,43 @@ const MiniGamePage = () => {
       points: 2000,
     });
 
-    // 초기 "숫자를 맞혀라" 마지막 플레이 날짜
-    setLastPlayedDate(new Date('2024-11-18')); // 예시 날짜
+    // 카드 뒤집기 초기 데이터 설정
+    setCards('beginner', [
+      { cardTitle: '카드 1', cardContent: '내용 1', category: '쉬움' },
+      { cardTitle: '카드 2', cardContent: '내용 2', category: '쉬움' },
+    ]);
+    setCards('medium', [
+      { cardTitle: '카드 3', cardContent: '내용 3', category: '보통' },
+      { cardTitle: '카드 4', cardContent: '내용 4', category: '보통' },
+    ]);
+    setCards('advanced', [
+      { cardTitle: '카드 5', cardContent: '내용 5', category: '어려움' },
+      { cardTitle: '카드 6', cardContent: '내용 6', category: '어려움' },
+    ]);
 
-    // 로또 데이터 초기화
+    // 로또 초기 데이터 설정
     setLotteries([
       { roundNumber: 1, drawDate: new Date('2024-11-15'), winningNumbers: [3, 7, 12, 24, 36], status: '진행 중' },
+      { roundNumber: 2, drawDate: new Date('2024-11-22'), winningNumbers: [1, 4, 9, 16, 25], status: '대기' },
     ]);
-  }, [setUser, setLotteries]);
+  }, [setUser, setCards, setLotteries]);
+
+  // 카드 뒤집기 플레이 핸들러
+  const handleFlipCardPlay = (level: 'beginner' | 'medium' | 'advanced') => {
+    if (isCardPlayable(level)) {
+      setCardLastPlayed(level, new Date());
+      navigate(`/flip-card/${level}`);
+    }
+  };
+
+  // 로또(숫자를 맞혀라) 플레이 핸들러
+  const handleLotteryPlay = () => {
+    if (isLotteryPlayable()) {
+      setLotteryLastPlayedDate(new Date());
+      navigate('/lottery');
+    }
+  };
+
 
   const openModal = (game: string) => {
     setSelectedGame(game);
@@ -42,20 +72,6 @@ const MiniGamePage = () => {
   const closeModal = () => {
     setModalVisible(false);
     setSelectedGame(null);
-  };
-
-  const handleNumberGuessClick = () => {
-    if (isPlayable()) {
-      navigate('/lottery'); // "숫자를 맞혀라"를 누르면 로또 페이지로 이동
-    }
-  };
-
-  const isPlayable = () => {
-    if (!lastPlayedDate) return true;
-    const now = new Date();
-    const oneWeekLater = new Date(lastPlayedDate);
-    oneWeekLater.setDate(oneWeekLater.getDate() + 7);
-    return now >= oneWeekLater;
   };
 
   return (
@@ -88,42 +104,88 @@ const MiniGamePage = () => {
 
         <BackgroundContainer>
         <GameGrid>
+          {/* 낱말 퀴즈 */}
           <GameCard>
-          <GameButton onClick={() => openModal('낱말 퀴즈')}>낱말 퀴즈</GameButton>
+            <GameButton onClick={() => openModal('낱말 퀴즈')}>낱말 퀴즈</GameButton>
             <p>100 Point</p>
           </GameCard>
+
+          {/* OX 퀴즈 */}
           <GameCard>
-            <h2>OX 퀴즈</h2>
+            <GameButton onClick={() => openModal('OX 퀴즈')}>OX 퀴즈</GameButton>
             <p>0~100 Point</p>
           </GameCard>
-          <GameCard>
-            <h2>카드 뒤집기</h2>
+
+         {/* 카드 뒤집기 */}
+         <GameCard>
+            <GameButton onClick={() => openModal('카드 뒤집기')}>카드 뒤집기</GameButton>
             <p>100 Point</p>
           </GameCard>
+          {/* 로또 */}
           <GameCard>
-          <GameButton
-                onClick={handleNumberGuessClick}
-                disabled={!isPlayable()}
-                style={!isPlayable() ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
-              >
-                숫자를 맞혀라!
-              </GameButton>
+            <GameButton
+              onClick={handleLotteryPlay}
+              disabled={!isLotteryPlayable()}
+              style={!isLotteryPlayable() ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
+            >
+              숫자를 맞혀라!
+            </GameButton>
             <p>10~1000 Point</p>
           </GameCard>
         </GameGrid>
         </BackgroundContainer>
       </MainContent>
-      {modalVisible && (
+      
+       {/* 모달 */}
+       {modalVisible && selectedGame && (
         <ModalOverlay>
           <ModalContent>
             <CloseButton onClick={closeModal}>&times;</CloseButton>
             <p>난이도를 선택하세요!</p>
-            <ModalButton>쉬움</ModalButton>
-            <ModalButton>보통</ModalButton>
-            <ModalButton>어려움</ModalButton>
+
+            {selectedGame === '카드 뒤집기' && (
+              <>
+                <ModalButton
+                  onClick={() => handleFlipCardPlay('beginner')}
+                  disabled={!isCardPlayable('beginner')}
+                  style={!isCardPlayable('beginner') ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
+                >
+                  쉬움
+                </ModalButton>
+                <ModalButton
+                  onClick={() => handleFlipCardPlay('medium')}
+                  disabled={!isCardPlayable('medium')}
+                  style={!isCardPlayable('medium') ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
+                >
+                  보통
+                </ModalButton>
+                <ModalButton
+                  onClick={() => handleFlipCardPlay('advanced')}
+                  disabled={!isCardPlayable('advanced')}
+                  style={!isCardPlayable('advanced') ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
+                >
+                  어려움
+                </ModalButton>
+              </>
+            )}
+
+            {(selectedGame === '낱말 퀴즈' || selectedGame === 'OX 퀴즈') && (
+              <>
+                <ModalButton onClick={() => navigate(`/${selectedGame === '낱말 퀴즈' ? 'word-quiz' : 'ox-quiz'}/beginner`)}>
+                  쉬움
+                </ModalButton>
+                <ModalButton onClick={() => navigate(`/${selectedGame === '낱말 퀴즈' ? 'word-quiz' : 'ox-quiz'}/medium`)}>
+                  보통
+                </ModalButton>
+                <ModalButton onClick={() => navigate(`/${selectedGame === '낱말 퀴즈' ? 'word-quiz' : 'ox-quiz'}/advanced`)}>
+                  어려움
+                </ModalButton>
+              </>
+            )}
           </ModalContent>
         </ModalOverlay>
       )}
+
       <FloatingButton>≡</FloatingButton>
     </PageContainer>
   );
