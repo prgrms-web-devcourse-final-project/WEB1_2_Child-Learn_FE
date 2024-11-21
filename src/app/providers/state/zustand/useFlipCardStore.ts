@@ -4,7 +4,7 @@ interface FlipCardState {
     cards: {
         beginner: Array<{ cardTitle: string; cardContent: string; category: string }>;
         medium: Array<{ cardTitle: string; cardContent: string; category: string }>;
-        advanced: Array<{ cardTitle: string; cardContent: string; category: string }>;
+        advanced: Array<{ cardTitle: string; cardContent: string; category:                                string }>;
       };
       setCards: (level: 'beginner' | 'medium' | 'advanced', cards: Array<{ cardTitle: string; cardContent: string; category: string }>) => void;
   lastPlayed: { beginner: Date | null; medium: Date | null; advanced: Date | null };

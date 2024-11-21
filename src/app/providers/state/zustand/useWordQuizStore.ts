@@ -1,22 +1,18 @@
 import { create } from 'zustand';
 
 interface WordQuizState {
-  words: {
-    beginner: Array<{ word: string; explanation: string; hint: string; difficulty: 'beginner' }>;
-    medium: Array<{ word: string; explanation: string; hint: string; difficulty: 'medium' }>;
-    advanced: Array<{ word: string; explanation: string; hint: string; difficulty: 'advanced' }>;
-  };
+  words: Array<{ word: string; explanation: string; hint: string }>;
   lastPlayed: { beginner: Date | null; medium: Date | null; advanced: Date | null };
   setWords: (
     level: 'beginner' | 'medium' | 'advanced',
-    words: Array<{ word: string; explanation: string; hint: string; difficulty: 'beginner' | 'medium' | 'advanced' }>
+    words: Array<{ word: string; explanation: string; hint: string }>
   ) => void;
   setLastPlayed: (level: 'beginner' | 'medium' | 'advanced', date: Date) => void;
   isPlayable: (level: 'beginner' | 'medium' | 'advanced') => boolean;
 }
 
 export const useWordQuizStore = create<WordQuizState>((set, get) => ({
-  words: { beginner: [], medium: [], advanced: [] },
+  words: [],
   lastPlayed: { beginner: null, medium: null, advanced: null },
   setWords: (level, words) =>
     set((state) => ({
