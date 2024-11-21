@@ -5,6 +5,7 @@ import ArticlePage from '../../features/article/pages/articlepage';
 import QuizPage from '../../features/beginner_chat/pages/quizpage';
 import MiniGamePage from '../../pages/MiniGamePage/MiniGamePage';
 import FlipCardGamePage from '../../pages/MiniGamePage/FlipCardGamePage/FlipCardGamePage';
+import WordQuizGamePage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizGamePage';
 import CharacterPage from '../../pages/characterPage/CharacterPage';
 import ExchangePage from '../../pages/exchangePage/ExchangePage';
 
@@ -15,6 +16,7 @@ export default function Router() {
       <Route path="/home" element={<HomePage />} />
       <Route path="/minigame" element={<MiniGamePage />} />
       <Route path="/flip-card/:level" element={<FlipCardGamePage />} />
+      <Route path="/word-quiz/:level" element={<WordQuizGamePage />} />
       <Route path="/character" element={<CharacterPage />} />
       <Route path="/exchange" element={<ExchangePage />} />
       <Route path="/article" element={<ArticlePage />} /> {/* 경로 수정 */}
