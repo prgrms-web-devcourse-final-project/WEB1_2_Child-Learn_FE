@@ -1,19 +1,14 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import Header from '../../widgets/Header/index';  // Header 컴포넌트 import
+import Header from '../../widgets/Header/index'; // Header 컴포넌트 import
 import FloatingGNB from '../../widgets/Footer/index';
 
 // 헤더를 숨길 페이지 경로들
-const HIDDEN_HEADER_PATHS = [
-  '/login',
-];
+const HIDDEN_HEADER_PATHS = ['/auth/login'];
 
 // GNB를 숨길 페이지 경로들
-const HIDDEN_GNB_PATHS = [
-  '/login',
-];
-
+const HIDDEN_GNB_PATHS = ['/auth/login'];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -26,9 +21,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       <AppWrapper>
         <AppContainer>
           {shouldShowHeader && <Header />}
-          <ScrollContainer>
-            {children}
-          </ScrollContainer>
+          <ScrollContainer>{children}</ScrollContainer>
           {shouldShowGNB && <FloatingGNB />}
         </AppContainer>
       </AppWrapper>
@@ -152,4 +145,13 @@ const ScrollContainer = styled.div`
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
+  height: 0;
+  -webkit-overflow-scrolling: touch;
+
+  // 스크롤바 숨기기
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none; // IE and Edge
+  scrollbar-width: none; // Firefox
 `;
