@@ -1,8 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import dynamic from 'next/dynamic';
-
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+import ReactApexChart from 'react-apexcharts';
 
 const GraphContainer = styled.div`
   width: 355px;
@@ -81,12 +79,12 @@ const Points = styled.div`
   padding: 10px 12px;
   border-radius: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  
+
   img {
     width: 20px;
     height: 20px;
   }
-  
+
   span {
     color: #666;
     font-size: 14px;
@@ -119,18 +117,18 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
       name: '요일',
       type: 'bar',
       data: days.map((day) => {
-        const dayData = data.find(item => item.date === day);
+        const dayData = data.find((item) => item.date === day);
         return dayData?.value || 0;
-      })
+      }),
     },
     {
       name: '이동평균',
       type: 'line',
       data: days.map((day) => {
-        const dayData = data.find(item => item.date === day);
+        const dayData = data.find((item) => item.date === day);
         return dayData?.value || 0;
-      })
-    }
+      }),
+    },
   ];
 
   const options: ApexCharts.ApexOptions = {
@@ -138,36 +136,35 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
       type: 'bar',
       height: 350,
       toolbar: {
-        show: false
-        
-      }
+        show: false,
+      },
     },
     plotOptions: {
       bar: {
         columnWidth: '30%',
         borderRadius: 8,
-        borderRadiusApplication: 'end'
-      }
+        borderRadiusApplication: 'end',
+      },
     },
     stroke: {
       width: [0, 2],
       curve: 'straight',
-      colors: ['transparent', '#f4a261']
+      colors: ['transparent', '#f4a261'],
     },
     markers: {
       size: [0, 0],
       colors: ['transparent', '#f4a261'],
       strokeColors: ['transparent', '#f4a261'],
-      strokeWidth: 2
+      strokeWidth: 2,
     },
     xaxis: {
       categories: days,
       labels: {
         style: {
           colors: '#666',
-          fontSize: '14px'
-        }
-      }
+          fontSize: '14px',
+        },
+      },
     },
     yaxis: {
       min: 0,
@@ -176,38 +173,47 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
       labels: {
         style: {
           colors: '#666',
-          fontSize: '12px'
-        }
-      }
+          fontSize: '12px',
+        },
+      },
     },
     grid: {
       borderColor: '#f1f1f1',
       xaxis: {
         lines: {
-          show: true
-        }
+          show: true,
+        },
       },
       yaxis: {
         lines: {
-          show: true
-        }
-      }
+          show: true,
+        },
+      },
     },
-    colors: [(context: { dataPointIndex: number }) => {
-      if (selectedDay !== 'Last 7 days' && context.dataPointIndex === selectedDayIndex) {
-        return '#2e68a2';  // 선택된 요일
-      }
-      if (context.dataPointIndex === adjustedToday && selectedDay === 'Last 7 days') {
-        return '#8ec3f8';  // 오늘
-      }
-      return '#FFE5D3';  // 기본 색상
-    }, '#f4a261'],
+    colors: [
+      (context: { dataPointIndex: number }) => {
+        if (
+          selectedDay !== 'Last 7 days' &&
+          context.dataPointIndex === selectedDayIndex
+        ) {
+          return '#2e68a2'; // 선택된 요일
+        }
+        if (
+          context.dataPointIndex === adjustedToday &&
+          selectedDay === 'Last 7 days'
+        ) {
+          return '#8ec3f8'; // 오늘
+        }
+        return '#FFE5D3'; // 기본 색상
+      },
+      '#f4a261',
+    ],
     dataLabels: {
-      enabled: false
+      enabled: false,
     },
     tooltip: {
-      enabled: true
-    }
+      enabled: true,
+    },
   };
 
   return (
@@ -236,7 +242,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
           ))}
         </Select>
       </GraphHeader>
-      <Chart
+      <ReactApexChart
         options={options}
         series={series}
         type="bar"
