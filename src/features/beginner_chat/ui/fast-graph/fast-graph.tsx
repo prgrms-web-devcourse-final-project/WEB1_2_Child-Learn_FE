@@ -1,8 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import dynamic from 'next/dynamic';
-
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+import ReactApexChart from 'react-apexcharts';
 
 const GraphContainer = styled.div`
   width: 355px;
@@ -236,7 +234,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
           ))}
         </Select>
       </GraphHeader>
-      <Chart
+      <ReactApexChart
         options={options}
         series={series}
         type="bar"

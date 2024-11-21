@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import QuizCard from '../ui/quizcard';
-import { FastGraph } from './fastgraph';
+import QuizCard from './quizcard';
+import { FastGraph } from '../ui/fast-graph/fast-graph';
 import { BeginQuiz } from '../types/quiz';
 import { BeginStock } from '../types/stock';
 
