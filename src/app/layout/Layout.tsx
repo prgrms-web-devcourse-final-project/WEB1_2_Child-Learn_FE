@@ -118,7 +118,8 @@ const AppWrapper = styled.div`
 `;
 
 const AppContainer = styled.div`
-  width: 390px;
+  width: 100%;
+  max-width: 390px;
   height: 844px;
   background-color: white;
   border: 1px solid #ccc;
