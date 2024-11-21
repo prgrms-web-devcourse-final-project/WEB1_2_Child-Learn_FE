@@ -133,16 +133,18 @@ const FlipCardGamePage = () => {
       <GameGrid level={level}>
         {cards[level!]?.map((card, index) => (
           <Card
-            key={index}
-            flipped={flippedCards.includes(index) || matchedCards.includes(index)}
-            onClick={() => (gamePhase === 'play' ? handleCardClick(index) : null)}
-          >
-            {flippedCards.includes(index) || matchedCards.includes(index) ? (
-              <CardContent>{card.cardTitle}</CardContent>
-            ) : (
-              <CardBack />
-            )}
-          </Card>
+          key={index}
+          flipped={
+            gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index)
+          }
+          onClick={() => (gamePhase === 'play' ? handleCardClick(index) : null)}
+        >
+          {gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index) ? (
+            <CardContent>{card.cardTitle}</CardContent>
+          ) : (
+            <CardBack />
+          )}
+        </Card>
         ))}
       </GameGrid>
 

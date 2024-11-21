@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUserStore } from '../../app/providers/state/zustand/userStore';
 import { useFlipCardStore } from '../../app/providers/state/zustand/useFlipCardStore';
 import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
@@ -185,8 +185,6 @@ const MiniGamePage = () => {
           </ModalContent>
         </ModalOverlay>
       )}
-
-      <FloatingButton>≡</FloatingButton>
     </PageContainer>
   );
 };
@@ -356,12 +354,6 @@ const StyledLink = styled(Link)`
   }
 `;
 
-const Points = styled.div`
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #333;
-`;
-
 const BackgroundContainer = styled.div`
   position: absolute;
   bottom: 0; /* 화면의 맨 아래에 고정 */
@@ -370,7 +362,7 @@ const BackgroundContainer = styled.div`
   height: 551px; /* 피그마 기준 높이 */
   background-color: #DEF9C4; /* 피그마 기준 배경색 */
   border-top-left-radius: 30px; /* 둥근 모서리 */
-  border-top-right-radius: 20px;
+  border-top-right-radius: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -383,42 +375,32 @@ const GameGrid = styled.div`
   grid-template-columns: repeat(2, 179px); /* 카드 크기에 맞게 고정 */
   gap: 20px; /* 피그마의 카드 간격에 맞게 조정 */
   justify-content: center; /* 화면 중앙 정렬 */
-
-  @media (max-width: 480px) {
-    grid-template-columns: repeat(2, 45vw); /* 작은 화면에서 반응형 크기 */
-    gap: 10px;
-  }
 `;
 
 const GameCard = styled.div`
-  width: 179px;
-  height: 177px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 179px; /* 피그마 기준 카드 너비 */
+  height: 177px; /* 피그마 기준 카드 높이 */
+  background-color: #fff; /* 카드 배경 흰색 */
+  border: 1px solid #F2F0F8; /* 피그마에서 지정된 테두리 색상 */
+  border-radius: 10px; /* 카드 모서리를 둥글게 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 약간의 그림자 추가 */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  position: relative; /* 내부 요소 위치 조정 */
 
   h2 {
-    font-size: 1rem;
+    font-size: 1rem; /* 텍스트 크기 */
     margin: 10px 0;
-
-    @media (max-width: 480px) {
-      font-size: 0.9rem;
-    }
+    font-weight: bold; /* 제목을 강조 */
+    color: #333; /* 텍스트 색상 */
   }
 
   p {
     font-size: 0.8rem;
-    color: #666;
-
-    @media (max-width: 480px) {
-      font-size: 0.7rem;
-    }
+    color: #666; /* 부가 텍스트 색상 */
   }
 `;
 
@@ -452,15 +434,11 @@ const ModalOverlay = styled.div`
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-
-  @media (max-width: 768px) {
-    justify-content: flex-end; /* 모바일 화면에서 모달 위치 조정 */
-    align-items: flex-end;
-  }
 `;
 
 const ModalContent = styled.div`
@@ -473,17 +451,6 @@ const ModalContent = styled.div`
   text-align: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   z-index: 1010;
-
-  @media (max-width: 768px) {
-    width: 95%; /* 모바일 화면에서 가로 폭을 거의 채우도록 */
-    max-width: 95%;
-    padding: 15px; /* 모바일에 적합한 패딩 */
-  }
-
-  @media (max-width: 480px) {
-    width: 100%; /* 작은 화면에서 완전한 너비 */
-    border-radius: 0; /* 테두리를 제거하여 깔끔하게 표시 */
-  }
 `;
 
 const ModalButton = styled.button`
@@ -524,33 +491,5 @@ const CloseButton = styled.button`
     top: 5px; /* 작은 화면에서 간격 조정 */
     right: 5px;
     font-size: 18px;
-  }
-`;
-
-const FloatingButton = styled.button`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-
-  &:hover {
-    background-color: #45a049;
-  }
-
-  @media (max-width: 480px) {
-    width: 50px;
-    height: 50px;
-    bottom: 10px;
-    right: 10px;
   }
 `;
