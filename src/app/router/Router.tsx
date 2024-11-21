@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
-import LandingPage from '../../pages/LandingPage';
-import HomePage from '../../pages/HomePage/index';
+import LandingPage from '../../pages/LandingPage/LandingPage';
+import HomePage from '../../pages/HomePage/HompPage';
 import ArticlePage from '../../features/article/pages/articlepage';
 import QuizPage from '../../features/beginner_chat/pages/quizpage';
 import { LoginPage } from '@/pages/auth/login/LoginPage';
