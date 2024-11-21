@@ -2,6 +2,7 @@ import styled from 'styled-components';
 
 interface AuthInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
+  width?: string; // width prop 추가
 }
 
 export const AuthInput = ({ error, width, ...props }: AuthInputProps) => {
@@ -19,11 +20,13 @@ const InputContainer = styled.div`
 `;
 
 const StyledInput = styled.input<AuthInputProps>`
-  width: ${(props) => props.width || '100%'}; // width prop 사용
+  width: ${(props) => props.width || '100%'};
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 14px;
-  background-color: white; // 배경색 추가
+  font-weight: 500;
+  color: #000000; // 글자 색상 추가
+  background-color: white;
   border: 1px solid ${(props) => (props.error ? '#ef4444' : '#e5e7eb')};
   transition: border-color 0.2s ease;
   outline: none;

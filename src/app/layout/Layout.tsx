@@ -51,21 +51,21 @@ const GlobalStyles = createGlobalStyle`
   /* Noto Sans KR 폰트 설정 - 한글용 */
   @font-face {
     font-family: 'Noto Sans KR';
-    src: url('/font/NotoSansKR-Regular.woff') format('woff');
+    src: url('/font/NotoSansKR-Light.woff') format('woff');
     font-weight: 400;
     unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
   }
 
   @font-face {
     font-family: 'Noto Sans KR';
-    src: url('/font/NotoSansKR-Medium.woff') format('woff');
+    src: url('/font/NotoSansKR-Regular.woff') format('woff');
     font-weight: 500;
     unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
   }
 
   @font-face {
     font-family: 'Noto Sans KR';
-    src: url('/font/NotoSansKR-Bold.woff') format('woff');
+    src: url('/font/NotoSansKR-SemiBold.woff') format('woff');
     font-weight: 700;
     unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
   }
