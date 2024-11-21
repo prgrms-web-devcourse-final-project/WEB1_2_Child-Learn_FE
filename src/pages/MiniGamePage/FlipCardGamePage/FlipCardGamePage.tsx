@@ -15,6 +15,12 @@ const FlipCardGamePage = () => {
   const [showFailureModal, setShowFailureModal] = useState(false); // 실패 모달 상태
   const navigate = useNavigate();
 
+  const formatTime = (time: number): string => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes.toString().padStart(2, '0')} : ${seconds.toString().padStart(2, '0')}`;
+  };
+
   useEffect(() => {
     // 공통 카드 데이터 설정 (16장의 카드 생성)
     const commonCards = [
@@ -107,8 +113,8 @@ const FlipCardGamePage = () => {
   return (
     <PageContainer>
       <Header>
-        {gamePhase === 'memorize' && <Timer>{timeLeft}초</Timer>}
-        {gamePhase === 'play' && <Timer>남은 시간: {gameTimeLeft}초</Timer>}
+        {gamePhase === 'memorize' && <Timer><img src="/public/img/timer.png" alt="Timer Icon" />{timeLeft}</Timer>}
+        {gamePhase === 'play' && <Timer><img src="/public/img/timer.png" alt="Timer Icon" />{formatTime(gameTimeLeft)}</Timer>}
       </Header>
 
       <GameGrid level={level}>
@@ -182,6 +188,12 @@ const Timer = styled.div`
   align-items: center; /* 세로 중앙 정렬 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
   z-index: 10; /* 다른 요소 위에 표시 */
+
+  img {
+    width: 19.78px; /* 이미지 너비 */
+    height: 20px; /* 이미지 높이 */
+    transform: translateX(-3px); /* 아이콘을 왼쪽으로 조금 이동 */
+  }
 `;
 
 const GameGrid = styled.div<{ level?: string }>`
