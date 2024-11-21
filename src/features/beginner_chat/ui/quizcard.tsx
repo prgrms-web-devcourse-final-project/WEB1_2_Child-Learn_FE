@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { BeginQuiz } from '../types/quiz';
+import { BeginQuiz } from '../model/quiz';
 
 const Container = styled.div`
   width: 100%;

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import QuizCard from './quizcard';
 import { FastGraph } from '../ui/fast-graph/fast-graph';
-import { BeginQuiz } from '../types/quiz';
-import { BeginStock } from '../types/stock';
+import { BeginQuiz } from '../model/quiz';
+import { BeginStock } from '../model/stock';
 
 const PageContainer = styled.div`
   padding: 16px;
