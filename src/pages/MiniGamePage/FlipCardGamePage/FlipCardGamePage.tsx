@@ -130,25 +130,24 @@ const FlipCardGamePage = () => {
       </Header>
 
       <GameGrid level={level}>
-        {cards[level!]?.map((card, index) => (
-          <Card
+      {cards[level!]?.map((card, index) => (
+        <Card
           key={index}
-          level={level} 
+          level={level}
           flipped={
             gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index)
           }
           onClick={() => (gamePhase === 'play' ? handleCardClick(index) : null)}
         >
-          {gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index) ? (
-            <CardContent>{card.cardTitle}</CardContent>
-          ) : (
-            <CardBack>
-      <img src="/public/img/logo.png" alt="Card Logo" />
-    </CardBack>
-          )}
+          <div className="card-inner">
+            <div className="card-front">{card.cardTitle}</div>
+            <div className="card-back">
+              <img src="/public/img/logo.png" alt="Card Logo" />
+            </div>
+          </div>
         </Card>
-        ))}
-      </GameGrid>
+      ))}
+    </GameGrid>
 
       {showSuccessModal && (
         <Modal>
@@ -207,20 +206,54 @@ const GameGrid = styled.div<{ level?: string }>`
 `;
 
 const Card = styled.div<{ flipped: boolean; level?: string }>`
-   width: ${({ level }) =>
+  width: ${({ level }) =>
     level === 'medium' ? '80px' : level === 'advanced' ? '70px' : '100px'};
   height: ${({ level }) =>
     level === 'medium' ? '130px' : level === 'advanced' ? '120px' : '150px'};
-  background-color: ${({ flipped }) => (flipped ? '#fff' : '#DEF9C4')};
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  perspective: 1000px;
-  transition: transform 0.5s;
+  position: relative; /* 카드의 앞면과 뒷면을 포개기 위해 */
+  perspective: 1000px; /* 3D 효과를 위해 필수 */
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform-style: preserve-3d; /* 3D 회전 효과를 유지 */
+    transition: transform 0.6s; /* 뒤집히는 애니메이션 시간 */
+    transform: ${({ flipped }) => (flipped ? 'rotateY(180deg)' : 'rotateY(0)')}; /* 뒤집힌 상태를 결정 */
+  }
+
+  .card-front,
+  .card-back {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    backface-visibility: hidden; /* 뒷면을 숨김 */
+    border-radius: 10px; /* 모서리를 둥글게 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card-back {
+    background-color: #DEF9C4; /* 뒷면 색상 */
+    transform: rotateY(0deg); /* 기본적으로 보이도록 설정 */
+    border: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 70px; /* 로고 너비 */
+      height: 40px; /* 로고 높이 */
+    }
+  }
+
+  .card-front {
+    background-color: #fff; /* 앞면 색상 */
+    transform: rotateY(180deg); /* 뒤집혔을 때 보이도록 설정 */
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const CardBack = styled.div`
