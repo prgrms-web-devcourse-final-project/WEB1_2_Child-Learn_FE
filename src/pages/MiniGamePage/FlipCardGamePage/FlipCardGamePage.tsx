@@ -143,16 +143,16 @@ const FlipCardGamePage = () => {
 
       {showSuccessModal && (
         <Modal>
-          <p>🎉 성공!</p>
-          <p>100 Point를 획득하셨습니다!</p>
+          <p><img src="/public/img/smile.png" alt="Smile Icon" />성공!</p>
+          <p>100 Point를 획득하셨어요!</p>
           <button onClick={() => navigate('/minigame')}>미니게임 페이지로 돌아가기</button>
         </Modal>
       )}
 
       {showFailureModal && (
         <Modal>
-          <p>😢 실패!</p>
-          <p>다음에 다시 도전하세요!</p>
+          <p><img src="/public/img/shocked.png" alt="Shocked Icon" />실패!</p>
+          <p>내일 다시 도전해봐요!</p>
           <button onClick={() => navigate('/minigame')}>미니게임 페이지로 돌아가기</button>
         </Modal>
       )}
@@ -291,9 +291,12 @@ const Modal = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 303px; /* 모달 너비 */
+  height: 170px; /* 모달 높이 */
   background-color: white;
   padding: 20px;
   border: 1px solid #ddd;
+  border-radius: 5.86px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
   p {
@@ -301,7 +304,7 @@ const Modal = styled.div`
   }
   button {
     padding: 10px 20px;
-    background-color: #4caf50;
+    background-color: #73C3AD;
     color: white;
     border: none;
     cursor: pointer;
