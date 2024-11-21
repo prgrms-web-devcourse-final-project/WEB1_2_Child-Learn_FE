@@ -172,7 +172,8 @@ export default FlipCardGamePage;
 
 const PageContainer = styled.div`
   text-align: center;
-  padding: 20px;
+  min-height: 100vh;
+  padding: 0px;
 `;
 
 const Header = styled.div`
@@ -203,6 +204,7 @@ const GameGrid = styled.div<{ level?: string }>`
   grid-template-rows: repeat(4, auto); /* 항상 4행 */
   gap: 10px;
   justify-items: center;
+  margin-top: 100px; /* 상단 간격 */
 `;
 
 const Card = styled.div<{ flipped: boolean; level?: string }>`
@@ -254,26 +256,6 @@ const Card = styled.div<{ flipped: boolean; level?: string }>`
     border: 1px solid #ddd;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
-`;
-
-const CardBack = styled.div`
-  width: 100%;
-  height: 100%;
-  background-color: #DEF9C4;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  
-  img {
-    width: 70px; /* 로고 너비 */
-    height: 40px; /* 로고 높이 */
-  }
-`;
-
-const CardContent = styled.div`
-  font-size: 16px;
-  font-weight: bold;
 `;
 
 const Modal = styled.div`
