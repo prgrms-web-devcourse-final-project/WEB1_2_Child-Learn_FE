@@ -218,7 +218,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
         </ExitButton>
         <Points>
           <img src="/img/coins.png" alt="points" />
-          <span>2,000 P</span>
+          <span>DB에서 가지고 오기</span>
         </Points>
       </TopBar>
       <GraphHeader>
