@@ -47,14 +47,18 @@ const OptionsContainer = styled.div`
   gap: 12px;
 `;
 
-const OptionButton = styled.button<{ isSelected?: boolean }>`
+interface OptionButtonProps {
+  $isSelected?: boolean;  // $ prefix 추가
+}
+
+const OptionButton = styled.button<OptionButtonProps>`
   width: 100%;
   padding: 16px;
   border-radius: 8px;
   border: none;
   color: #000000;
-  background-color: ${props => props.isSelected ? '#e9f7ef' : '#fff'};
-  border: 1px solid ${props => props.isSelected ? '#4caf50' : '#e0e0e0'};
+  background-color: ${props => props.$isSelected ? '#e9f7ef' : '#fff'};
+  border: 1px solid ${props => props.$isSelected ? '#4caf50' : '#e0e0e0'};
   text-align: left;
   display: flex;
   align-items: center;
@@ -63,7 +67,7 @@ const OptionButton = styled.button<{ isSelected?: boolean }>`
   transition: all 0.2s ease-in-out;
 
   &:hover {
-    background-color: ${props => props.isSelected ? '#e9f7ef' : '#f5f5f5'};
+    background-color: ${props => props.$isSelected ? '#e9f7ef' : '#f5f5f5'};
   }
 `;
 
@@ -112,16 +116,18 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onAnswer, selectedAnswer }) =
         
         <OptionsContainer>
           <OptionButton 
-            isSelected={selectedAnswer === 'O'}
+            $isSelected={selectedAnswer === 'O'}  // $ prefix 추가
             onClick={() => onAnswer('O')}
+            disabled={!!selectedAnswer}
           >
             <Circle>O</Circle>
             {quiz.o_content}
           </OptionButton>
           
           <OptionButton 
-            isSelected={selectedAnswer === 'X'}
+            $isSelected={selectedAnswer === 'X'}  // $ prefix 추가
             onClick={() => onAnswer('X')}
+            disabled={!!selectedAnswer}
           >
             <X>X</X>
             {quiz.x_content}

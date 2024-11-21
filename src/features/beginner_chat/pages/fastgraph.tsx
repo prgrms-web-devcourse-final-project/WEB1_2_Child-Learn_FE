@@ -5,23 +5,23 @@ import dynamic from 'next/dynamic';
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 const GraphContainer = styled.div`
-  width: 390px;
+  width: 355px;
   background: white;
-  padding: 20px;
-  margin-bottom: 16px;
+  padding: 5;
+  margin-bottom: 20px;
 `;
 
 const GraphHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 `;
 
 const GraphTitle = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 20px;
 `;
 
 const StaminaIndicator = styled.div`
@@ -55,6 +55,44 @@ const Select = styled.select`
   }
 `;
 
+const TopBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+`;
+
+const ExitButton = styled.div`
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  img {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+const Points = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  padding: 10px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  img {
+    width: 20px;
+    height: 20px;
+  }
+  
+  span {
+    color: #666;
+    font-size: 14px;
+  }
+`;
+
 interface GraphData {
   value: number;
   date: string;
@@ -70,18 +108,17 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
   const adjustedToday = today === 0 ? 6 : today - 1;
 
   const [selectedDay, setSelectedDay] = React.useState('Last 7 days');
+  const selectedDayIndex = days.indexOf(selectedDay);
 
   const handleDaySelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedDay(event.target.value);
   };
 
-  const selectedDayIndex = days.indexOf(selectedDay);
-
   const series = [
     {
       name: '요일',
-      type: 'column',
-      data: days.map(day => {
+      type: 'bar',
+      data: days.map((day) => {
         const dayData = data.find(item => item.date === day);
         return dayData?.value || 0;
       })
@@ -89,7 +126,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
     {
       name: '이동평균',
       type: 'line',
-      data: days.map(day => {
+      data: days.map((day) => {
         const dayData = data.find(item => item.date === day);
         return dayData?.value || 0;
       })
@@ -98,67 +135,41 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
 
   const options: ApexCharts.ApexOptions = {
     chart: {
+      type: 'bar',
       height: 350,
-      width: 350,
       toolbar: {
         show: false
-      },
-      background: '#ffffff',
-      zoom: {
-        enabled: false
-      },
-      events: {
-        dataPointSelection: (event, chartContext, config) => {
-          if (selectedDay === 'Last 7 days') {
-            const selectedIndex = config.dataPointIndex;
-            const selectedDayValue = days[selectedIndex];
-            setSelectedDay(selectedDayValue);
-          }
-        }
+        
       }
     },
-    colors: ['#FFE5D3', '#2f2e2e'],
     plotOptions: {
       bar: {
         columnWidth: '30%',
-        borderRadius: 5,
+        borderRadius: 8,
         borderRadiusApplication: 'end'
       }
     },
     stroke: {
-      width: [0, 1.5],
+      width: [0, 2],
       curve: 'straight',
       colors: ['transparent', '#f4a261']
     },
     markers: {
-      size: [0, 6],
-      colors: ['transparent', '#ffffff'],
+      size: [0, 0],
+      colors: ['transparent', '#f4a261'],
       strokeColors: ['transparent', '#f4a261'],
-      strokeWidth: 2,
+      strokeWidth: 2
     },
     xaxis: {
       categories: days,
       labels: {
         style: {
           colors: '#666',
-          fontSize: '14px',
+          fontSize: '14px'
         }
-      },
-      axisBorder: {
-        show: false
-      },
-      axisTicks: {
-        show: false
-      },
-      tooltip: {
-        enabled: false
-      },
-      crosshairs: {
-        show: false
       }
     },
     yaxis: {
-      opposite: true,
       min: 0,
       max: 600,
       tickAmount: 6,
@@ -166,15 +177,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
         style: {
           colors: '#666',
           fontSize: '12px'
-        },
-        formatter: (value) => value.toFixed(0),
-        offsetX: -10,
-      },
-      axisBorder: {
-        show: false
-      },
-      axisTicks: {
-        show: false
+        }
       }
     },
     grid: {
@@ -188,55 +191,44 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
         lines: {
           show: true
         }
-      },
-      padding: {
-        right: 20
       }
     },
+    colors: [(context: { dataPointIndex: number }) => {
+      if (selectedDay !== 'Last 7 days' && context.dataPointIndex === selectedDayIndex) {
+        return '#2e68a2';  // 선택된 요일
+      }
+      if (context.dataPointIndex === adjustedToday && selectedDay === 'Last 7 days') {
+        return '#8ec3f8';  // 오늘
+      }
+      return '#FFE5D3';  // 기본 색상
+    }, '#f4a261'],
     dataLabels: {
       enabled: false
     },
-    legend: {
-      show: false
-    },
     tooltip: {
       enabled: true
-    },
-    states: {
-      hover: {
-        filter: {
-          type: 'none'
-        }
-      },
-      active: {
-        allowMultipleDataPointsSelection: false,
-        filter: {
-          type: 'none',
-        }
-      },
-    },
-    fill: {
-      opacity: 1,
-      colors: [(context: { dataPointIndex: number }) => {
-        if (selectedDay !== 'Last 7 days' && context.dataPointIndex === selectedDayIndex) {
-          return '#8ec3f8';
-        }
-        if (context.dataPointIndex === adjustedToday && selectedDay === 'Last 7 days') {
-          return '#8ec3f8';
-        }
-        return '#FFE5D3';
-      }, 'transparent']
     }
   };
 
   return (
     <GraphContainer>
+      <TopBar>
+        <ExitButton>
+          <img src="/img/out.png" alt="exit" />
+        </ExitButton>
+        <Points>
+          <img src="/img/coins.png" alt="points" />
+          <span>2,000 P</span>
+        </Points>
+      </TopBar>
       <GraphHeader>
         <GraphTitle>
-          <StaminaIndicator>요일</StaminaIndicator>
+          <StaminaIndicator>
+            {selectedDay === 'Last 7 days' ? '요일' : `${selectedDay}요일`}
+          </StaminaIndicator>
         </GraphTitle>
         <Select value={selectedDay} onChange={handleDaySelect}>
-          <option value="Last 7 days">Last 7 days</option>
+          <option value="Last 7 days">요일선택</option>
           {days.map((day) => (
             <option key={day} value={day}>
               {day}요일
@@ -247,7 +239,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
       <Chart
         options={options}
         series={series}
-        type="line"
+        type="bar"
         height={350}
         width={350}
       />

@@ -9,8 +9,10 @@ export default function Router() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/home" element={<HomePage />} />
-      <Route path="/" element={<ArticlePage />} />
+      <Route path="/article" element={<ArticlePage />} /> {/* 경로 수정 */}
       <Route path="/quiz" element={<QuizPage />} />
+      {/* 404 페이지 추가 */}
+      <Route path="*" element={<div>Page not found</div>} />
     </Routes>
   );
 }
