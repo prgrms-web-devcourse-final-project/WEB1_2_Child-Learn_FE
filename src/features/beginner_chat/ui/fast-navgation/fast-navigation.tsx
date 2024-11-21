@@ -5,6 +5,41 @@ const Container = styled.div`
   padding: 20px;
   background-color: #ffffff;
   min-height: 100vh;
+  position: relative;
+  overflow: hidden;    
+`;
+
+const Overlay = styled.div`
+  position: absolute;  
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  pointer-events: none;
+`;
+
+const ArrowWithText = styled.div<{ top: string; left: string; transform?: string }>`
+  position: absolute;
+  top: ${props => props.top};
+  left: ${props => props.left};
+  z-index: 101;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: ${props => props.transform || 'rotate(0deg)'};
+  
+  img {
+    width: 24px;
+    height: 24px;
+  }
+  
+  span {
+    color: white;
+    font-size: 14px;
+    text-align: center;
+  }
 `;
 
 const Card = styled.div`
@@ -55,7 +90,6 @@ const GraphCard = styled(Card)`
   padding: 16px;
 `;
 
-
 const GraphImage = styled.img`
   width: 100%;
   height: auto;
@@ -76,20 +110,21 @@ const NewsHeader = styled.div`
   border-bottom: 1px solid #eee;
 `;
 
-const NewsTitle = styled.h3`
+const NewsTitle = styled.h3<{ left?: string }>`
   font-size: 16px;
-  color: #333;
+  color: #000000;
   margin: 0;
+  ${props => props.left && `left: ${props.left};`}
 `;
 
 const NewsDate = styled.div`
   font-size: 12px;
-  color: #666;
+  color: #000000;
 `;
 
 const NewsContent = styled.p`
   font-size: 14px;
-  color: #333;
+  color: #000000;
   margin: 16px 0;
 `;
 
@@ -99,8 +134,8 @@ const AnswerButton = styled.button<{ variant: 'O' | 'X' }>`
   margin: 8px 0;
   border: none;
   border-radius: 8px;
-  background-color: ${props => props.variant === 'O' ? '#4A90E2' : '#E25C5C'};
-  color: white;
+  background-color: ${props => props.variant === 'O' ? '#ffffff' : '#ffffff'};
+  color: #000000;
   text-align: left;
   font-size: 14px;
   cursor: pointer;
@@ -116,7 +151,7 @@ const AnswerButton = styled.button<{ variant: 'O' | 'X' }>`
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: white;
+    background: #edecec;
     color: ${props => props.variant === 'O' ? '#4A90E2' : '#E25C5C'};
     font-weight: bold;
   }
@@ -143,13 +178,53 @@ const StartButton = styled.button`
 
 const GraphExplanationPage = () => {
   const navigate = useNavigate();
-
+  
   const handleStartClick = () => {
     navigate('/quiz');
   };
 
   return (
     <Container>
+      <Overlay />
+      
+      {/* 포인트 표시 화살표 */}
+      <ArrowWithText top="2px" left="20px" transform="rotate(0deg) scaleX(-1)">
+        <img src="/img/arrow.png" alt="arrow" />
+        <span style={{ transform: 'scaleX(-1)' }}>주기적으로 적립되는 포인트를 그래프로 표현했어요</span>
+      </ArrowWithText>
+
+       {/* 포인트 표시 화살표 */}
+       <ArrowWithText top="70px" left="100px" transform="rotate(0deg) scaleX(-1)">
+        <img src="/img/arrow.png" alt="arrow" />
+        <span style={{ transform: 'scaleX(-1)' }}>요일을 선택할 수 있어요</span>
+      </ArrowWithText>
+
+      {/* 그래프 설명 화살표 */}
+      <ArrowWithText top="200px" left="150px">
+        <img src="/img/arrow.png" alt="arrow" />
+        <span>주제별 달성도를 한눈에 확인하세요</span>
+      </ArrowWithText>
+
+      {/* Child-Learn News 화살표 */}
+      <ArrowWithText top="430px" left="40px">
+        <img src="/img/arrow.png" alt="arrow" />
+        <span>오늘의 학습 문제를 풀어보세요</span>
+      </ArrowWithText>
+
+      {/* Chid-Learn Newls 화살표 */}
+     <ArrowWithText top="330px" left="100px">
+        <img src="/img/arrow.png" alt="arrow" />
+        <span>요일을 알 수 있어요</span>
+      </ArrowWithText> 
+
+       {/* Chid-Learn Newls 화살표 */}
+     <ArrowWithText top="247px" left="70px">
+        <img src="/img/arrow.png" alt="arrow" />
+        <span>크기를 확인할 수 있어요</span>
+      </ArrowWithText> 
+
+      
+
       <TopBar>
         <ExitButton onClick={() => navigate(-1)}>
           <img src="/img/out.png" alt="exit" />
@@ -170,13 +245,13 @@ const GraphExplanationPage = () => {
           <NewsDate>2024.11.21</NewsDate>
         </NewsHeader>
         <NewsContent>
-          금용 퀴즈에 대한 예시 질문입니다.
+          If you want to save money, what's the best thing to do with your allowance?
         </NewsContent>
         <AnswerButton variant="O">
-          정답
+          Spend it all right away
         </AnswerButton>
         <AnswerButton variant="X">
-          오답
+          Save your of it and spend the rest
         </AnswerButton>
       </NewsCard>
 
