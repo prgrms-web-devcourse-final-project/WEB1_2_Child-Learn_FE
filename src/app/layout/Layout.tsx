@@ -5,10 +5,10 @@ import Header from '../../widgets/Header/index'; // Header 컴포넌트 import
 import FloatingGNB from '../../widgets/Footer/index';
 
 // 헤더를 숨길 페이지 경로들
-const HIDDEN_HEADER_PATHS = ['/auth/login'];
+const HIDDEN_HEADER_PATHS = ['/auth/login', '/auth/signup'];
 
 // GNB를 숨길 페이지 경로들
-const HIDDEN_GNB_PATHS = ['/auth/login'];
+const HIDDEN_GNB_PATHS = ['/auth/login', '/auth/signup'];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
