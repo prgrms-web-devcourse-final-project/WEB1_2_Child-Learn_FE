@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useFlipCardStore } from '../../../app/providers/state/zustand/useFlipCardStore';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -125,8 +125,7 @@ const FlipCardGamePage = () => {
   return (
     <PageContainer>
       <Header>
-        <h1>카드 뒤집기 - {level}</h1>
-        {gamePhase === 'memorize' && <Timer>카드를 살펴보세요: {timeLeft}초</Timer>}
+        {gamePhase === 'memorize' && <Timer>{timeLeft}초</Timer>}
         {gamePhase === 'play' && <Timer>남은 시간: {gameTimeLeft}초</Timer>}
       </Header>
 
@@ -134,6 +133,7 @@ const FlipCardGamePage = () => {
         {cards[level!]?.map((card, index) => (
           <Card
           key={index}
+          level={level} 
           flipped={
             gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index)
           }
@@ -142,7 +142,9 @@ const FlipCardGamePage = () => {
           {gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index) ? (
             <CardContent>{card.cardTitle}</CardContent>
           ) : (
-            <CardBack />
+            <CardBack>
+      <img src="/public/img/logo.png" alt="Card Logo" />
+    </CardBack>
           )}
         </Card>
         ))}
@@ -179,8 +181,21 @@ const Header = styled.div`
 `;
 
 const Timer = styled.div`
-  font-size: 18px;
-  font-weight: bold;
+  position: absolute; /* 화면 상단 고정 */
+  top: 16px; /* 피그마 기준 Y 위치 */
+  left: 141px; /* 피그마 기준 X 위치 */
+  width: 108px; /* 피그마 기준 너비 */
+  height: 33px; /* 피그마 기준 높이 */
+  background-color: #50b498; /* 피그마의 배경색 */
+  color: #ffffff; /* 텍스트 색상 */
+  font-size: 14px; /* 텍스트 크기 */
+  font-weight: bold; /* 텍스트 굵기 */
+  border-radius: 16.5px; /* 피그마의 둥근 모서리 반지름 */
+  display: flex; /* 플렉스 박스를 사용해 중앙 정렬 */
+  justify-content: center; /* 가로 중앙 정렬 */
+  align-items: center; /* 세로 중앙 정렬 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  z-index: 10; /* 다른 요소 위에 표시 */
 `;
 
 const GameGrid = styled.div<{ level?: string }>`
@@ -191,15 +206,19 @@ const GameGrid = styled.div<{ level?: string }>`
   justify-items: center;
 `;
 
-const Card = styled.div<{ flipped: boolean }>`
-  width: 80px;
-  height: 120px;
-  background-color: ${({ flipped }) => (flipped ? '#fff' : '#555')};
-  border: 1px solid #000;
+const Card = styled.div<{ flipped: boolean; level?: string }>`
+   width: ${({ level }) =>
+    level === 'medium' ? '80px' : level === 'advanced' ? '70px' : '100px'};
+  height: ${({ level }) =>
+    level === 'medium' ? '130px' : level === 'advanced' ? '120px' : '150px'};
+  background-color: ${({ flipped }) => (flipped ? '#fff' : '#DEF9C4')};
+  border: 1px solid #ddd;
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   perspective: 1000px;
   transition: transform 0.5s;
 `;
@@ -207,7 +226,16 @@ const Card = styled.div<{ flipped: boolean }>`
 const CardBack = styled.div`
   width: 100%;
   height: 100%;
-  background-color: #333;
+  background-color: #DEF9C4;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  img {
+    width: 70px; /* 로고 너비 */
+    height: 40px; /* 로고 높이 */
+  }
 `;
 
 const CardContent = styled.div`

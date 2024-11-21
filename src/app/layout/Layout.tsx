@@ -7,18 +7,26 @@ import FloatingGNB from '../../widgets/Footer/index';
 // 헤더를 숨길 페이지 경로들
 const HIDDEN_HEADER_PATHS = [
   '/login',
+  '/flip-card',
 ];
 
 // GNB를 숨길 페이지 경로들
 const HIDDEN_GNB_PATHS = [
   '/login',
+  '/flip-card',
 ];
 
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const shouldShowHeader = !HIDDEN_HEADER_PATHS.includes(location.pathname);
-  const shouldShowGNB = !HIDDEN_GNB_PATHS.includes(location.pathname);
+  
+  // 동적 경로를 처리하기 위한 조건
+  const shouldShowHeader = !HIDDEN_HEADER_PATHS.some((path) =>
+    location.pathname.startsWith(path)
+  );
+  const shouldShowGNB = !HIDDEN_GNB_PATHS.some((path) =>
+    location.pathname.startsWith(path)
+  );
 
   return (
     <>
