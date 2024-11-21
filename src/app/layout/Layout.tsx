@@ -6,13 +6,13 @@ import FloatingGNB from '../../widgets/Footer/index';
 
 // 헤더를 숨길 페이지 경로들
 const HIDDEN_HEADER_PATHS = [
-  '/login',
+  '/auth/login', '/auth/signup',
   '/flip-card',
 ];
 
 // GNB를 숨길 페이지 경로들
 const HIDDEN_GNB_PATHS = [
-  '/login',
+  '/auth/login', '/auth/signup',
   '/flip-card',
 ];
 
@@ -64,21 +64,21 @@ const GlobalStyles = createGlobalStyle`
   /* Noto Sans KR 폰트 설정 - 한글용 */
   @font-face {
     font-family: 'Noto Sans KR';
-    src: url('/font/NotoSansKR-Regular.woff') format('woff');
+    src: url('/font/NotoSansKR-Light.woff') format('woff');
     font-weight: 400;
     unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
   }
 
   @font-face {
     font-family: 'Noto Sans KR';
-    src: url('/font/NotoSansKR-Medium.woff') format('woff');
+    src: url('/font/NotoSansKR-Regular.woff') format('woff');
     font-weight: 500;
     unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
   }
 
   @font-face {
     font-family: 'Noto Sans KR';
-    src: url('/font/NotoSansKR-Bold.woff') format('woff');
+    src: url('/font/NotoSansKR-SemiBold.woff') format('woff');
     font-weight: 700;
     unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7AF, U+D7B0-D7FF;
   }
@@ -161,11 +161,11 @@ const ScrollContainer = styled.div`
   position: relative;
   height: 0;
   -webkit-overflow-scrolling: touch;
-  
+
   // 스크롤바 숨기기
   &::-webkit-scrollbar {
     display: none;
   }
-  -ms-overflow-style: none;  // IE and Edge
-  scrollbar-width: none;  // Firefox
+  -ms-overflow-style: none; // IE and Edge
+  scrollbar-width: none; // Firefox
 `;

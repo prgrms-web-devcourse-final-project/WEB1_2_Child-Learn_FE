@@ -1,8 +1,10 @@
 import { Route, Routes } from 'react-router-dom';
-import LandingPage from '../../pages/LandingPage';
-import HomePage from '../../pages/homePage';
+import LandingPage from '../../pages/LandingPage/LandingPage';
+import HomePage from '../../pages/HomePage/HompPage';
 import ArticlePage from '../../features/article/pages/articlepage';
 import QuizPage from '../../features/beginner_chat/pages/quizpage';
+import { LoginPage } from '@/pages/auth/login/LoginPage';
+import { SignUpPage } from '@/pages/auth/signup/SignUpPage';
 import MiniGamePage from '../../pages/MiniGamePage/MiniGamePage';
 import FlipCardGamePage from '../../pages/MiniGamePage/FlipCardGamePage/FlipCardGamePage';
 import WordQuizGamePage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizGamePage';
@@ -23,6 +25,8 @@ export default function Router() {
       <Route path="/quiz" element={<QuizPage />} />
       {/* 404 페이지 추가 */}
       <Route path="*" element={<div>Page not found</div>} />
+      <Route path="/auth/login" element={<LoginPage />} />
+      <Route path="/auth/signup" element={<SignUpPage />} />
     </Routes>
   );
 }
