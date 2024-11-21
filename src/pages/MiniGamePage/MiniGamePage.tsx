@@ -290,7 +290,7 @@ const PointsContainer = styled.div`
 
 const MainContent = styled.main`
   width: 100%;
-  max-width: 768px;
+  max-width: 390px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -356,23 +356,27 @@ const StyledLink = styled(Link)`
 
 const BackgroundContainer = styled.div`
   position: absolute;
-  bottom: 0; /* 화면의 맨 아래에 고정 */
+  bottom: 0;
   left: 0;
   right: 0;
+  width: 100%; /* 컨테이너 너비에 맞춤 */
+  max-width: 390px; /* AppContainer와 동일한 최대 너비 */
   height: 551px; /* 피그마 기준 높이 */
-  background-color: #DEF9C4; /* 피그마 기준 배경색 */
-  border-top-left-radius: 30px; /* 둥근 모서리 */
+  background-color: #DEF9C4;
+  border-top-left-radius: 30px;
   border-top-right-radius: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 20px;
+  justify-content: flex-start;
+  padding: 20px 0;
+  z-index: 0;
+  margin: 0 auto; /* 중앙 정렬 */
 `;
 
 const GameGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 179px); /* 카드 크기에 맞게 고정 */
+  grid-template-columns: repeat(2, 1fr); /* 카드 크기에 맞게 고정 */
   gap: 20px; /* 피그마의 카드 간격에 맞게 조정 */
   justify-content: center; /* 화면 중앙 정렬 */
 `;
