@@ -16,57 +16,39 @@ const FlipCardGamePage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 초기 카드 데이터 설정
-    const defaultCards = {
-      beginner: [
-        { cardTitle: 'A', cardContent: '내용 A', category: '쉬움' },
-        { cardTitle: 'B', cardContent: '내용 B', category: '쉬움' },
-        { cardTitle: 'A', cardContent: '내용 A', category: '쉬움' },
-        { cardTitle: 'B', cardContent: '내용 B', category: '쉬움' },
-        { cardTitle: 'C', cardContent: '내용 C', category: '쉬움' },
-        { cardTitle: 'D', cardContent: '내용 D', category: '쉬움' },
-        { cardTitle: 'C', cardContent: '내용 C', category: '쉬움' },
-        { cardTitle: 'D', cardContent: '내용 D', category: '쉬움' },
-      ],
-      medium: [
-        { cardTitle: 'A', cardContent: '내용 A', category: '보통' },
-        { cardTitle: 'B', cardContent: '내용 B', category: '보통' },
-        { cardTitle: 'A', cardContent: '내용 A', category: '보통' },
-        { cardTitle: 'B', cardContent: '내용 B', category: '보통' },
-        { cardTitle: 'C', cardContent: '내용 C', category: '보통' },
-        { cardTitle: 'D', cardContent: '내용 D', category: '보통' },
-        { cardTitle: 'C', cardContent: '내용 C', category: '보통' },
-        { cardTitle: 'D', cardContent: '내용 D', category: '보통' },
-        { cardTitle: 'E', cardContent: '내용 E', category: '보통' },
-        { cardTitle: 'F', cardContent: '내용 F', category: '보통' },
-        { cardTitle: 'E', cardContent: '내용 E', category: '보통' },
-        { cardTitle: 'F', cardContent: '내용 F', category: '보통' },
-      ],
-      advanced: [
-        { cardTitle: 'A', cardContent: '내용 A', category: '어려움' },
-        { cardTitle: 'B', cardContent: '내용 B', category: '어려움' },
-        { cardTitle: 'A', cardContent: '내용 A', category: '어려움' },
-        { cardTitle: 'B', cardContent: '내용 B', category: '어려움' },
-        { cardTitle: 'C', cardContent: '내용 C', category: '어려움' },
-        { cardTitle: 'D', cardContent: '내용 D', category: '어려움' },
-        { cardTitle: 'C', cardContent: '내용 C', category: '어려움' },
-        { cardTitle: 'D', cardContent: '내용 D', category: '어려움' },
-        { cardTitle: 'E', cardContent: '내용 E', category: '어려움' },
-        { cardTitle: 'F', cardContent: '내용 F', category: '어려움' },
-        { cardTitle: 'E', cardContent: '내용 E', category: '어려움' },
-        { cardTitle: 'F', cardContent: '내용 F', category: '어려움' },
-        { cardTitle: 'G', cardContent: '내용 G', category: '어려움' },
-        { cardTitle: 'H', cardContent: '내용 H', category: '어려움' },
-        { cardTitle: 'G', cardContent: '내용 G', category: '어려움' },
-        { cardTitle: 'H', cardContent: '내용 H', category: '어려움' },
-      ],
-    };
-
-    if (level && defaultCards[level]) {
-      setCards(level, defaultCards[level]);
-    }
-  }, [level, setCards]);
-
+    // 공통 카드 데이터 설정 (16장의 카드 생성)
+    const commonCards = [
+      { cardTitle: 'A', cardContent: '내용 A', category: '경제' },
+      { cardTitle: 'B', cardContent: '내용 B', category: '수학' },
+      { cardTitle: 'C', cardContent: '내용 C', category: '과학' },
+      { cardTitle: 'D', cardContent: '내용 D', category: '역사' },
+      { cardTitle: 'E', cardContent: '내용 E', category: '예술' },
+      { cardTitle: 'F', cardContent: '내용 F', category: '지리' },
+      { cardTitle: 'G', cardContent: '내용 G', category: '문학' },
+      { cardTitle: 'H', cardContent: '내용 H', category: '철학' },
+  
+      // 카드 쌍을 맞추기 위해 동일한 카드 반복
+      { cardTitle: 'A', cardContent: '내용 A', category: '경제' },
+      { cardTitle: 'B', cardContent: '내용 B', category: '수학' },
+      { cardTitle: 'C', cardContent: '내용 C', category: '과학' },
+      { cardTitle: 'D', cardContent: '내용 D', category: '역사' },
+      { cardTitle: 'E', cardContent: '내용 E', category: '예술' },
+      { cardTitle: 'F', cardContent: '내용 F', category: '지리' },
+      { cardTitle: 'G', cardContent: '내용 G', category: '문학' },
+      { cardTitle: 'H', cardContent: '내용 H', category: '철학' },
+    ];
+  
+    // 단계별 카드 제한
+    const beginnerCards = commonCards.slice(0, 8); // 8장 (2행 x 4열)
+    const mediumCards = commonCards.slice(0, 12); // 12장 (3행 x 4열)
+    const advancedCards = commonCards; // 16장 (4행 x 4열)
+  
+    // 단계별 카드 설정
+    setCards('beginner', beginnerCards);
+    setCards('medium', mediumCards);
+    setCards('advanced', advancedCards);
+  }, [setCards]);  
+  
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (gamePhase === 'memorize') {
@@ -140,7 +122,11 @@ const FlipCardGamePage = () => {
           onClick={() => (gamePhase === 'play' ? handleCardClick(index) : null)}
         >
           <div className="card-inner">
-            <div className="card-front">{card.cardTitle}</div>
+          <div className="card-front">
+  <div className="category">{card.category}</div>
+  <div className="title">{card.cardTitle}</div>
+  <div className="description">{card.cardContent}</div>
+</div>
             <div className="card-back">
               <img src="/public/img/logo.png" alt="Card Logo" />
             </div>
@@ -251,10 +237,40 @@ const Card = styled.div<{ flipped: boolean; level?: string }>`
   }
 
   .card-front {
+    position: absolute;
     background-color: #fff; /* 앞면 색상 */
     transform: rotateY(180deg); /* 뒤집혔을 때 보이도록 설정 */
     border: 1px solid #ddd;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+     /* 세로 배치 스타일 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+
+    .category {
+      font-size: 8px;
+      font-weight: bold;
+      position: absolute;
+      top: 5px;
+      margin-bottom: 0px;
+    }
+
+    .title {
+      font-size: 12px;
+      font-weight: bold;
+      position: relative;
+      top: -10px;
+      margin-bottom: 10px; /* 제목과 설명 간 기본 간격 유지 */
+    }
+
+    .description {
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.2;
+    }
   }
 `;
 
