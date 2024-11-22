@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import styled from 'styled-components';
 import useWordQuizStore from './store/useWordQuizStore';
 
 const sharedWords = [
@@ -10,7 +10,7 @@ const sharedWords = [
 ];
 
 const WordQuizGamePage = () => {
-  const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>(); // 난이도 동적 경로
+  const { level } = useParams();
   const { incrementCorrectAnswers, decrementLives, resetQuiz, lives } = useWordQuizStore();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -21,41 +21,40 @@ const WordQuizGamePage = () => {
   const [showFinishPopup, setShowFinishPopup] = useState(false);
   const navigate = useNavigate();
 
-  const alphabet = '가나다라마바사아자차카타파하'; // 예시 글자들
+  const alphabet = '가나다라마바사아자차카타파하';
   const correctWord = sharedWords[currentQuestionIndex]?.word;
-  const keyboardLetters = useState(() => {
-    const uniqueLetters = new Set(correctWord); // 정답 단어에 포함된 글자
+
+  // 키보드 글자 생성 (currentQuestionIndex 변경 시 새로 생성)
+  const keyboardLetters = useMemo(() => {
+    const uniqueLetters = new Set<string>(correctWord.split('')); // 정답 단어의 모든 글자를 먼저 추가
     while (uniqueLetters.size < 10) {
-      // 정답 단어 포함 글자를 제외한 랜덤한 글자를 추가
       const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
       uniqueLetters.add(randomLetter);
     }
-    return Array.from(uniqueLetters);
-  })[0];
+    return Array.from(uniqueLetters).sort(() => Math.random() - 0.5); // 랜덤으로 섞음
+  }, [currentQuestionIndex]); // currentQuestionIndex가 변경될 때마다 갱신
 
-   // 난이도에 따라 타이머 초기값 설정
-   useEffect(() => {
-    let initialTime = 60; // 기본값
+  useEffect(() => {
+    let initialTime = 60;
     if (level === 'medium') initialTime = 40;
     if (level === 'advanced') initialTime = 20;
 
     setTimeLeft(initialTime);
   }, [level]);
-  
-   // 타이머 설정
-   useEffect(() => {
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev === 1) {
           clearInterval(timer);
-          navigate(`/word-quiz/result/${level}`); // 시간 종료 시 결과 페이지로 이동
+          navigate(`/word-quiz/result/${level}`); // 타이머 종료 시 결과 페이지로 이동
         }
         return prev - 1;
       });
     }, 1000);
-
+  
     return () => clearInterval(timer);
-  }, [navigate, level]);
+  }, [navigate, level]);  
 
   const handleSelectLetter = (letter: string) => {
     if (!correctWord || userAnswer.length >= correctWord.length) return;
@@ -64,16 +63,15 @@ const WordQuizGamePage = () => {
     setUserAnswer(updatedAnswer);
 
     if (updatedAnswer.join('') === correctWord) {
-      incrementCorrectAnswers(); // 전역 상태에서 맞춘 문제 증가
+      incrementCorrectAnswers(); // 맞춘 문제 증가
       setShowCorrectPopup(true);
     } else if (updatedAnswer.join('').length === correctWord.length) {
-      decrementLives(); // 전역 상태에서 목숨 감소
+      decrementLives(); // 목숨 감소
       setShowIncorrectPopup(true);
     }
   };
 
-   // 정답 시 다음 문제로 이동
-   const handleNextQuestion = () => {
+  const handleNextQuestion = () => {
     setShowCorrectPopup(false);
     setShowIncorrectPopup(false);
     setUserAnswer([]);
@@ -81,24 +79,23 @@ const WordQuizGamePage = () => {
     if (currentQuestionIndex + 1 < sharedWords.length) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      navigate(`/word-quiz/result/${level}`); // 문제 다 풀면 결과 페이지로 이동
+      navigate(`/word-quiz/result/${level}`); // 모든 문제를 다 풀었을 때 결과 페이지로 이동
     }
   };
 
-  // 목숨이 소진되었을 때
   useEffect(() => {
     if (lives === 0) {
-      navigate(`/word-quiz/result/${level}`); // 목숨이 0일 때 결과 페이지로 이동
+      navigate(`/word-quiz/result/${level}`); // 목숨이 0이 되었을 때 결과 페이지로 이동
     }
   }, [lives, level, navigate]);
 
   const handleCloseIncorrectPopup = () => {
     setShowIncorrectPopup(false);
-    setUserAnswer([]); // 정답 입력칸 초기화
+    setUserAnswer([]);
   };
 
   const handleRestart = () => {
-    resetQuiz(); // 전역 상태 초기화
+    resetQuiz();
     setCurrentQuestionIndex(0);
     setTimeLeft(60);
     setUserAnswer([]);
@@ -114,7 +111,7 @@ const WordQuizGamePage = () => {
             <Heart key={index} filled={index < lives} />
           ))}
         </LivesContainer>
-        <Timer>⏰ {timeLeft < 10 ? `0${timeLeft}` : timeLeft} </Timer>
+        <Timer>⏰ {timeLeft < 10 ? `0${timeLeft}` : timeLeft}</Timer>
       </Header>
       <QuestionContainer>
         <QuestionText>{currentWord?.explanation}</QuestionText>
@@ -132,12 +129,12 @@ const WordQuizGamePage = () => {
         </Popup>
       )}
       <Keyboard>
-  {keyboardLetters.map((letter, index) => (
-    <LetterButton key={index} onClick={() => handleSelectLetter(letter)}>
-      {letter}
-    </LetterButton>
-  ))}
-</Keyboard>
+        {keyboardLetters.map((letter, index) => (
+          <LetterButton key={index} onClick={() => handleSelectLetter(letter)}>
+            {letter}
+          </LetterButton>
+        ))}
+      </Keyboard>
       {showCorrectPopup && (
         <Popup>
           <p>😃 정답!</p>
@@ -164,7 +161,6 @@ const WordQuizGamePage = () => {
 
 export default WordQuizGamePage;
 
-
 // Styled Components
 const PageContainer = styled.div`
   display: flex;
@@ -189,8 +185,11 @@ const LivesContainer = styled.div`
   display: flex;
   gap: 5px;
 `;
+interface HeartProps {
+  filled: boolean;
+}
 
-const Heart = styled.div<{ filled: boolean }>`
+const Heart = styled.div<HeartProps>`
   width: 20px;
   height: 20px;
   background-color: ${(props) => (props.filled ? 'red' : 'lightgray')};
@@ -207,11 +206,6 @@ const QuestionContainer = styled.div`
   flex-direction: column;
   align-items: center;
   margin-top: 20px;
-`;
-
-const QuestionImage = styled.img`
-  width: 200px;
-  height: 200px;
 `;
 
 const QuestionText = styled.p`
@@ -291,4 +285,3 @@ const PopupButton = styled.button`
   font-size: 16px;
   cursor: pointer;
 `;
-
