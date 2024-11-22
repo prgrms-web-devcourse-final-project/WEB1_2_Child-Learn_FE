@@ -202,7 +202,7 @@ const GraphExplanationPage = () => {
       {/* 그래프 설명 화살표 */}
       <ArrowWithText top="200px" left="150px">
         <img src="/img/arrow.png" alt="arrow" />
-        <span>주제별 달성도를 한눈에 확인하세요</span>
+        <span>그래프 달성도를 한눈에 확인하세요</span>
       </ArrowWithText>
 
       {/* Child-Learn News 화살표 */}

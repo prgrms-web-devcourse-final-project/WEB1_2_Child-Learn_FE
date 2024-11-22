@@ -4,6 +4,7 @@ import HomePage from '../../pages/HomePage/HompPage';
 import ArticlePage from '../../features/article/pages/articlepage';
 import QuizPage from '../../features/beginner_chat/ui/quizpage';
 import { LoginPage } from '@/pages/auth/login/LoginPage';
+import { SignUpPage } from '@/pages/auth/signup/SignUpPage';
 import GraphExplanationPage from '../../features/beginner_chat/ui/fast-navgation/fast-navigation';
 
 export default function Router() {
@@ -16,6 +17,7 @@ export default function Router() {
       <Route path="/quiz" element={<QuizPage />} />
       <Route path="*" element={<div>Page not found</div>} />
       <Route path="/auth/login" element={<LoginPage />} />
+      <Route path="/auth/signup" element={<SignUpPage />} />
     </Routes>
   );
 }
