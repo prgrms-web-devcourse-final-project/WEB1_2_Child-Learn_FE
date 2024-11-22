@@ -1,10 +1,16 @@
-import { rest } from 'msw';
+import { http } from 'msw';
 
 export const authHandlers = [
-  rest.post('/api/login', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({ message: 'Login successful', token: 'fake-jwt-token' })
+  http.post('/api/v1/auth/login', async () => {
+    return new Response(
+      JSON.stringify({ message: 'Login successful', token: 'fake-jwt-token' }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
   }),
 ];
+

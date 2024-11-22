@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
+import useWordQuizStore from './store/useWordQuizStore';
 
 const sharedWords = [
   { word: '시장', explanation: '기업의 주식 발행 가격 총액을 뜻하는 단어', hint: '첫 글자는 "시"입니다.' },
@@ -10,8 +11,8 @@ const sharedWords = [
 
 const WordQuizGamePage = () => {
   const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>(); // 난이도 동적 경로
+  const { incrementCorrectAnswers, decrementLives, resetQuiz, lives } = useWordQuizStore();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [lives, setLives] = useState(3);
   const [timeLeft, setTimeLeft] = useState(60);
   const [userAnswer, setUserAnswer] = useState<string[]>([]);
   const [showHint, setShowHint] = useState(false);
@@ -41,41 +42,38 @@ const WordQuizGamePage = () => {
     setTimeLeft(initialTime);
   }, [level]);
   
-  // 전체 타이머 설정
-  useEffect(() => {
+   // 타이머 설정
+   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev === 0) {
+        if (prev === 1) {
           clearInterval(timer);
-          setShowFinishPopup(true); // 시간 종료 시 게임 종료
-          return 0;
+          navigate(`/word-quiz/result/${level}`); // 시간 종료 시 결과 페이지로 이동
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [navigate, level]);
 
   const handleSelectLetter = (letter: string) => {
-    const correctWord = sharedWords[currentQuestionIndex]?.word;
-
     if (!correctWord || userAnswer.length >= correctWord.length) return;
 
     const updatedAnswer = [...userAnswer, letter];
     setUserAnswer(updatedAnswer);
 
-    // 정답 체크
     if (updatedAnswer.join('') === correctWord) {
+      incrementCorrectAnswers(); // 전역 상태에서 맞춘 문제 증가
       setShowCorrectPopup(true);
     } else if (updatedAnswer.join('').length === correctWord.length) {
-      // 정답이 아닌 경우
-      handleLoseLife();
+      decrementLives(); // 전역 상태에서 목숨 감소
       setShowIncorrectPopup(true);
     }
   };
 
-  const handleNextQuestion = () => {
+   // 정답 시 다음 문제로 이동
+   const handleNextQuestion = () => {
     setShowCorrectPopup(false);
     setShowIncorrectPopup(false);
     setUserAnswer([]);
@@ -83,32 +81,27 @@ const WordQuizGamePage = () => {
     if (currentQuestionIndex + 1 < sharedWords.length) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-      setShowFinishPopup(true);
+      navigate(`/word-quiz/result/${level}`); // 문제 다 풀면 결과 페이지로 이동
     }
   };
+
+  // 목숨이 소진되었을 때
+  useEffect(() => {
+    if (lives === 0) {
+      navigate(`/word-quiz/result/${level}`); // 목숨이 0일 때 결과 페이지로 이동
+    }
+  }, [lives, level, navigate]);
 
   const handleCloseIncorrectPopup = () => {
     setShowIncorrectPopup(false);
     setUserAnswer([]); // 정답 입력칸 초기화
   };
 
-  const handleLoseLife = () => {
-    setLives((prev) => {
-      if (prev === 1) {
-        setShowFinishPopup(true);
-        return 0;
-      }
-      return prev - 1;
-    });
-    setUserAnswer([]);
-  };
-
   const handleRestart = () => {
+    resetQuiz(); // 전역 상태 초기화
     setCurrentQuestionIndex(0);
-    setLives(3);
     setTimeLeft(60);
     setUserAnswer([]);
-    setShowFinishPopup(false);
   };
 
   const currentWord = sharedWords[currentQuestionIndex];
