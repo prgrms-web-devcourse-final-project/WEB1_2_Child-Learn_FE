@@ -1,15 +1,28 @@
 // pages/main/MainPage.tsx
 import styled from 'styled-components';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { InfoCard } from '@/shared/ui/InfoCard/InfoCard';
 import { MenuCard } from '@/shared/ui/MenuCard/MenuCard';
 import { AttendanceCard } from '@/features/mainpage/ui/AttendanceCard';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
+import { DifficultyModal } from '@/features/mainpage/ui/DifficultyModal';
 
 const MainPage = () => {
   const navigate = useNavigate();
   const handleAttendance = () => {
     // 출석 처리 로직 (API 호출 등)
+  };
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleGraphClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleDifficultySelect = (level: string) => {
+    setIsModalOpen(false);
+    navigate(`/graph/${level}`);
   };
 
   const menuItems = [
@@ -46,49 +59,60 @@ const MainPage = () => {
   ];
 
   return (
-    <PageContainer>
-      <ContentContainer>
-        {/* 환영 메시지 & 포인트 */}
-        <WelcomeSection>
-          <WelcomeText>반가워요, 희주 님! 😊</WelcomeText>
-          <PointBadge points={2000} />
-        </WelcomeSection>
+    <>
+      <PageContainer>
+        <ContentContainer>
+          {/* 환영 메시지 & 포인트 */}
+          <WelcomeSection>
+            <WelcomeText>반가워요, 희주 님! 😊</WelcomeText>
+            <PointBadge points={2000} />
+          </WelcomeSection>
 
-        {/* 출석체크 카드 */}
-        <AttendanceCard
-          title={'매일 출석하고\n10 Point 받기'}
-          onClick={handleAttendance}
-        />
+          {/* 출석체크 카드 */}
+          <AttendanceCard
+            title={'매일 출석하고\n10 Point 받기'}
+            onClick={handleAttendance}
+          />
 
-        {/* 메뉴 그리드 */}
-        <MenuGrid>
-          {menuItems.map((item, index) => (
+          {/* 메뉴 그리드 */}
+          <MenuGrid>
             <MenuCard
-              key={index}
-              {...item}
-              onClick={() => navigate(item.path)}
+              {...menuItems[0]}
+              onClick={handleGraphClick} // 첫 번째 카드(그래프)만 모달 열기로 변경
             />
-          ))}
-        </MenuGrid>
+            {menuItems.slice(1).map((item, index) => (
+              <MenuCard
+                key={index + 1}
+                {...item}
+                onClick={() => navigate(item.path)}
+              />
+            ))}
+          </MenuGrid>
 
-        {/* 하단 카드들 */}
-        <InfoCard
-          title="모의투자"
-          description="조금 더 어려운 투자에 도전해 볼래요!"
-          iconSrc="/img/chart.png"
-          iconAlt="차트"
-          onClick={() => navigate('/investment')}
-        />
+          {/* 하단 카드들 */}
+          <InfoCard
+            title="모의투자"
+            description="조금 더 어려운 투자에 도전해 볼래요!"
+            iconSrc="/img/chart.png"
+            iconAlt="차트"
+            onClick={() => navigate('/investment')}
+          />
 
-        <InfoCard
-          title="친구목록"
-          description="친구들과 같이 둘러보아요!"
-          iconSrc="/img/friend.png"
-          iconAlt="친구"
-          onClick={() => navigate('/friends')}
-        />
-      </ContentContainer>
-    </PageContainer>
+          <InfoCard
+            title="친구목록"
+            description="친구들과 같이 둘러보아요!"
+            iconSrc="/img/friend.png"
+            iconAlt="친구"
+            onClick={() => navigate('/friends')}
+          />
+        </ContentContainer>
+      </PageContainer>
+      <DifficultyModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSelect={handleDifficultySelect}
+      />
+    </>
   );
 };
 
@@ -96,7 +120,7 @@ export default MainPage;
 
 const PageContainer = styled.div`
   background-color: #def9c4;
-  min-height: 100vh;
+  height: 100%;
 `;
 
 const ContentContainer = styled.div`
