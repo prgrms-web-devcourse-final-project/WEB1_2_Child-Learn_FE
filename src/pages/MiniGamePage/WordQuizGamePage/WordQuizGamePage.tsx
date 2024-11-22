@@ -18,7 +18,6 @@ const WordQuizGamePage = () => {
   const [showHint, setShowHint] = useState(false);
   const [showCorrectPopup, setShowCorrectPopup] = useState(false);
   const [showIncorrectPopup, setShowIncorrectPopup] = useState(false);
-  const [showFinishPopup, setShowFinishPopup] = useState(false);
   const navigate = useNavigate();
 
   const alphabet = '가나다라마바사아자차카타파하';
@@ -145,14 +144,6 @@ const WordQuizGamePage = () => {
         <Popup>
           <p>😢 오답!</p>
           <PopupButton onClick={handleCloseIncorrectPopup}>다시 도전해보세요!</PopupButton>
-        </Popup>
-      )}
-      {showFinishPopup && (
-        <Popup>
-          <p>{lives > 0 ? '🎉 축하합니다!' : '😢 아쉽습니다.'}</p>
-          <PopupButton onClick={lives > 0 ? () => navigate('/minigame') : handleRestart}>
-            {lives > 0 ? '미니게임 페이지로 돌아가기' : '다시 시작'}
-          </PopupButton>
         </Popup>
       )}
     </PageContainer>
