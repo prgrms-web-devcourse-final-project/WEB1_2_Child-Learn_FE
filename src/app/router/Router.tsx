@@ -9,6 +9,7 @@ import MiniGamePage from '../../pages/MiniGamePage/MiniGamePage';
 import FlipCardGamePage from '../../pages/MiniGamePage/FlipCardGamePage/FlipCardGamePage';
 import WordQuizGamePage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizGamePage';
 import WordQuizResultPage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizResultPage';
+import OXQuizGamePage from '../../pages/MiniGamePage/OXQuizGamePage/OXQuizGamePage';
 import CharacterPage from '../../pages/characterPage/CharacterPage';
 import ExchangePage from '../../pages/exchangePage/ExchangePage';
 
@@ -21,6 +22,7 @@ export default function Router() {
       <Route path="/flip-card/:level" element={<FlipCardGamePage />} />
       <Route path="/word-quiz/:level" element={<WordQuizGamePage />} />
       <Route path="/word-quiz/result/:level" element={<WordQuizResultPage />} />
+      <Route path="/ox-quiz/:level" element={<OXQuizGamePage />} />
       <Route path="/character" element={<CharacterPage />} />
       <Route path="/exchange" element={<ExchangePage />} />
       <Route path="/article" element={<ArticlePage />} /> {/* 경로 수정 */}
