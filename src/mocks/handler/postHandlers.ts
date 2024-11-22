@@ -1,10 +1,18 @@
-import { rest } from 'msw';
+import { http } from 'msw';
 
 export const postHandlers = [
-  rest.get('/api/posts', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json([{ id: 1, title: 'First Post' }, { id: 2, title: 'Second Post' }])
+  http.get('/api/posts', async () => {
+    return new Response(
+      JSON.stringify([
+        { id: 1, title: 'First Post' }, 
+        { id: 2, title: 'Second Post' }
+      ]),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
     );
   }),
 ];

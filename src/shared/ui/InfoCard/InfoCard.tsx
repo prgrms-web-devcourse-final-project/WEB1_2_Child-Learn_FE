@@ -33,7 +33,7 @@ export const InfoCard = ({
 
 const CardContainer = styled.div<{ $variant: 'primary' | 'white' }>`
   background-color: ${({ $variant }) => $variant === 'primary' ? '#50B498' : 'white'};
-  padding: 20px;
+  padding: 24px;
   border-radius: 16px;
   display: flex;
   justify-content: space-between;
@@ -41,6 +41,16 @@ const CardContainer = styled.div<{ $variant: 'primary' | 'white' }>`
   margin-bottom: 16px;
   cursor: pointer;
   box-shadow: ${({ $variant }) => $variant === 'white' ? '0 2px 8px rgba(0, 0, 0, 0.05)' : 'none'};
+  transition: all 0.2s ease; // 부드러운 전환 효과 추가
+
+  &:hover {
+    transform: translateY(-4px); // hover 시 위로 떠오르는 효과
+    box-shadow: ${({ $variant }) => 
+      $variant === 'white' 
+        ? '0 8px 12px rgba(0, 0, 0, 0.1)' 
+        : '0 8px 12px rgba(0, 0, 0, 0.15)'
+    };
+  }
 `;
 
 const TextContent = styled.div`
@@ -48,15 +58,16 @@ const TextContent = styled.div`
 `;
 
 const Title = styled.p`
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 500;
+  font-size: 10px;
   margin-bottom: 4px;
   white-space: pre-line;
 `;
 
 const Description = styled.p`
   font-size: 14px;
-  color: #666;
+  font-weight: 700;
+  color: #181B1E;
   white-space: pre-line;
 `;
 

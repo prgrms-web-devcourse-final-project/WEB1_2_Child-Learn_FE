@@ -3,9 +3,12 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { InfoCard } from '@/shared/ui/InfoCard/InfoCard';
 import { MenuCard } from '@/shared/ui/MenuCard/MenuCard';
-
+import { AttendanceCard } from '@/features/mainpage/ui/AttendanceCard';
 const MainPage = () => {
  const navigate = useNavigate();
+ const handleAttendance = () => {
+    // 출석 처리 로직 (API 호출 등)
+  };
 
  const menuItems = [
    {
@@ -52,11 +55,10 @@ const MainPage = () => {
        </WelcomeSection>
 
        {/* 출석체크 카드 */}
-       <InfoCard
-         title="매일 출석하고\n10 Point 받기"
-         actionText="출석하기"
-         variant="primary"
-       />
+       <AttendanceCard 
+      title={"매일 출석하고\n10 Point 받기"}
+      onClick={handleAttendance}
+    />
 
        {/* 메뉴 그리드 */}
        <MenuGrid>
