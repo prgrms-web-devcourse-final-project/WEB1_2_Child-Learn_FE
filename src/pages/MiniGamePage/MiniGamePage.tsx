@@ -76,16 +76,22 @@ const MiniGamePage = () => {
 
   return (
     <PageContainer>
+      {/* 고정 배경 */}
+      <BackgroundContainer />
+  
+      {/* 헤더 섹션 */}
       <Header>
         <GreetingContainer>
-          <h1>안녕하세요, {username}님!</h1>
-          <p>오늘은 어떤 게임을 즐겨보시겠어요?</p>
+          <p>안녕하세요, {username}님!</p>
+          <h1>오늘은 어떤 게임을 즐겨보시겠어요?</h1>
         </GreetingContainer>
         <PointsContainer>
-        <img src="/icons/coins 1.png" alt="Coin Icon" />
-        {points} P
+          <img src="/icons/coins 1.png" alt="Coin Icon" />
+          {points} P
         </PointsContainer>
-    </Header>
+      </Header>
+  
+      {/* 메인 콘텐츠 */}
       <MainContent>
         <TopSection>
           <div>
@@ -93,7 +99,7 @@ const MiniGamePage = () => {
             <StyledLink to="/character">내 캐릭터 꾸미러 가기</StyledLink>
           </div>
         </TopSection>
-
+  
         <TopSection>
           <div>
             <p>오늘 미니게임으로 획득한 포인트</p>
@@ -101,26 +107,26 @@ const MiniGamePage = () => {
           </div>
           <StyledLink to="/exchange">환전하러 가기</StyledLink>
         </TopSection>
-
-        <BackgroundContainer>
+  
         <GameGrid>
           {/* 낱말 퀴즈 */}
           <GameCard>
             <GameButton onClick={() => openModal('낱말 퀴즈')}>낱말 퀴즈</GameButton>
             <p>100 Point</p>
           </GameCard>
-
+  
           {/* OX 퀴즈 */}
           <GameCard>
             <GameButton onClick={() => openModal('OX 퀴즈')}>OX 퀴즈</GameButton>
             <p>0~100 Point</p>
           </GameCard>
-
-         {/* 카드 뒤집기 */}
-         <GameCard>
+  
+          {/* 카드 뒤집기 */}
+          <GameCard>
             <GameButton onClick={() => openModal('카드 뒤집기')}>카드 뒤집기</GameButton>
             <p>100 Point</p>
           </GameCard>
+  
           {/* 로또 */}
           <GameCard>
             <GameButton
@@ -133,16 +139,15 @@ const MiniGamePage = () => {
             <p>10~1000 Point</p>
           </GameCard>
         </GameGrid>
-        </BackgroundContainer>
       </MainContent>
-      
-       {/* 모달 */}
-       {modalVisible && selectedGame && (
+  
+      {/* 모달 */}
+      {modalVisible && selectedGame && (
         <ModalOverlay>
           <ModalContent>
             <CloseButton onClick={closeModal}>&times;</CloseButton>
             <p>난이도를 선택하세요!</p>
-
+            {/* 난이도 버튼 */}
             {selectedGame === '카드 뒤집기' && (
               <>
                 <ModalButton
@@ -168,72 +173,37 @@ const MiniGamePage = () => {
                 </ModalButton>
               </>
             )}
-
-            {(selectedGame === '낱말 퀴즈' || selectedGame === 'OX 퀴즈') && (
-              <>
-                <ModalButton onClick={() => navigate(`/${selectedGame === '낱말 퀴즈' ? 'word-quiz' : 'ox-quiz'}/beginner`)}>
-                  쉬움
-                </ModalButton>
-                <ModalButton onClick={() => navigate(`/${selectedGame === '낱말 퀴즈' ? 'word-quiz' : 'ox-quiz'}/medium`)}>
-                  보통
-                </ModalButton>
-                <ModalButton onClick={() => navigate(`/${selectedGame === '낱말 퀴즈' ? 'word-quiz' : 'ox-quiz'}/advanced`)}>
-                  어려움
-                </ModalButton>
-              </>
-            )}
           </ModalContent>
         </ModalOverlay>
       )}
     </PageContainer>
-  );
+  );  
 };
 
 export default MiniGamePage;
 
 const PageContainer = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start; /* 상단 콘텐츠는 위쪽에 배치 */
   width: 100%;
-  min-height: 100vh; /* 페이지 전체 높이를 채움 */
-  background-color: #f5f5f5;
-  padding: 20px;
-  position: relative; /* BackgroundContainer의 위치를 기준으로 삼음 */
-
-  @media (max-width: 768px) {
-    padding: 10px;
-  }
-
-  @media (max-width: 390px) {
-    padding: 5px;
-  }
+  min-height: 100vh;
+  background-color: #fff;
 `;
 
 const Header = styled.header`
   width: 100%;
-  background-color: #fff;
   padding: 10px 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
   margin-bottom: 10px;
 
   h1 {
     font-size: 1.5rem;
     font-weight: bold;
-
-    @media (max-width: 390px) {
-      font-size: 1.2rem;
-    }
   }
 
   p {
     font-size: 1rem;
-
-    @media (max-width: 390px) {
-      font-size: 0.9rem;
-    }
   }
 `;
 
@@ -248,21 +218,12 @@ const GreetingContainer = styled.div`
     font-size: 1.2rem;
     font-weight: bold;
     color: #333;
-
-    @media (max-width: 390px) {
-      font-size: 1rem;
-    }
   }
 
   p {
     margin: 0;
     font-size: 0.9rem;
     color: #666;
-
-    @media (max-width: 390px) {
-      font-size: 0.8rem;
-    }
-  }
 `;
 
 const PointsContainer = styled.div`
@@ -295,17 +256,6 @@ const MainContent = styled.main`
   flex-direction: column;
   gap: 20px;
   padding: 20px;
-  padding-bottom: 600px; /* BackgroundContainer와 겹침 방지 */
-
-  @media (max-width: 768px) {
-    padding: 10px;
-    padding-bottom: 550px; /* 모바일 화면에 맞게 조정 */
-  }
-
-  @media (max-width: 390px) {
-    padding: 5px;
-    padding-bottom: 551px; /* 모바일 환경에서 피그마 기준 */
-  }
 `;
 
 const TopSection = styled.div`
@@ -359,19 +309,10 @@ const BackgroundContainer = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  width: 100%; /* 컨테이너 너비에 맞춤 */
-  max-width: 390px; /* AppContainer와 동일한 최대 너비 */
-  height: 551px; /* 피그마 기준 높이 */
-  background-color: #DEF9C4;
+  top: 250px;
+  background-color: #DEF9C4; /* 연두색 배경 */
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 20px 0;
-  z-index: 0;
-  margin: 0 auto; /* 중앙 정렬 */
 `;
 
 const GameGrid = styled.div`
@@ -423,11 +364,6 @@ const GameButton = styled.button`
 
   &:hover {
     background-color: #0056b3;
-  }
-
-  @media (max-width: 480px) {
-    padding: 10px;
-    font-size: 14px;
   }
 `;
 
@@ -489,11 +425,5 @@ const CloseButton = styled.button`
 
   &:hover {
     color: #000;
-  }
-
-  @media (max-width: 768px) {
-    top: 5px; /* 작은 화면에서 간격 조정 */
-    right: 5px;
-    font-size: 18px;
   }
 `;
