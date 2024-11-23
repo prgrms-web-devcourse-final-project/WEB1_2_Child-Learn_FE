@@ -15,7 +15,7 @@ const Header = () => {
   
     return (
       <HeaderContainer>
-        <LogoLink to="/">
+        <LogoLink to="/main">
           <Logo 
             src="/img/logo.png" 
             alt="Logo"
