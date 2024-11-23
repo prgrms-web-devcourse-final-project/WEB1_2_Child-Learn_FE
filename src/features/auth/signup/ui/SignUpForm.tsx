@@ -1,43 +1,123 @@
 import styled from 'styled-components';
+import { useState } from 'react';
 import { AuthInput } from '@/shared/ui/AuthInput/AuthInput';
 import { AuthButton } from '@/shared/ui/AuthButton/AuthButton';
 import { Link } from 'react-router-dom';
+import { useJoin } from '../lib/useJoin';
+import { joinValidation } from '../model/validation';
 
 export const SignUpForm = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const { handleJoin, isLoading, error } = useJoin();
+  const [formData, setFormData] = useState({
+    loginId: '',
+    pw: '',
+    username: '',
+    email: '',
+    birth: '',
+    pwConfirm: '',
+    terms: false,
+  });
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+
+  const validateField = (name: string, value: string) => {
+    if (name === 'pwConfirm') {
+      return formData.pw !== value ? '비밀번호가 일치하지 않습니다.' : '';
+    }
+
+    const validation = joinValidation[name as keyof typeof joinValidation];
+    if (!validation) return '';
+
+    if (!value && validation.required) {
+      return validation.required;
+    }
+
+    if (validation.pattern && !validation.pattern.value.test(value)) {
+      return validation.pattern.message;
+    }
+
+    return '';
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
+
+    if (type !== 'checkbox') {
+      const error = validateField(name, value);
+      setValidationErrors((prev) => ({
+        ...prev,
+        [name]: error,
+      }));
+
+      // 비밀번호 변경 시 비밀번호 확인 필드도 재검증
+      if (name === 'pw' && formData.pwConfirm) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          pwConfirm:
+            formData.pwConfirm !== value ? '비밀번호가 일치하지 않습니다.' : '',
+        }));
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 회원가입 로직
+
+    // 약관 동의 확인
+    if (!formData.terms) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        terms: '약관에 동의해주세요.',
+      }));
+      return;
+    }
+
+    // 전체 폼 유효성 검사
+    const errors: Record<string, string> = {};
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key !== 'terms' && key !== 'pwConfirm') {
+        const error = validateField(key, String(value));
+        if (error) errors[key] = error;
+      }
+    });
+
+    // 비밀번호 확인 검사
+    if (formData.pw !== formData.pwConfirm) {
+      errors.pwConfirm = '비밀번호가 일치하지 않습니다.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    // API 호출용 데이터 준비
+    const submitData = {
+      loginId: formData.loginId,
+      pw: formData.pw,
+      username: formData.username,
+      email: formData.email,
+      birth: Number(formData.birth),
+    };
+
+    await handleJoin(submitData);
   };
 
   return (
     <Form onSubmit={handleSubmit}>
       <InputGroup>
-        <Label>닉네임</Label>
-        <AuthInput
-          width="80%" // 여기에 width 추가
-          name="nickname"
-          placeholder="ex) 키앗"
-        />
-      </InputGroup>
-
-      <InputGroup>
-        <Label>생년월일</Label>
-        <AuthInput width="80%" placeholder="ex) 001123" name="birthdate" />
-      </InputGroup>
-
-      {/* 나머지 input들도 동일하게 width="80%" 추가 */}
-      <InputGroup>
         <Label>아이디</Label>
-        <AuthInput width="80%" placeholder="ex) abcd1234" name="userId" />
-      </InputGroup>
-
-      <InputGroup>
-        <Label>이메일</Label>
         <AuthInput
           width="80%"
-          placeholder="ex) ijuju@gmail.com"
-          type="email"
-          name="email"
+          placeholder="ex) abcd1234"
+          name="loginId"
+          value={formData.loginId}
+          onChange={handleChange}
+          error={validationErrors.loginId}
         />
       </InputGroup>
 
@@ -47,7 +127,10 @@ export const SignUpForm = () => {
           width="80%"
           placeholder="******"
           type="password"
-          name="password"
+          name="pw"
+          value={formData.pw}
+          onChange={handleChange}
+          error={validationErrors.pw}
         />
       </InputGroup>
 
@@ -57,21 +140,72 @@ export const SignUpForm = () => {
           width="80%"
           placeholder="******"
           type="password"
-          name="passwordConfirm"
+          name="pwConfirm"
+          value={formData.pwConfirm}
+          onChange={handleChange}
+          error={validationErrors.pwConfirm}
+        />
+      </InputGroup>
+
+      <InputGroup>
+        <Label>이메일</Label>
+        <AuthInput
+          width="80%"
+          placeholder="ex) ijuju@gmail.com"
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          error={validationErrors.email}
+        />
+      </InputGroup>
+
+      <InputGroup>
+        <Label>닉네임</Label>
+        <AuthInput
+          width="80%"
+          name="username"
+          placeholder="ex) 키앗"
+          value={formData.username}
+          onChange={handleChange}
+          error={validationErrors.username}
+        />
+      </InputGroup>
+
+      <InputGroup>
+        <Label>생년월일</Label>
+        <AuthInput
+          width="80%"
+          placeholder="ex) 20001123"
+          name="birth"
+          value={formData.birth}
+          onChange={handleChange}
+          error={validationErrors.birth}
         />
       </InputGroup>
 
       <InputGroup>
         <CheckboxContainer>
-          <StyledCheckbox type="checkbox" id="terms" />
+          <StyledCheckbox
+            type="checkbox"
+            id="terms"
+            name="terms"
+            checked={formData.terms}
+            onChange={handleChange}
+          />
           <label htmlFor="terms">
             <TermsLink to="/terms">약관 및 정책</TermsLink>에 대해 이해했습니다.
           </label>
         </CheckboxContainer>
+        {validationErrors.terms && (
+          <ErrorText>{validationErrors.terms}</ErrorText>
+        )}
       </InputGroup>
 
-      <AuthButton width="80%" type="submit">
-        회원가입
+      {error && <ErrorText>{error}</ErrorText>}
+
+      <AuthButton width="80%" type="submit" disabled={isLoading}>
+        {isLoading ? '회원가입 중...' : '회원가입'}
       </AuthButton>
     </Form>
   );
@@ -141,4 +275,12 @@ const TermsLink = styled(Link)`
   &:hover {
     opacity: 0.8;
   }
+`;
+
+const ErrorText = styled.p`
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+  width: 80%;
+  text-align: left;
 `;
