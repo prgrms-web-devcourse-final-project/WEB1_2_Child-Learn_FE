@@ -16,7 +16,13 @@ export default function Router() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/home" element={<MainPage />} />
+      <Route path="/main" element={<MainPage />} />
+      <Route path="/minigame" element={<MiniGamePage />} />
+      <Route path="/flip-card/:level" element={<FlipCardGamePage />} />
+      <Route path="/word-quiz/:level" element={<WordQuizGamePage />} />
+      <Route path="/word-quiz/result/:level" element={<WordQuizResultPage />} />
+      <Route path="/character" element={<CharacterPage />} />
+      <Route path="/exchange" element={<ExchangePage />} />
       <Route path="/article" element={<ArticlePage />} /> {/* 경로 수정 */}
       <Route path="/quiz" element={<QuizPage />} />
       {/* 404 페이지 추가 */}

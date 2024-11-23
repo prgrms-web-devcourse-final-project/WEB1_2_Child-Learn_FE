@@ -1,59 +1,33 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import type { Card } from '../../../app/providers/state/zustand/useFlipCardStore';
 import { useFlipCardStore } from '../../../app/providers/state/zustand/useFlipCardStore';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const FlipCardGamePage = () => {
   const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
-  const { cards, setCards } = useFlipCardStore();
+  const { getCardsByLevel } = useFlipCardStore();
   const [flippedCards, setFlippedCards] = useState<number[]>([]); // 뒤집힌 카드 상태
   const [timeLeft, setTimeLeft] = useState(3); // 첫 번째 타이머 (3초)
   const [gameTimeLeft, setGameTimeLeft] = useState(30); // 두 번째 타이머 (30초)
   const [gamePhase, setGamePhase] = useState<'memorize' | 'play' | 'end'>('memorize');
   const [matchedCards, setMatchedCards] = useState<number[]>([]); // 매칭 성공 카드
+  const [shuffledCards, setShuffledCards] = useState<Card[]>([]); // 섞은 카드를 상태로 저장
   const [showSuccessModal, setShowSuccessModal] = useState(false); // 성공 모달 상태
   const [showFailureModal, setShowFailureModal] = useState(false); // 실패 모달 상태
   const navigate = useNavigate();
+  
+  // 초기 카드를 섞고 상태에 저장
+  useEffect(() => {
+    const initialCards = getCardsByLevel(level!);
+    setShuffledCards(initialCards); // 섞은 카드를 상태로 저장
+  }, [level, getCardsByLevel]);
 
   const formatTime = (time: number): string => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
     return `${minutes.toString().padStart(2, '0')} : ${seconds.toString().padStart(2, '0')}`;
   };
-
-  useEffect(() => {
-    // 공통 카드 데이터 설정 (16장의 카드 생성)
-    const commonCards = [
-      { cardTitle: 'A', cardContent: '내용 A', category: '경제' },
-      { cardTitle: 'B', cardContent: '내용 B', category: '수학' },
-      { cardTitle: 'C', cardContent: '내용 C', category: '과학' },
-      { cardTitle: 'D', cardContent: '내용 D', category: '역사' },
-      { cardTitle: 'E', cardContent: '내용 E', category: '예술' },
-      { cardTitle: 'F', cardContent: '내용 F', category: '지리' },
-      { cardTitle: 'G', cardContent: '내용 G', category: '문학' },
-      { cardTitle: 'H', cardContent: '내용 H', category: '철학' },
-  
-      // 카드 쌍을 맞추기 위해 동일한 카드 반복
-      { cardTitle: 'A', cardContent: '내용 A', category: '경제' },
-      { cardTitle: 'B', cardContent: '내용 B', category: '수학' },
-      { cardTitle: 'C', cardContent: '내용 C', category: '과학' },
-      { cardTitle: 'D', cardContent: '내용 D', category: '역사' },
-      { cardTitle: 'E', cardContent: '내용 E', category: '예술' },
-      { cardTitle: 'F', cardContent: '내용 F', category: '지리' },
-      { cardTitle: 'G', cardContent: '내용 G', category: '문학' },
-      { cardTitle: 'H', cardContent: '내용 H', category: '철학' },
-    ];
-  
-    // 단계별 카드 제한
-    const beginnerCards = commonCards.slice(0, 8); // 8장 (2행 x 4열)
-    const mediumCards = commonCards.slice(0, 12); // 12장 (3행 x 4열)
-    const advancedCards = commonCards; // 16장 (4행 x 4열)
-  
-    // 단계별 카드 설정
-    setCards('beginner', beginnerCards);
-    setCards('medium', mediumCards);
-    setCards('advanced', advancedCards);
-  }, [setCards]);  
   
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -85,11 +59,11 @@ const FlipCardGamePage = () => {
   }, [gamePhase]);
 
   useEffect(() => {
-    if (matchedCards.length === cards[level!]?.length && gamePhase === 'play') {
+    if (matchedCards.length === shuffledCards.length && gamePhase === 'play') {
       setShowSuccessModal(true);
       setGamePhase('end');
     }
-  }, [matchedCards, cards, gamePhase, level]);
+  }, [matchedCards, shuffledCards, gamePhase]);
 
   const handleCardClick = (index: number) => {
     if (flippedCards.length === 2 || matchedCards.includes(index)) return;
@@ -98,10 +72,10 @@ const FlipCardGamePage = () => {
 
     if (flippedCards.length === 1) {
       const firstIndex = flippedCards[0];
-      const firstCard = cards[level!][firstIndex];
-      const secondCard = cards[level!][index];
+      const firstCard = shuffledCards[firstIndex];
+      const secondCard = shuffledCards[index];
 
-      if (firstCard.cardTitle === secondCard.cardTitle) {
+      if (firstCard.card_title === secondCard.card_title) {
         setMatchedCards((prev) => [...prev, firstIndex, index]);
         setFlippedCards([]);
       } else {
@@ -118,10 +92,9 @@ const FlipCardGamePage = () => {
       </Header>
 
       <GameGrid level={level}>
-      {cards[level!]?.map((card, index) => (
+      {shuffledCards.map((card, index) => (
         <Card
-          key={index}
-          level={level}
+          key={card.card_id}
           flipped={
             gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index)
           }
@@ -130,8 +103,8 @@ const FlipCardGamePage = () => {
           <div className="card-inner">
           <div className="card-front">
   <div className="category">{card.category}</div>
-  <div className="title">{card.cardTitle}</div>
-  <div className="description">{card.cardContent}</div>
+  <div className="title">{card.card_title}</div>
+                <div className="description">{card.card_content}</div>
 </div>
             <div className="card-back">
               <img src="/public/img/logo.png" alt="Card Logo" />
