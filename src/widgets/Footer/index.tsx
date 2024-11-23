@@ -21,7 +21,7 @@ const FloatingGNB = () => {
     <Container>
       <MenuContainer $isOpen={isOpen}>
         <MenuItem
-          onClick={() => handleNavigation('/home')}
+          onClick={() => handleNavigation('/main')}
           $position={1}
           $isOpen={isOpen}
         >
