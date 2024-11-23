@@ -2,11 +2,11 @@ import { Route, Routes } from 'react-router-dom';
 import LandingPage from '../../pages/LandingPage/LandingPage';
 import HomePage from '../../pages/HomePage/HompPage';
 import ArticlePage from '../../features/article/pages/articlepage';
-import QuizPage from '../../features/beginner_chat/ui/quizpage';
+import QuizPage from '../../features/beginner_chat/ui/quiz-widget/quizpage';
 import { LoginPage } from '@/pages/auth/login/LoginPage';
 import { SignUpPage } from '@/pages/auth/signup/SignUpPage';
 import GraphExplanationPage from '../../features/beginner_chat/ui/fast-navgation/fast-navigation';
-import IntermediatePage from '../../pages/Intermediate_chat/IntermediatePage';
+import IntermediatePage from '../../pages/TradePages/IntermediateTradePage/IntermediatePage';
 
 export default function Router() {
   return (

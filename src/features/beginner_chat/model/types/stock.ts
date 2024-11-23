@@ -1,3 +1,4 @@
+// types/stock.ts
 export interface BeginStock {
     begin_id: number;     // BIGINT - 기초번호
     price: number;        // INT - 거래가격
