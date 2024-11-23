@@ -29,8 +29,8 @@ const MainPage = () => {
     {
       title: '오늘은 어떤 그래프가\n기다리고 있을까요?',
       bgColor: '#6CC2A1',
-      iconSrc: '/img/3d-graph.png',
-      iconAlt: '그래프',
+      iconSrc: '/img/contract.png',
+      iconAlt: '문서',
       path: '/graph',
       extended: true,
     },
@@ -44,15 +44,15 @@ const MainPage = () => {
     {
       title: '나를 멋있게\n꾸며봐요!',
       bgColor: '#FF497F',
-      iconSrc: '/img/palette.png',
-      iconAlt: '팔레트',
+      iconSrc: '/img/magic-hat.png',
+      iconAlt: '마술모자',
       path: '/customize',
     },
     {
       title: '재미는 게임도\n준비되어 있어요!',
       bgColor: '#29BAE2',
-      iconSrc: '/img/gamepad.png',
-      iconAlt: '게임패드',
+      iconSrc: '/img/chess.png',
+      iconAlt: '체스',
       path: '/games',
       extended: true,
     },
@@ -62,6 +62,7 @@ const MainPage = () => {
     <>
       <PageContainer>
         <ContentContainer>
+          <WhiteBackground />
           {/* 환영 메시지 & 포인트 */}
           <WelcomeSection>
             <WelcomeText>반가워요, 희주 님! 😊</WelcomeText>
@@ -93,16 +94,16 @@ const MainPage = () => {
           <InfoCard
             title="모의투자"
             description="조금 더 어려운 투자에 도전해 볼래요!"
-            iconSrc="/img/chart.png"
-            iconAlt="차트"
+            iconSrc="/img/calculator.png"
+            iconAlt="계산기"
             onClick={() => navigate('/investment')}
           />
 
           <InfoCard
             title="친구목록"
             description="친구들과 같이 둘러보아요!"
-            iconSrc="/img/friend.png"
-            iconAlt="친구"
+            iconSrc="/img/boy.png"
+            iconAlt="남자아이"
             onClick={() => navigate('/friends')}
           />
         </ContentContainer>
@@ -119,12 +120,28 @@ const MainPage = () => {
 export default MainPage;
 
 const PageContainer = styled.div`
-  background-color: #def9c4;
   height: 100%;
+  background-color: #def9c4; // 상단 연두색
 `;
 
 const ContentContainer = styled.div`
   padding: 20px;
+  position: relative;
+  & > * {
+    position: relative;
+    z-index: 1; // 모든 직접적인 자식 요소들에 z-index 적용
+  }
+`;
+
+const WhiteBackground = styled.div`
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 60%;
+  background-color: white;
+  border-radius: 24px 24px 0 0;
+  z-index: 0;
 `;
 
 const WelcomeSection = styled.div`
@@ -132,6 +149,8 @@ const WelcomeSection = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
 `;
 
 const WelcomeText = styled.h1`
@@ -142,9 +161,11 @@ const WelcomeText = styled.h1`
 
 const MenuGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr); // 2열 그리드
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin: 24px 0;
+  position: relative;
+  z-index: 1;
 
   // 첫 번째 카드 (그래프)
   > *:nth-child(1) {

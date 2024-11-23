@@ -17,14 +17,16 @@ export const InfoCard = ({
   iconSrc,
   iconAlt,
   onClick,
-  variant = 'white'
+  variant = 'white',
 }: InfoCardProps) => {
   return (
     <CardContainer $variant={variant} onClick={onClick}>
       <TextContent>
         <Title>{title}</Title>
         {description && <Description>{description}</Description>}
-        {actionText && <ActionButton $variant={variant}>{actionText}</ActionButton>}
+        {actionText && (
+          <ActionButton $variant={variant}>{actionText}</ActionButton>
+        )}
       </TextContent>
       {iconSrc && <Icon src={iconSrc} alt={iconAlt || ''} />}
     </CardContainer>
@@ -32,7 +34,8 @@ export const InfoCard = ({
 };
 
 const CardContainer = styled.div<{ $variant: 'primary' | 'white' }>`
-  background-color: ${({ $variant }) => $variant === 'primary' ? '#50B498' : 'white'};
+  background-color: ${({ $variant }) =>
+    $variant === 'primary' ? '#50B498' : 'white'};
   padding: 24px;
   border-radius: 16px;
   display: flex;
@@ -40,16 +43,20 @@ const CardContainer = styled.div<{ $variant: 'primary' | 'white' }>`
   align-items: center;
   margin-bottom: 16px;
   cursor: pointer;
-  box-shadow: ${({ $variant }) => $variant === 'white' ? '0 2px 8px rgba(0, 0, 0, 0.05)' : 'none'};
-  transition: all 0.2s ease; // 부드러운 전환 효과 추가
+  border: ${({ $variant }) =>
+    $variant === 'white' ? '1px solid #E5E7EB' : 'none'}; // 회색 테두리 추가
+  box-shadow: ${({ $variant }) =>
+    $variant === 'white' ? '0 2px 8px rgba(0, 0, 0, 0.05)' : 'none'};
+  transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-4px); // hover 시 위로 떠오르는 효과
-    box-shadow: ${({ $variant }) => 
-      $variant === 'white' 
-        ? '0 8px 12px rgba(0, 0, 0, 0.1)' 
-        : '0 8px 12px rgba(0, 0, 0, 0.15)'
-    };
+    transform: translateY(-4px);
+    border-color: ${({ $variant }) =>
+      $variant === 'white' ? '#D1D5DB' : 'none'}; // hover 시 테두리 색상 변경
+    box-shadow: ${({ $variant }) =>
+      $variant === 'white'
+        ? '0 8px 12px rgba(0, 0, 0, 0.1)'
+        : '0 8px 12px rgba(0, 0, 0, 0.15)'};
   }
 `;
 
@@ -67,13 +74,14 @@ const Title = styled.p`
 const Description = styled.p`
   font-size: 14px;
   font-weight: 700;
-  color: #181B1E;
+  color: #181b1e;
   white-space: pre-line;
 `;
 
 const ActionButton = styled.button<{ $variant: 'primary' | 'white' }>`
-  background-color: ${({ $variant }) => $variant === 'primary' ? 'white' : '#50B498'};
-  color: ${({ $variant }) => $variant === 'primary' ? '#50B498' : 'white'};
+  background-color: ${({ $variant }) =>
+    $variant === 'primary' ? 'white' : '#50B498'};
+  color: ${({ $variant }) => ($variant === 'primary' ? '#50B498' : 'white')};
   border: none;
   padding: 8px 24px;
   border-radius: 8px;
@@ -83,7 +91,7 @@ const ActionButton = styled.button<{ $variant: 'primary' | 'white' }>`
 `;
 
 const Icon = styled.img`
-  width: 32px;
-  height: 32px;
-  margin-left: 16px;
+  width: 60px;
+  height: 60px;
+  margin-left: 10px;
 `;
