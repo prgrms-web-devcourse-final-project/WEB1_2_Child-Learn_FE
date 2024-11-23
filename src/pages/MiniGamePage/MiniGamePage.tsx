@@ -109,36 +109,33 @@ const MiniGamePage = () => {
         </TopSection>
   
         <GameGrid>
-          {/* 낱말 퀴즈 */}
-          <GameCard>
-            <GameButton onClick={() => openModal('낱말 퀴즈')}>낱말 퀴즈</GameButton>
-            <p>100 Point</p>
-          </GameCard>
-  
-          {/* OX 퀴즈 */}
-          <GameCard>
-            <GameButton onClick={() => openModal('OX 퀴즈')}>OX 퀴즈</GameButton>
-            <p>0~100 Point</p>
-          </GameCard>
-  
-          {/* 카드 뒤집기 */}
-          <GameCard>
-            <GameButton onClick={() => openModal('카드 뒤집기')}>카드 뒤집기</GameButton>
-            <p>100 Point</p>
-          </GameCard>
-  
-          {/* 로또 */}
-          <GameCard>
-            <GameButton
-              onClick={handleLotteryPlay}
-              disabled={!isLotteryPlayable()}
-              style={!isLotteryPlayable() ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
-            >
-              숫자를 맞혀라!
-            </GameButton>
-            <p>10~1000 Point</p>
-          </GameCard>
-        </GameGrid>
+  {/* 낱말 퀴즈 */}
+  <GameCard onClick={() => openModal('낱말 퀴즈')}>
+    <CardTitle>낱말 퀴즈</CardTitle>
+    <p>100 Point</p>
+  </GameCard>
+
+  {/* OX 퀴즈 */}
+  <GameCard onClick={() => openModal('OX 퀴즈')}>
+    <CardTitle>OX 퀴즈</CardTitle>
+    <p>0~100 Point</p>
+  </GameCard>
+
+  {/* 카드 뒤집기 */}
+  <GameCard onClick={() => openModal('카드 뒤집기')}>
+    <CardTitle>카드 뒤집기</CardTitle>
+    <p>100 Point</p>
+  </GameCard>
+
+  {/* 로또 */}
+  <GameCard
+    onClick={() => isLotteryPlayable() && handleLotteryPlay()}
+    style={!isLotteryPlayable() ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
+  >
+    <CardTitle>숫자를 맞혀라!</CardTitle>
+    <p>10~1000 Point</p>
+  </GameCard>
+</GameGrid>
       </MainContent>
   
       {/* 모달 */}
@@ -150,27 +147,31 @@ const MiniGamePage = () => {
             {/* 난이도 버튼 */}
             {selectedGame === '카드 뒤집기' && (
               <>
-                <ModalButton
-                  onClick={() => handleFlipCardPlay('beginner')}
-                  disabled={!isCardPlayable('beginner')}
-                  style={!isCardPlayable('beginner') ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
-                >
-                  쉬움
-                </ModalButton>
-                <ModalButton
-                  onClick={() => handleFlipCardPlay('medium')}
-                  disabled={!isCardPlayable('medium')}
-                  style={!isCardPlayable('medium') ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
-                >
-                  보통
-                </ModalButton>
-                <ModalButton
-                  onClick={() => handleFlipCardPlay('advanced')}
-                  disabled={!isCardPlayable('advanced')}
-                  style={!isCardPlayable('advanced') ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
-                >
-                  어려움
-                </ModalButton>
+                {selectedGame === '카드 뒤집기' && (
+  <>
+    <ModalButton
+      level="beginner"
+      onClick={() => handleFlipCardPlay('beginner')}
+      disabled={!isCardPlayable('beginner')}
+    >
+      쉬움
+    </ModalButton>
+    <ModalButton
+      level="medium"
+      onClick={() => handleFlipCardPlay('medium')}
+      disabled={!isCardPlayable('medium')}
+    >
+      보통
+    </ModalButton>
+    <ModalButton
+      level="advanced"
+      onClick={() => handleFlipCardPlay('advanced')}
+      disabled={!isCardPlayable('advanced')}
+    >
+      어려움
+    </ModalButton>
+  </>
+)}
               </>
             )}
           </ModalContent>
@@ -191,55 +192,63 @@ const PageContainer = styled.div`
   background-color: #fff;
 `;
 
+const BackgroundContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 250px;
+  background-color: #DEF9C4; /* 연두색 배경 */
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+`;
+
 const Header = styled.header`
+  position: relative;
   width: 100%;
+  display: flex; 
   padding: 10px 20px;
-  text-align: center;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 10px;
-
-  h1 {
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
-
-  p {
-    font-size: 1rem;
-  }
 `;
 
 const GreetingContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  /*position: absolute;*/
   margin-bottom: 10px;
+  top: 15px;
 
   h1 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
     color: #333;
   }
 
   p {
     margin: 0;
-    font-size: 0.9rem;
-    color: #666;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #333;
 `;
 
 const PointsContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute; /* 위치를 절대적으로 지정 */
-  top: 55px; /* 피그마 기준 Y값 */
-  right: 20px; /* 피그마 기준 X값 */
-  width: 91px; /* 피그마 기준 너비 */
-  height: 34px; /* 피그마 기준 높이 */
+  /*position: absolute;*/
+  top: 15px; 
+  right: 20px; 
+  width: 91px; 
+  height: 34px; 
   background-color: #50B498;
   border-radius: 20px; /* 둥근 모서리 */
   font-weight: bold;
-  color: #ffffff; /* 텍스트 색상 흰색 */
-  font-size: 11px; /* 피그마 기준 폰트 크기 */
+  color: #ffffff; 
+  font-size: 11px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   img {
@@ -265,8 +274,8 @@ const TopSection = styled.div`
   background-color: rgba(80, 180, 152, 0.8); /* #50B498의 opacity 80% */
   color: white; /* 텍스트 색상 흰색 */
   border-radius: 15px; /* 모서리를 둥글게 */
-  width: 310px; /* 피그마 기준 너비 */
-  height: 107px; /* 피그마 기준 높이 */
+  width: 310px; 
+  height: 107px; 
   padding: 15px; /* 내부 여백 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
   position: relative; /* 텍스트 정렬 및 추가 요소를 위한 기준 */
@@ -304,17 +313,6 @@ const StyledLink = styled(Link)`
   }
 `;
 
-const BackgroundContainer = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  top: 250px;
-  background-color: #DEF9C4; /* 연두색 배경 */
-  border-top-left-radius: 30px;
-  border-top-right-radius: 30px;
-`;
-
 const GameGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* 카드 크기에 맞게 고정 */
@@ -323,48 +321,41 @@ const GameGrid = styled.div`
 `;
 
 const GameCard = styled.div`
-  width: 179px; /* 피그마 기준 카드 너비 */
-  height: 177px; /* 피그마 기준 카드 높이 */
-  background-color: #fff; /* 카드 배경 흰색 */
-  border: 1px solid #F2F0F8; /* 피그마에서 지정된 테두리 색상 */
-  border-radius: 10px; /* 카드 모서리를 둥글게 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 약간의 그림자 추가 */
+  width: 179px;
+  height: 177px;
+  background-color: #fff;
+  border: 1px solid #F2F0F8;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  position: relative; /* 내부 요소 위치 조정 */
+  position: relative;
+  cursor: pointer; /* 클릭 가능 표시 */
+
+  &:hover {
+    background-color: #f0f0f0; /* 호버 효과 */
+  }
 
   h2 {
-    font-size: 1rem; /* 텍스트 크기 */
+    font-size: 1rem;
     margin: 10px 0;
-    font-weight: bold; /* 제목을 강조 */
-    color: #333; /* 텍스트 색상 */
+    font-weight: bold;
+    color: #468585;
   }
 
   p {
     font-size: 0.8rem;
-    color: #666; /* 부가 텍스트 색상 */
+    color: #666;
   }
 `;
 
-const GameButton = styled.button`
-  width: 100%;
-  max-width: 300px;
-  padding: 15px;
+const CardTitle = styled.h2`
   font-size: 16px;
   font-weight: bold;
-  color: white;
-  background-color: #007bff;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  text-align: center;
-
-  &:hover {
-    background-color: #0056b3;
-  }
+  color: #468585;
 `;
 
 const ModalOverlay = styled.div`
@@ -393,7 +384,7 @@ const ModalContent = styled.div`
   z-index: 1010;
 `;
 
-const ModalButton = styled.button`
+const ModalButton = styled.button<{ level: 'beginner' | 'medium' | 'advanced' }>`
   width: 100%;
   margin-top: 10px;
   padding: 10px;
@@ -401,11 +392,26 @@ const ModalButton = styled.button`
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  background-color: #28a745;
+  background-color: ${({ level }) =>
+    level === 'beginner'
+      ? '#9CDBA6'
+      : level === 'medium'
+      ? '#50B498'
+      : '#468585'};
   color: white;
 
   &:hover {
-    background-color: #218838;
+    background-color: ${({ level }) =>
+      level === 'beginner'
+        ? '#8BCF96'
+        : level === 'medium'
+        ? '#44997E'
+        : '#3A7572'};
+  }
+
+  &:disabled {
+    background-color: gray;
+    cursor: not-allowed;
   }
 
   &:not(:last-child) {
