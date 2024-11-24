@@ -2,6 +2,7 @@ import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import  { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
+import { Timer } from '../../../features/minigame/flipcardgame/ui/Timer'
 
 const WordQuizGamePage = () => {
   const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
@@ -128,7 +129,9 @@ const WordQuizGamePage = () => {
             <ProgressBar key={index} active={index <= currentQuestionIndex} />
           ))}
         </ProgressContainer>
-        <Timer>⏰ {timeLeft < 10 ? `0${timeLeft}` : timeLeft}</Timer>
+        <TimerContainer>
+    <Timer time={timeLeft} phase="play" />
+  </TimerContainer>
       </Header>
       <QuestionContainer>
         <QuestionText>{currentWord?.explanation}</QuestionText>
@@ -203,6 +206,12 @@ const Header = styled.div`
   position: relative; /* 아이콘의 위치 조정 */
 `;
 
+const TimerContainer = styled.div`
+  position: absolute; 
+  top: 30px; 
+  justify-content: center;
+`;
+
 const LivesContainer = styled.div`
   display: flex;
   gap: 5px;
@@ -242,16 +251,6 @@ const ProgressBar = styled.div<ProgressBarProps>`
   width: 60px;
   height: 5px;
   background-color: ${(props) => (props.active ? '#50b498' : '#ccc')};
-`;
-
-const Timer = styled.div`
-  font-size: 18px;
-  font-weight: bold;
-  position: absolute;
-  justify-content: center;
-  top: 50px;
-  left: 50%; /* 가로 중앙 정렬 */
-  transform: translateX(-50%); /* 중앙 정렬 보정 */
 `;
 
 const QuestionContainer = styled.div`
