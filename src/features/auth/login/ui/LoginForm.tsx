@@ -47,7 +47,7 @@ export const LoginForm = () => {
 
       <SignupContainer>
         <span>아직 계정이 없으신가요?</span>
-        <SignupLink href="/auth/register">회원가입하기</SignupLink>
+        <SignupLink href="/auth/signup">회원가입하기</SignupLink>
       </SignupContainer>
 
       <FindAccountLink href="/auth/register">
