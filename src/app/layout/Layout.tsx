@@ -3,24 +3,44 @@ import styled, { createGlobalStyle } from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import Header from '../../widgets/Header/index'; // Header 컴포넌트 import
 import FloatingGNB from '../../widgets/Footer/index';
+import { BackButton } from '../../widgets/BackButton/index';
 
 // 헤더를 숨길 페이지 경로들
-const HIDDEN_HEADER_PATHS = ['/auth/login', '/auth/signup'];
+const HIDDEN_HEADER_PATHS = [
+  '/auth/login', '/auth/signup',
+  '/flip-card', '/word-quiz'
+];
 
 // GNB를 숨길 페이지 경로들
-const HIDDEN_GNB_PATHS = ['/auth/login', '/auth/signup'];
+const HIDDEN_GNB_PATHS = [
+  '/auth/login', '/auth/signup',
+  '/flip-card', '/word-quiz'
+];
+
+// BackButton만 표시할 페이지 경로들
+const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz'];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const shouldShowHeader = !HIDDEN_HEADER_PATHS.includes(location.pathname);
-  const shouldShowGNB = !HIDDEN_GNB_PATHS.includes(location.pathname);
+  
+  // 동적 경로를 처리하기 위한 조건
+  const shouldShowHeader = !HIDDEN_HEADER_PATHS.some((path) =>
+    location.pathname.startsWith(path)
+  );
+  const shouldShowGNB = !HIDDEN_GNB_PATHS.some((path) =>
+    location.pathname.startsWith(path)
+  );
+  const shouldShowBackButton = SHOW_BACK_BUTTON_PATHS.some((path) =>
+    location.pathname.startsWith(path)
+  );
 
   return (
     <>
       <GlobalStyles />
       <AppWrapper>
         <AppContainer>
-          {shouldShowHeader && <Header />}
+        {shouldShowHeader && <Header />}
+          {!shouldShowHeader && shouldShowBackButton && <BackButton />}
           <ScrollContainer>{children}</ScrollContainer>
           {shouldShowGNB && <FloatingGNB />}
         </AppContainer>
