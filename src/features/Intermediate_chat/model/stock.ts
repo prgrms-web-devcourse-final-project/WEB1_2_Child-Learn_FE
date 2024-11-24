@@ -1,25 +1,4 @@
-import { ChartData, StockSlideData } from '../types/stock';
-
-export const stockList: StockSlideData[] = [
-  {
-    id: 1,
-    name: "삼성전자",
-    basePrice: 700,
-    description: ""
-  },
-  {
-    id: 2,
-    name: "현대자동차",
-    basePrice: 12000,
-    description: ""
-  },
-  {
-    id: 3,
-    name: "카카오",
-    basePrice: 2500000,
-    description: ""
-  }
-];
+import { ChartData } from '../types/stock';
 
 export const generateStockData = (stockId: number): ChartData[] => {
   // 각 주식의 기준가격 설정

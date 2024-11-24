@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { StockChart } from './stockchart';
-import { generateStockData } from '../model/stock';
+import { stockApi } from '@/shared/api/stock';
 import { ChevronLeft, ChevronRight, Plus, Minus } from 'lucide-react';
 import ArticleComponent from '../../article/article';
 import { TrendPrediction, Relevance } from '../../article/type/article';
-import { ChartData, StockSlideData } from '../types/stock';
+import { MidStock, StockPrice, TradeAvailability } from '../types/stock';
+import StockChart from '@/shared/ui/Intermediate/StockChat';
 
-interface TradeResult {
-  stockName: string;
-  price: number;
-  quantity: number;
-  total: number;
-  type: 'buy' | 'sell';
-  date: string;
-}
 
 // 메인 컨테이너: 전체 슬라이더를 감싸는 컨테이너
 const SlideContainer = styled.div`
@@ -86,11 +78,6 @@ const Indicator = styled.div<{ $active: boolean }>`
   &:hover {
     background-color: ${props => props.$active ? '#1B63AB' : '#bbb'};
   }
-`;
-
-// 차트를 감싸는 컨테이너
-const ChartContainer = styled.div`
-  cursor: pointer;
 `;
 
 // 매수/매도 버튼을 감싸는 컨테이너
@@ -323,11 +310,17 @@ const LimitText = styled.p`
   color: #333;
 `;
 
+const ChartContainer = styled.div`
+  width: 100%;
+  cursor: pointer;
+`;
+
 interface StockSliderProps {
-  stocks: StockSlideData[];
+  stocks: MidStock[];
 }
 
 const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
+  // 기본 상태
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showActions, setShowActions] = useState(false);
   const [showTradeModal, setShowTradeModal] = useState(false);
@@ -335,33 +328,143 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
   const [quantity, setQuantity] = useState(1);
-  const [chartData, setChartData] = useState<ChartData[]>([]);
   const [price, setPrice] = useState('');
   const [totalPrice, setTotalPrice] = useState(0);
-  const [hasTradedToday, setHasTradedToday] = useState(false);
-  const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
 
-  const currentStock = stocks[currentSlide];
+  // API 관련 상태
+  const [stockList, setStockList] = useState<MidStock[]>(stocks);
+  const [priceData, setPriceData] = useState<StockPrice[]>([]);
+  const [tradeAvailability, setTradeAvailability] = useState<TradeAvailability>({
+    isPossibleBuy: false,
+    isPossibleSell: false
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tradeResult, setTradeResult] = useState<{
+    success: boolean;
+    message: string;
+    points?: number;
+  } | null>(null);
 
+  const currentStock = stockList[currentSlide];
+
+  // 주식 목록 로드
   useEffect(() => {
-    if (currentStock) {
-      const data = generateStockData(currentStock.id);
-      setChartData(data);
-    }
+    const loadStocks = async () => {
+      try {
+        const data = await stockApi.getStockList();
+        setStockList(data);
+        setIsLoading(false);
+      } catch (err) {
+        setError('Failed to load stocks');
+        setIsLoading(false);
+      }
+    };
+    loadStocks();
+  }, []);
+
+  // 현재 주식의 가격 데이터 로드
+  useEffect(() => {
+    const loadPriceData = async () => {
+      if (!currentStock) return;
+
+      try {
+        console.log('Fetching price data for stock:', currentStock.midStockId);
+        const data = await stockApi.getStockPrices(currentStock.midStockId);
+        console.log('Received price data:', data);
+        setPriceData(data);
+
+        // 현재가(마지막 평균가)를 초기 거래가로 설정
+        if (data.length > 0) {
+          setPrice(data[0].avgPrice.toString());
+          setTotalPrice(data[0].avgPrice * quantity);
+        }
+
+        // 거래 가능 여부 확인
+        const availability = await stockApi.checkTradeAvailability(currentStock.midStockId);
+        setTradeAvailability(availability);
+      } catch (err) {
+        console.error('Error loading price data:', err);
+        setError('Failed to load price data');
+      }
+    };
+
+    loadPriceData();
   }, [currentStock]);
 
-  useEffect(() => {
-    const numPrice = price === '' ? 0 : parseInt(price.replace(/,/g, ''));
-    setTotalPrice(numPrice * quantity);
-  }, [price, quantity]);
+  // 거래 처리
+  const handleTrade = async () => {
+    if (!currentStock || !price) return;
+
+    try {
+      const tradePoint = parseInt(price.replace(/,/g, '')) * quantity;
+
+      if (tradeType === 'buy') {
+        const result = await stockApi.buyStock(currentStock.midStockId, tradePoint);
+        setTradeResult({
+          success: !result.warning,
+          message: result.warning ? '거래가 실패했습니다.' : '매수가 완료되었습니다.',
+        });
+      } else {
+        const result = await stockApi.sellStock(currentStock.midStockId);
+        setTradeResult({
+          success: true,
+          message: '매도가 완료되었습니다.',
+          points: result.earnedPoints
+        });
+      }
+
+      setShowTradeModal(false);
+      setShowResultModal(true);
+
+      // 거래 후 거래 가능 여부 다시 확인
+      const availability = await stockApi.checkTradeAvailability(currentStock.midStockId);
+      setTradeAvailability(availability);
+    } catch (err) {
+      if (err instanceof Error && err.message === 'Insufficient balance') {
+        setTradeResult({
+          success: false,
+          message: '잔액이 부족합니다.'
+        });
+      } else {
+        setTradeResult({
+          success: false,
+          message: '거래 처리 중 오류가 발생했습니다.'
+        });
+      }
+      setShowResultModal(true);
+    }
+  };
+
+  const handleTradeClick = async (type: 'buy' | 'sell') => {
+    // 거래 가능 여부 확인
+    if (type === 'buy' && !tradeAvailability.isPossibleBuy) {
+      setTradeType(type);
+      setShowLimitModal(true);
+      return;
+    }
+    if (type === 'sell' && !tradeAvailability.isPossibleSell) {
+      setTradeType(type);
+      setShowLimitModal(true);
+      return;
+    }
+
+    setTradeType(type);
+    setShowTradeModal(true);
+    setQuantity(1);
+    if (priceData.length > 0) {
+      setPrice(priceData[0].avgPrice.toString());
+      setTotalPrice(priceData[0].avgPrice);
+    }
+  };
 
   const handlePrevSlide = () => {
-    setCurrentSlide(current => (current - 1 + stocks.length) % stocks.length);
+    setCurrentSlide(current => (current - 1 + stockList.length) % stockList.length);
     setShowActions(false);
   };
 
   const handleNextSlide = () => {
-    setCurrentSlide(current => (current + 1) % stocks.length);
+    setCurrentSlide(current => (current + 1) % stockList.length);
     setShowActions(false);
   };
 
@@ -369,53 +472,28 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
     setShowActions(true);
   };
 
-  const handleTradeClick = (type: 'buy' | 'sell') => {
-    if (hasTradedToday) {
-      setTradeType(type);  // 이 부분 추가
-      setShowLimitModal(true);
-      return;
-    }
-    setTradeType(type);
-    setShowTradeModal(true);
-    setQuantity(1);
-    setPrice('');
-  };
-
-  const handleTrade = () => {
-    const numPrice = parseInt(price.replace(/,/g, ''));
-    const result: TradeResult = {
-      stockName: currentStock.name,
-      price: numPrice,
-      quantity: quantity,
-      total: totalPrice,
-      type: tradeType,
-      date: new Date().toISOString()
-    };
-
-    setTradeResult(result);
-    setShowTradeModal(false);
-    setShowResultModal(true);
-    setHasTradedToday(true);
-  };
-
   const handleQuantityChange = (delta: number) => {
     const newQuantity = Math.max(1, quantity + delta);
     setQuantity(newQuantity);
+    const numPrice = price === '' ? 0 : parseInt(price.replace(/,/g, ''));
+    setTotalPrice(numPrice * newQuantity);
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
     if (value === '') {
       setPrice('');
+      setTotalPrice(0);
       return;
     }
     const numValue = parseInt(value);
     setPrice(numValue.toLocaleString());
+    setTotalPrice(numValue * quantity);
   };
 
-  const formatPrice = (price: number) => {
-    return Math.floor(price).toLocaleString();
-  };
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!currentStock) return null;
 
   return (
     <SlideContainer>
@@ -428,11 +506,14 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
       </PrevButton>
 
       <ChartContainer onClick={handleChartClick}>
-        <StockChart 
-          stockId={currentStock.id} 
-          title={`${currentStock.name} 주가 차트`}
-          data={chartData}
-        />
+        {priceData.length > 0 && (  // 데이터가 있을 때만 렌더링
+          <StockChart 
+            stockId={currentStock.midStockId} 
+            title={`${currentStock.midName} 주가 차트`}
+            data={priceData}
+          />
+        )}
+        {priceData.length === 0 && <div>Loading chart data...</div>}  // 로딩 상태 표시
       </ChartContainer>
 
       {showActions && (
@@ -446,13 +527,13 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
             <ArticleComponent article={{
               id: currentSlide + 1,
               article_id: 1001,
-              stock_symbol: currentStock.name,
+              stock_symbol: currentStock.midName,
               trend_prediction: TrendPrediction.UP,
-              content: `${currentStock.name} 분석...`,
+              content: `${currentStock.midName} 분석...`,
               relevance: Relevance.HIGH,
               created_at: new Date().toISOString(),
               duration: 60,
-              mid_stock_id: currentStock.id,
+              mid_stock_id: currentStock.midStockId,
               adv_id: 1
             }} />
           </ArticleContainer>
@@ -469,7 +550,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
             
             <ModalContent>
               <FormGroup>
-                <Label>{currentStock.name}</Label>
+                <Label>{currentStock.midName}</Label>
                 <Input
                   type="text"
                   value={price}
@@ -504,7 +585,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
                 <Label>총 포인트</Label>
                 <Input
                   type="text"
-                  value={formatPrice(totalPrice)}
+                  value={totalPrice.toLocaleString()}
                   disabled
                 />
               </FormGroup>
@@ -513,6 +594,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
                 <ConfirmButton 
                   onClick={handleTrade}
                   disabled={!price || price === '0'}
+                  type={tradeType}
                 >
                   {tradeType === 'buy' ? '매수하기' : '매도하기'}
                 </ConfirmButton>
@@ -525,71 +607,59 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
         </>
       )}
 
-{showResultModal && tradeResult && (
-  <>
-    <ModalOverlay />
-    <ModalContainer>
-      <ModalTitle>
-        주식 {tradeResult.type === 'buy' ? '매수' : '매도'}주문
-      </ModalTitle>
-      <ModalContent>
-        <FormGroup>
-          <Label>종목명</Label>
-          <Input value={tradeResult.stockName} disabled />
-        </FormGroup>
-        <FormGroup>
-          <Label>주문가격</Label>
-          <Input value={formatPrice(tradeResult.price)} disabled />
-        </FormGroup>
-        <FormGroup>
-          <Label>주문수량</Label>
-          <Input value={tradeResult.quantity} disabled />
-        </FormGroup>
-        <FormGroup>
-          <Label>포인트가격</Label>
-          <Input value={formatPrice(tradeResult.total)} disabled />
-        </FormGroup>
-        <ResultButtonGroup>
-          <SingleButton onClick={() => setShowResultModal(false)}>
-            확인
-          </SingleButton>
-        </ResultButtonGroup>
-      </ModalContent>
-    </ModalContainer>
-  </>
-)}
+      {showResultModal && tradeResult && (
+        <>
+          <ModalOverlay />
+          <ModalContainer>
+            <ModalTitle>
+              거래 결과
+            </ModalTitle>
+            <ModalContent>
+              <ResultText>{tradeResult.message}</ResultText>
+              {tradeResult.points !== undefined && (
+                <ResultText>획득 포인트: {tradeResult.points.toLocaleString()}</ResultText>
+              )}
+              <ResultButtonGroup>
+                <SingleButton onClick={() => setShowResultModal(false)}>
+                  확인
+                </SingleButton>
+              </ResultButtonGroup>
+            </ModalContent>
+          </ModalContainer>
+        </>
+      )}
 
-{showLimitModal && (
-  <>
-    <ModalOverlay />
-    <ModalContainer>
-      <ModalTitle>
-        거래 제한
-      </ModalTitle>
-      <LimitModalContent>
-        <LimitText>
-          오늘은 더 이상 {tradeType === 'buy' ? '매수' : '매도'}를 할 수 없습니다.
-        </LimitText>
-        <ResultButtonGroup>
-          <SingleButton onClick={() => setShowLimitModal(false)}>
-            확인
-          </SingleButton>
-        </ResultButtonGroup>
-      </LimitModalContent>
-    </ModalContainer>
-  </>
-)}
+      {showLimitModal && (
+        <>
+          <ModalOverlay />
+          <ModalContainer>
+            <ModalTitle>
+              거래 제한
+            </ModalTitle>
+            <LimitModalContent>
+              <LimitText>
+                현재 {tradeType === 'buy' ? '매수' : '매도'}가 불가능합니다.
+              </LimitText>
+              <ResultButtonGroup>
+                <SingleButton onClick={() => setShowLimitModal(false)}>
+                  확인
+                </SingleButton>
+              </ResultButtonGroup>
+            </LimitModalContent>
+          </ModalContainer>
+        </>
+      )}
 
       <NextButton 
         onClick={handleNextSlide} 
-        disabled={currentSlide === stocks.length - 1}
+        disabled={currentSlide === stockList.length - 1}
         $show={!showActions}
       >
         <ChevronRight size={24} />
       </NextButton>
 
       <SlideIndicators $show={!showActions}>
-        {stocks.map((_, index) => (
+        {stockList.map((_, index) => (
           <Indicator
             key={index}
             $active={index === currentSlide}
