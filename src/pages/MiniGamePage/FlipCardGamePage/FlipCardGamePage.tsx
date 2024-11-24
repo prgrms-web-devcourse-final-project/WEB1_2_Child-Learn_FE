@@ -20,6 +20,7 @@ const FlipCardGamePage = () => {
   // 초기 카드를 섞고 상태에 저장
   useEffect(() => {
     const initialCards = getCardsByLevel(level!);
+    console.log('Shuffled Cards:', initialCards); 
     setShuffledCards(initialCards); // 섞은 카드를 상태로 저장
   }, [level, getCardsByLevel]);
 
@@ -98,6 +99,7 @@ const FlipCardGamePage = () => {
           flipped={
             gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index)
           }
+          level={level}
           onClick={() => (gamePhase === 'play' ? handleCardClick(index) : null)}
         >
           <div className="card-inner">
@@ -171,11 +173,26 @@ const Timer = styled.div`
 
 const GameGrid = styled.div<{ level?: string }>`
   display: grid;
-  grid-template-columns: repeat(${(props) => (props.level === 'beginner' ? 2 : props.level === 'medium' ? 3 : 4)}, 1fr);
-  grid-template-rows: repeat(4, auto); /* 항상 4행 */
-  gap: 10px;
+  grid-template-columns: repeat(
+    ${({ level }) => (level === 'beginner' ? 2 : level === 'medium' ? 3 : 4)},
+    ${({ level }) =>
+      level === 'beginner' ? '100px' : level === 'medium' ? '90px' : '80px'}
+  );
+  column-gap: ${({ level }) =>
+    level === 'beginner' ? '20px' : level === 'medium' ? '15px' : '10px'};
+  row-gap: 10px; /* 상하 간격 */
+  margin-top: 100px; /* 상단 간격 고정 */
+  margin-bottom: 40px; /* 하단 간격 고정 */
+  margin-left: auto;
+  margin-right: auto;
+  max-width: ${({ level }) =>
+    level === 'beginner'
+      ? 'calc(2 * 100px + 20px)' // 카드 크기와 간격 계산
+      : level === 'medium'
+      ? 'calc(3 * 90px + 30px)' // 카드 크기와 간격 계산
+      : 'calc(4 * 80px + 30px)'}; // 카드 크기와 간격 계산
   justify-items: center;
-  margin-top: 100px; /* 상단 간격 */
+  align-items: center;
 `;
 
 const Card = styled.div<{ flipped: boolean; level?: string }>`
@@ -211,6 +228,7 @@ const Card = styled.div<{ flipped: boolean; level?: string }>`
     background-color: #DEF9C4; /* 뒷면 색상 */
     transform: rotateY(0deg); /* 기본적으로 보이도록 설정 */
     border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: center;
     align-items: center;
