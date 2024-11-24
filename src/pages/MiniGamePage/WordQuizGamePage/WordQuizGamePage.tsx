@@ -1,12 +1,13 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import  { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
-import { Header } from '../../../features/minigame/wordquizgame/ui/Header'
-import { Question } from '../../../features/minigame/wordquizgame/ui/Question'
-import { Answer } from '../../../features/minigame/wordquizgame/ui/Answer'
-import { Keyboard } from '../../../features/minigame/wordquizgame/ui/KeyBoard'
-import { Popup } from '../../../features/minigame/wordquizgame/ui/Popup'
+import { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
+import { Header } from '../../../features/minigame/wordquizgame/ui/Header';
+import { Question } from '../../../features/minigame/wordquizgame/ui/Question';
+import { Answer } from '../../../features/minigame/wordquizgame/ui/Answer';
+import { Keyboard } from '../../../features/minigame/wordquizgame/ui/KeyBoard';
+import { Popup } from '../../../features/minigame/wordquizgame/ui/Popup';
+import { Word } from '../../../features/minigame/wordquizgame/types/wordTypes';
 
 const WordQuizGamePage = () => {
   const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
@@ -44,16 +45,31 @@ const WordQuizGamePage = () => {
     }
     return Array.from(uniqueLetters).sort(() => Math.random() - 0.5); // 랜덤 섞음
   }, [correctWord]);
+  
+  // 전체 단어 리스트
+  const wordList: Word[] = [
+    { word_id: 1, word: '시장', explanation: '기업의 주식 발행 가격 총액을 뜻하는 단어', hint: '첫 글자는 "시"입니다.' },
+    { word_id: 2, word: '경제', explanation: '사람들의 재화와 서비스 교환에 대한 활동을 뜻하는 단어', hint: '첫 글자는 "경"입니다.' },
+    { word_id: 3, word: '투자', explanation: '미래의 이익을 기대하며 자산을 구매하는 활동', hint: '첫 글자는 "투"입니다.' },
+    { word_id: 4, word: '관리자', explanation: '시스템을 운영하고 관리하는 역할을 맡은 사람', hint: '첫 글자는 "관"입니다.' },
+    { word_id: 5, word: '소프트웨어', explanation: '컴퓨터 프로그램과 관련된 모든 것', hint: '첫 글자는 "소"입니다.' },
+    { word_id: 6, word: '데이터베이스', explanation: '데이터를 체계적으로 저장하는 시스템', hint: '첫 글자는 "데"입니다.' },
+    { word_id: 7, word: '알고리즘', explanation: '문제를 해결하는 절차나 방법', hint: '첫 글자는 "알"입니다.' },
+    { word_id: 8, word: '컴퓨터', explanation: '정보를 처리하는 기계', hint: '첫 글자는 "컴"입니다.' },
+  ];
+
+  // 랜덤으로 3개의 단어 선택
+  const selectRandomWords = (list: Word[], count: number): Word[] => {
+    const shuffled = [...list].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  };
 
   // 초기화: 난이도 설정 및 문제 리스트
   useEffect(() => {
     resetQuiz(); // 퀴즈 초기화
     setLevel(level || 'beginner'); // 난이도 설정
-    setWords([
-      { word_id: 1, word: '시장', explanation: '기업의 주식 발행 가격 총액을 뜻하는 단어', hint: '첫 글자는 "시"입니다.' },
-      { word_id: 2, word: '경제', explanation: '사람들의 재화와 서비스 교환에 대한 활동을 뜻하는 단어', hint: '첫 글자는 "경"입니다.' },
-      { word_id: 3, word: '투자', explanation: '미래의 이익을 기대하며 자산을 구매하는 활동', hint: '첫 글자는 "투"입니다.' },
-    ]); // 문제 리스트 설정
+    const randomWords = selectRandomWords(wordList, 3); // 랜덤 단어 3개 선택
+    setWords(randomWords); // 문제 리스트 설정
   }, [level, resetQuiz, setLevel, setWords]);
 
   // 타이머 초기화
@@ -121,41 +137,18 @@ const WordQuizGamePage = () => {
 
   return (
     <PageContainer>
-       <BackgroundContainer /> {/* Background 추가 */}
+      <BackgroundContainer />
       <Header
         timeLeft={timeLeft}
         lives={lives}
         progress={words.map((_, i) => i <= currentQuestionIndex)}
       />
-      <Question
-        question={currentWord?.explanation || ''}
-      />
-      <Answer
-      answerLength={correctWord.length}
-      userAnswer={userAnswer}
-      />
-      {showHint && (
-        <Popup
-          message={currentWord?.hint || ''}
-          onClose={() => setShowHint(false)}
-        />
-      )}
-      {showCorrectPopup && (
-        <Popup
-          message="😃 정답!"
-          onClose={handleNextQuestion}
-        />
-      )}
-      {showIncorrectPopup && (
-        <Popup
-          message="😢 오답!"
-          onClose={handleCloseIncorrectPopup}
-        />
-      )}
-      <Keyboard
-        letters={keyboardLetters}
-        onSelect={handleSelectLetter}
-      />
+      <Question question={currentWord?.explanation || ''} />
+      <Answer answerLength={correctWord.length} userAnswer={userAnswer} />
+      {showHint && <Popup message={currentWord?.hint || ''} onClose={() => setShowHint(false)} />}
+      {showCorrectPopup && <Popup message="😃 정답!" onClose={handleNextQuestion} />}
+      {showIncorrectPopup && <Popup message="😢 오답!" onClose={handleCloseIncorrectPopup} />}
+      <Keyboard letters={keyboardLetters} onSelect={handleSelectLetter} />
     </PageContainer>
   );
 };
@@ -180,7 +173,7 @@ const BackgroundContainer = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  top: 630px; 
-  background-color: #DEf9C4; /* 연두색 배경 */
-  z-index: 0; /* 콘텐츠 뒤로 배치 */
+  top: 630px;
+  background-color: #DEf9C4;
+  z-index: 0;
 `;
