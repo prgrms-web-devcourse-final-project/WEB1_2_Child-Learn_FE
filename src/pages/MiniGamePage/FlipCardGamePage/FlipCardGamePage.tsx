@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 const FlipCardGamePage = () => {
   const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
-  const { getCardsByLevel } = useFlipCardStore();
+  const { getCardsByLevel, setCards } = useFlipCardStore();
   const [flippedCards, setFlippedCards] = useState<number[]>([]); // 뒤집힌 카드 상태
   const [timeLeft, setTimeLeft] = useState(3); // 첫 번째 타이머 (3초)
   const [gameTimeLeft, setGameTimeLeft] = useState(30); // 두 번째 타이머 (30초)
@@ -17,13 +17,26 @@ const FlipCardGamePage = () => {
   const [showFailureModal, setShowFailureModal] = useState(false); // 실패 모달 상태
   const navigate = useNavigate();
   
-  // 초기 카드를 섞고 상태에 저장
-  useEffect(() => {
-    const initialCards = getCardsByLevel(level!);
-    console.log('Shuffled Cards:', initialCards); 
-    setShuffledCards(initialCards); // 섞은 카드를 상태로 저장
-  }, [level, getCardsByLevel]);
+   // 초기 카드를 설정 및 섞기
+   useEffect(() => {
+    const mockCards: Card[] = [
+      { card_id: '1', card_title: 'A', card_content: '내용 A', category: '경제' },
+      { card_id: '2', card_title: 'B', card_content: '내용 B', category: '수학' },
+      { card_id: '3', card_title: 'C', card_content: '내용 C', category: '과학' },
+      { card_id: '4', card_title: 'D', card_content: '내용 D', category: '역사' },
+      { card_id: '5', card_title: 'E', card_content: '내용 E', category: '예술' },
+      { card_id: '6', card_title: 'F', card_content: '내용 F', category: '지리' },
+      { card_id: '7', card_title: 'G', card_content: '내용 G', category: '문학' },
+      { card_id: '8', card_title: 'H', card_content: '내용 H', category: '철학' },
+    ];
 
+    // Zustand에 카드 데이터를 저장
+    setCards(mockCards);
+
+    // 난이도에 따라 카드를 섞고 상태로 저장
+    const initialCards = getCardsByLevel(level!);
+    setShuffledCards(initialCards);
+  }, [level, setCards, getCardsByLevel]);
   const formatTime = (time: number): string => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
@@ -118,18 +131,31 @@ const FlipCardGamePage = () => {
 
       {showSuccessModal && (
         <Modal>
-          <p><img src="/public/img/smile.png" alt="Smile Icon" />성공!</p>
-          <p>100 Point를 획득하셨어요!</p>
+          <p>
+      <span style={{ fontSize: '20px', marginRight: '2px' }}>😊</span> {/* 성공 이모지 */}
+      성공!
+    </p>
+          <p>
+    <span style={{ fontSize: '24px', fontWeight: 'bold', color: '#000000', display: 'block' }}>
+      100 Point
+    </span>
+    <span>를 획득하셨어요!</span>
+  </p>
+          <div className="divider"></div> {/* 선 추가 */}
           <button onClick={() => navigate('/minigame')}>미니게임 페이지로 돌아가기</button>
         </Modal>
       )}
 
       {showFailureModal && (
         <Modal>
-          <p><img src="/public/img/shocked.png" alt="Shocked Icon" />실패!</p>
-          <p>내일 다시 도전해봐요!</p>
-          <button onClick={() => navigate('/minigame')}>미니게임 페이지로 돌아가기</button>
-        </Modal>
+         <p>
+      <span style={{ fontSize: '20px', marginRight: '2px' }}>😢</span> {/* 실패 이모지 */}
+      실패!
+    </p>
+        <p>내일 다시 도전해봐요!</p>
+        <div className="divider"></div>
+        <button onClick={() => navigate('/minigame')}>미니게임 페이지로 돌아가기</button>
+      </Modal>
       )}
     </PageContainer>
   );
@@ -282,19 +308,30 @@ const Modal = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 303px; /* 모달 너비 */
-  height: 170px; /* 모달 높이 */
+  width: 303px; /* 모달 너비 고정 */
   background-color: white;
-  padding: 20px;
+  padding: 15px 20px; /* 하단 패딩을 줄임 */
   border: 1px solid #ddd;
   border-radius: 5.86px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 텍스트와 버튼 사이 공간 조정 */
+
   p {
-    margin: 10px 0;
+    margin: 5px 0; /* 텍스트 간 간격 줄임 */
+    font-weight: bold; 
   }
+
+  .divider {
+    margin: 10px 0; /* 선과 텍스트 간격 */
+    border-top: 1px solid #ddd; /* 선 스타일 */
+  }
+
   button {
-    padding: 10px 20px;
+    margin-top: auto; /* 버튼을 항상 하단으로 배치 */
+    padding: 5px 20px; /* 버튼 크기 조정 */
     background-color: #73C3AD;
     color: white;
     border: none;

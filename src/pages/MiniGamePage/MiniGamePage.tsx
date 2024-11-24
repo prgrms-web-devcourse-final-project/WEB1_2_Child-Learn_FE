@@ -7,23 +7,11 @@ import styled from 'styled-components';
 
 const MiniGamePage = () => {
   const { username, points, setUser } = useUserStore();
-  const { isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed, setCards } = useFlipCardStore();
+  const { isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed } = useFlipCardStore();
   const { setLotteries, isPlayable: isLotteryPlayable, setLastPlayedDate: setLotteryLastPlayedDate } = useLotteryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  // 카드 초기 데이터 설정
-  const mockCards = [
-    { card_id: '1', card_title: 'A', card_content: '내용 A', category: '경제' },
-    { card_id: '2', card_title: 'B', card_content: '내용 B', category: '수학' },
-    { card_id: '3', card_title: 'C', card_content: '내용 C', category: '과학' },
-    { card_id: '4', card_title: 'D', card_content: '내용 D', category: '역사' },
-    { card_id: '5', card_title: 'E', card_content: '내용 E', category: '예술' },
-    { card_id: '6', card_title: 'F', card_content: '내용 F', category: '지리' },
-    { card_id: '7', card_title: 'G', card_content: '내용 G', category: '문학' },
-    { card_id: '8', card_title: 'H', card_content: '내용 H', category: '철학' },
-  ];
 
   useEffect(() => {
     // 초기 사용자 데이터 설정
@@ -43,16 +31,11 @@ const MiniGamePage = () => {
       { roundNumber: 1, drawDate: new Date('2024-11-15'), winningNumbers: [3, 7, 12, 24, 36], status: '진행 중' },
       { roundNumber: 2, drawDate: new Date('2024-11-22'), winningNumbers: [1, 4, 9, 16, 25], status: '대기' },
     ]);
-    setCards(mockCards);
-  }, [setUser, setLotteries, setCards]);
+  }, [setUser, setLotteries]);
 
   // 카드 뒤집기 플레이 핸들러
   const handleFlipCardPlay = async (level: 'beginner' | 'medium' | 'advanced') => {
     if (isCardPlayable(level)) {
-      await new Promise((resolve) => {
-        setCards(mockCards);
-        resolve(null); // 상태 설정 완료 보장
-      });
       setCardLastPlayed(level, new Date());
       navigate(`/flip-card/${level}`);
     }
