@@ -3,12 +3,8 @@ import styled from 'styled-components';
 import { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
 
 const WordQuizResultPage = () => {
-  const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
   const navigate = useNavigate();
-  const { correctAnswers, resetQuiz, words } = useWordQuizStore();
-
-  // 총 문제 수 계산 (words 배열의 길이)
-  const totalQuestions = words.length;
+  const { correctAnswers, resetQuiz } = useWordQuizStore();
 
   // 별의 개수 계산 (최대 별 3개)
   const stars = Math.min(correctAnswers, 3); // 최대 별 3개

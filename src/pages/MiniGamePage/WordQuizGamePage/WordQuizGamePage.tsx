@@ -33,7 +33,7 @@ const WordQuizGamePage = () => {
   const keyboardLetters = useMemo(() => {
     if (!correctWord) return [];
     const uniqueLetters = new Set<string>(correctWord.split('')); // 정답 단어의 모든 글자를 추가
-    while (uniqueLetters.size < 10) {
+    while (uniqueLetters.size < 12) {
       const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
       uniqueLetters.add(randomLetter);
     }
@@ -171,6 +171,7 @@ export default WordQuizGamePage;
 
 // Styled Components
 const PageContainer = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -266,21 +267,27 @@ const HintButton = styled.button`
 `;
 
 const Keyboard = styled.div`
-  display: flex;
+  position: absolute;
+  bottom: 50px; /* 하단에서 50px 간격 */
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 6열 */
   gap: 10px;
-  flex-wrap: wrap;
   justify-content: center;
-  margin-top: 20px;
 `;
 
 const LetterButton = styled.button`
   width: 50px;
   height: 50px;
   border: none;
-  background-color: #ddd;
-  font-size: 16px;
-  border-radius: 5px;
+  background-color: #468585;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  border-radius: 10px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     background-color: #bbb;
