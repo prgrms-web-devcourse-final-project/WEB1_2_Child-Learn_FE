@@ -1,10 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { signUpApi } from '../lib/signUpApi';
 import type { JoinRequest } from '../model/types';
 
 export const useJoin = () => {
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -13,10 +11,11 @@ export const useJoin = () => {
     setError(null);
 
     try {
-      await signUpApi.join(data);
-      navigate('/login');
+      const response = await signUpApi.join(data);
+      return response; // 성공 시 응답 반환
     } catch (err) {
       setError(err instanceof Error ? err.message : '회원가입에 실패했습니다.');
+      throw err; // 에러를 throw하여 컴포넌트에서 처리할 수 있도록 함
     } finally {
       setIsLoading(false);
     }
