@@ -138,7 +138,7 @@ const WordQuizGamePage = () => {
           <AnswerBox key={index}>{userAnswer[index] || ''}</AnswerBox>
         ))}
       </AnswerContainer>
-      <HintButton onClick={() => setShowHint(true)}>💡 힌트</HintButton>
+      <HintIcon onClick={() => setShowHint(true)}>💡</HintIcon>
       {showHint && (
         <Popup>
           <p>{currentWord?.hint}</p>
@@ -199,11 +199,16 @@ const Header = styled.div`
   align-items: center;
   width: 100%;
   max-width: 390px;
+  height: 40px;
+  position: relative; /* 아이콘의 위치 조정 */
 `;
 
 const LivesContainer = styled.div`
   display: flex;
   gap: 5px;
+  position: absolute;
+  top: 10px;
+  left: 20px;
 `;
 interface HeartProps {
   filled: boolean;
@@ -218,8 +223,10 @@ const Heart = styled.div<HeartProps>`
 
 const ProgressContainer = styled.div`
   display: flex;
-  gap: 5px;
-  align-items: center;
+  gap: 5px; /* ProgressBar 간 간격 */
+  justify-content: center; /* 중앙 정렬 */
+  flex: 1; /* 중앙에서 공간을 최대한 확보 */
+  z-index: 1; /* 다른 요소 위에 위치 */
 `;
 
 interface ProgressBarProps {
@@ -227,7 +234,7 @@ interface ProgressBarProps {
 }
 
 const ProgressBar = styled.div<ProgressBarProps>`
-  width: 20px;
+  width: 60px;
   height: 5px;
   background-color: ${(props) => (props.active ? '#50b498' : '#ccc')};
 `;
@@ -235,19 +242,31 @@ const ProgressBar = styled.div<ProgressBarProps>`
 const Timer = styled.div`
   font-size: 18px;
   font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 20px;
 `;
 
 const QuestionContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 20px;
+  justify-content: center;
+  margin-top: 400px;
+  width: 310px; /* 사각형 너비 */
+  height: 107px; /* 사각형 높이 */
+  background-color: #50B498; /* 배경색 */
+  opacity: 0.8;
+  border-radius: 15px; /* 둥근 모서리 */
+  text-align: center; /* 텍스트 중앙 정렬 */
 `;
 
 const QuestionText = styled.p`
-  margin-top: 10px;
-  font-size: 16px;
-  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff; /* 텍스트 색상 */
+  margin: 0; /* 상하 간격 제거 */
+  line-height: 1.5; /* 텍스트 줄 간격 */
 `;
 
 const AnswerContainer = styled.div`
@@ -259,7 +278,8 @@ const AnswerContainer = styled.div`
 const AnswerBox = styled.div`
   width: 40px;
   height: 40px;
-  border: 2px solid #ccc;
+  border: 2px solid #468585;
+  border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -267,14 +287,17 @@ const AnswerBox = styled.div`
   font-weight: bold;
 `;
 
-const HintButton = styled.button`
-  background-color: #50b498;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
+const HintIcon = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px; /* 화면 중앙에서 약간 오른쪽 */
+  transform: translateX(50%);
   cursor: pointer;
+
+  img {
+    width: 32px;
+    height: 32px;
+  }
 `;
 
 const Keyboard = styled.div`
@@ -295,7 +318,7 @@ const LetterButton = styled.button`
   height: 50px;
   border: none;
   background-color: #468585;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: bold;
   color: #fff;
   border-radius: 10px;
