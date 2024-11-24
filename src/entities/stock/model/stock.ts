@@ -1,8 +1,17 @@
+// StockChartData 인터페이스 정의
+export interface StockChartData {
+  date: string;
+  price: number;
+}
+
 export interface Stock {
     id: number;
     name: string;
+    basePrice: number;
     currentPrice: number;
+    description: string;
     dailyChange: number;
+    volume: number;
     chartData?: StockChartData[];
   }
   

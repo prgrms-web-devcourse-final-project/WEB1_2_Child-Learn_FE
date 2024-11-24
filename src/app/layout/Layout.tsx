@@ -12,19 +12,16 @@ const HIDDEN_HEADER_PATHS = [
 ];
 
 // GNB를 숨길 페이지 경로들
-<<<<<<< HEAD
-const HIDDEN_GNB_PATHS = ['/auth/login', '/auth/signup','/fast-navigation'];
 
-
-=======
 const HIDDEN_GNB_PATHS = [
   '/auth/login', '/auth/signup',
-  '/flip-card', '/word-quiz'
+  '/flip-card', '/word-quiz',
+  '/fast-navigation'
 ];
 
 // BackButton만 표시할 페이지 경로들
 const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz'];
->>>>>>> origin/develop
+
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();

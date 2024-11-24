@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { generateStockData } from '../model/stock';
 import { ChartWrapper, ChartHeader, ChartTitle, ChartContent } from './index';
@@ -6,10 +6,11 @@ import { ChartData } from '../types/stock';
 
 interface StockChartProps {
   stockId: number;
-  title?: string;
+  title: string;
+  data: ChartData[];
 }
 
-export const StockChart = ({ stockId, title }: StockChartProps) => {
+export const StockChart = ({ stockId, title, data }: StockChartProps) => {
   const [chartData, setChartData] = useState<{
     series: { data: ChartData[] }[];
     options: any;
