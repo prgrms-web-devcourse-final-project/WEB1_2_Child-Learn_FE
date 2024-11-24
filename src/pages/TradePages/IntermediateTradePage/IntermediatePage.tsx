@@ -4,7 +4,7 @@ import StockSlider from '../../../features/Intermediate_chat/ui/StockSlider';
 
 const PageContainer = styled.div`
   padding: 20px;
-  background-color: #f5f5f5;
+  background-color: #ffffff;
   min-height: 100vh;
 `;
 
