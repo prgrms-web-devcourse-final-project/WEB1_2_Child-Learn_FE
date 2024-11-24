@@ -36,6 +36,7 @@ export const signUpHandlers = [
         userId: 'generated-id',
         username: data.username,
         email: data.email,
+        birth: data.birth,
       });
     }
   ),

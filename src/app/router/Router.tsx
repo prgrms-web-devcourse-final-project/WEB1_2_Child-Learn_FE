@@ -9,7 +9,7 @@ import MainPage from '@/pages/mainpage/MainPage';
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<LoginPage />} />
       <Route path="/main" element={<MainPage />} />
       <Route path="/article" element={<ArticlePage />} /> {/* 경로 수정 */}
       <Route path="/quiz" element={<QuizPage />} />

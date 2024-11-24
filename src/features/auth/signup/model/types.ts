@@ -10,4 +10,5 @@ export interface JoinResponse {
   userId: string;
   username: string;
   email: string;
+  birth: number;
 }
