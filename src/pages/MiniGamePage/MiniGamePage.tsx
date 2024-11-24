@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useUserStore } from '../../app/providers/state/zustand/userStore';
-import { useFlipCardStore } from '../../app/providers/state/zustand/useFlipCardStore';
+import { useFlipCardStore } from '../../features/minigame/flipcardgame/model/filpCardStore'
 import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
