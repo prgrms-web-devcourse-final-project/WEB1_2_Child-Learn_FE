@@ -1,0 +1,84 @@
+import { useNavigate, useParams } from 'react-router-dom';
+import styled from 'styled-components';
+import useWordQuizStore from './store/useWordQuizStore';
+
+const WordQuizResultPage = () => {
+    const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
+  const navigate = useNavigate();
+  const { totalQuestions, correctAnswers, resetQuiz } = useWordQuizStore(); 
+
+   // 별의 개수 계산 (최대 별 3개)
+   const stars = Math.min(correctAnswers, totalQuestions);
+
+   const handleNavigate = () => {
+     resetQuiz(); // 전역 상태 초기화
+     navigate('/minigame');
+   }; 
+
+
+  return (
+    <Container>
+      <CheckImage src="/public/img/Check.png" alt="result" />
+      <StarsContainer>
+        {Array.from({ length: stars }).map((_, index) => (
+          <Star key={index} src="/public/img/star.png" alt="Star" />
+        ))}
+      </StarsContainer>
+      <PointsText>총 {stars * 100} Points를 획득하셨습니다!</PointsText>
+      <NavigateButton onClick={handleNavigate}>
+        미니게임 페이지로 돌아가기
+      </NavigateButton>
+    </Container>
+  );
+};
+
+export default WordQuizResultPage;
+
+// Styled Components
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f5f5f5;
+`;
+
+const CheckImage = styled.img`
+  width: 120px;
+  height: 120px;
+  margin-bottom: 20px;
+`;
+
+const StarsContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+`;
+
+const Star = styled.img`
+  width: 52px;
+  height: 52px;
+  margin: 0 5px;
+`;
+
+const PointsText = styled.p`
+  font-size: 16px;
+  font-weight: bold;
+  color: #666;
+  margin-bottom: 20px;
+`;
+
+const NavigateButton = styled.button`
+  padding: 10px 20px;
+  background-color: #50b498;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #3d937b;
+  }
+`;
