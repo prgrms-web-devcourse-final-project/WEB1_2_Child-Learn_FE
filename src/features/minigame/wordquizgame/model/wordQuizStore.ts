@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { Word } from '../types/wordTypes'; // Word 타입 import
+import { Word } from '../types/wordTypes'; 
 
 interface WordQuizState {
   level: 'beginner' | 'medium' | 'advanced'; // 난이도
   memberId: number; // 회원 ID
   lives: number; // 남은 목숨
-  lastPlayedDate: string | null; // 마지막 플레이 날짜
+  lastPlayedDates: Record<'beginner' | 'medium' | 'advanced', string | null>; // 난이도별 마지막 플레이 날짜
   correctAnswers: number; // 맞춘 문제 수
   words: Word[]; // 퀴즈 문제 리스트
   currentQuestionIndex: number; // 현재 문제 인덱스
@@ -15,14 +15,20 @@ interface WordQuizState {
   setWords: (words: Word[]) => void; // 퀴즈 문제 설정
   nextQuestion: () => void; // 다음 문제로 이동
   resetQuiz: () => void; // 퀴즈 초기화
-  initializeQuiz: (memberId: number, lastPlayedDate: string | null, lives: number) => void; // 퀴즈 상태 초기화
+  initializeQuiz: (memberId: number) => void; // 퀴즈 상태 초기화
+  isPlayable: (level: 'beginner' | 'medium' | 'advanced') => boolean; // 플레이 가능 여부 확인
+  setLastPlayedDate: (level: 'beginner' | 'medium' | 'advanced', date: string) => void; // 마지막 플레이 날짜 설정
 }
 
-export const useWordQuizStore = create<WordQuizState>((set) => ({
+export const useWordQuizStore = create<WordQuizState>((set, get) => ({
   level: 'beginner', // 기본 난이도
   memberId: 0, // 기본 회원 ID
   lives: 3, // 기본 목숨
-  lastPlayedDate: null, // 마지막 플레이 날짜
+  lastPlayedDates: {
+    beginner: null,
+    medium: null,
+    advanced: null,
+  },
   correctAnswers: 0, // 맞춘 문제 수
   words: [], // 기본 퀴즈 문제 리스트
   currentQuestionIndex: 0, // 기본 문제 인덱스
@@ -45,12 +51,21 @@ export const useWordQuizStore = create<WordQuizState>((set) => ({
       currentQuestionIndex: 0,
       words: [],
     }),
-  initializeQuiz: (memberId, lastPlayedDate, lives) =>
+  initializeQuiz: (memberId) =>
     set({
       memberId,
-      lastPlayedDate,
-      lives,
     }),
+  isPlayable: (level) => {
+    const lastPlayed = get().lastPlayedDates[level];
+    if (!lastPlayed) return true; // 이전에 플레이한 기록이 없으면 플레이 가능
+
+    const today = new Date().toISOString().split('T')[0]; // 오늘 날짜 (YYYY-MM-DD)
+    return lastPlayed !== today; // 오늘 플레이한 기록이 있으면 false
+  },
+  setLastPlayedDate: (level, date) =>
+    set((state) => ({
+      lastPlayedDates: { ...state.lastPlayedDates, [level]: date },
+    })),
 }));
 
 export default useWordQuizStore;

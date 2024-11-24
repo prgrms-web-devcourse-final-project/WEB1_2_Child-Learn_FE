@@ -9,7 +9,7 @@ import styled from 'styled-components';
 const MiniGamePage = () => {
   const { username, points, setUser } = useUserStore();
   const { isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed } = useFlipCardStore();
-  const { setLevel: setWordQuizLevel } = useWordQuizStore();
+  const { isPlayable: isWordQuizPlayable, setLastPlayedDate: setWordQuizLastPlayedDate } = useWordQuizStore();
   const { setLotteries, isPlayable: isLotteryPlayable, setLastPlayedDate: setLotteryLastPlayedDate } = useLotteryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
@@ -44,9 +44,12 @@ const MiniGamePage = () => {
   };  
 
   // 낱말 퀴즈 플레이 핸들러
-  const handleWordQuizPlay = (level: 'beginner' | 'medium' | 'advanced') => {
-    setWordQuizLevel(level); // 난이도 설정
-    navigate(`/word-quiz/${level}`);
+  const handleWordQuizPlay = async (level: 'beginner' | 'medium' | 'advanced') => {
+    if (isWordQuizPlayable(level)) {
+      const today = new Date().toISOString().split('T')[0];
+      setWordQuizLastPlayedDate(level, today); // 마지막 플레이 날짜 업데이트
+      navigate(`/word-quiz/${level}`);
+    }
   };
 
   // 로또(숫자를 맞혀라) 플레이 핸들러
@@ -173,18 +176,21 @@ const MiniGamePage = () => {
                 <ModalButton
                   level="beginner"
                   onClick={() => handleWordQuizPlay('beginner')}
+                  disabled={!isWordQuizPlayable('beginner')}
                 >
                   쉬움
                 </ModalButton>
                 <ModalButton
                   level="medium"
                   onClick={() => handleWordQuizPlay('medium')}
+                  disabled={!isWordQuizPlayable('medium')}
                 >
                   보통
                 </ModalButton>
                 <ModalButton
                   level="advanced"
                   onClick={() => handleWordQuizPlay('advanced')}
+                  disabled={!isWordQuizPlayable('advanced')}
                 >
                   어려움
                 </ModalButton>
