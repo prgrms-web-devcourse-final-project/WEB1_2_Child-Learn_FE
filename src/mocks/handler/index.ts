@@ -1,5 +1,5 @@
-import { authHandlers } from './authHandlers';
+import { signUpHandlers } from './signUpHandlers';
 import { postHandlers } from './postHandlers';
 import { userHandlers } from './userHandlers';
 
-export const handlers = [...authHandlers, ...postHandlers, ...userHandlers];
+export const handlers = [...signUpHandlers, ...postHandlers, ...userHandlers];

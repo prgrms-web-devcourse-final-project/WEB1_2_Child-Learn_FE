@@ -12,9 +12,13 @@ import MainPage from '@/pages/mainpage/MainPage';
 export default function Router() {
   return (
     <Routes>
+<<<<<<< HEAD
       <Route path="/" element={<LandingPage />} />
       <Route path="/article" element={<ArticlePage />} /> 
       <Route path="/fast-navigation" element={<GraphExplanationPage />} />
+=======
+      <Route path="/" element={<LoginPage />} />
+>>>>>>> origin/develop
       <Route path="/main" element={<MainPage />} />
       <Route path="/article" element={<ArticlePage />} /> {/* 경로 수정 */}
       <Route path="/quiz" element={<QuizPage />} />
