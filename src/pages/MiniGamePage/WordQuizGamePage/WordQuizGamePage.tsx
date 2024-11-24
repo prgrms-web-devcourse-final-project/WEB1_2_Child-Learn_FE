@@ -2,7 +2,11 @@ import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import  { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
-import { Timer } from '../../../features/minigame/flipcardgame/ui/Timer'
+import { Header } from '../../../features/minigame/wordquizgame/ui/Header'
+import { Question } from '../../../features/minigame/wordquizgame/ui/Question'
+import { Answer } from '../../../features/minigame/wordquizgame/ui/Answer'
+import { Keyboard } from '../../../features/minigame/wordquizgame/ui/KeyBoard'
+import { Popup } from '../../../features/minigame/wordquizgame/ui/Popup'
 
 const WordQuizGamePage = () => {
   const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
@@ -118,55 +122,40 @@ const WordQuizGamePage = () => {
   return (
     <PageContainer>
        <BackgroundContainer /> {/* Background 추가 */}
-      <Header>
-        <LivesContainer>
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Heart key={index} filled={index < lives} />
-          ))}
-        </LivesContainer>
-        <ProgressContainer>
-          {Array.from({ length: words.length }).map((_, index) => (
-            <ProgressBar key={index} active={index <= currentQuestionIndex} />
-          ))}
-        </ProgressContainer>
-        <TimerContainer>
-    <Timer time={timeLeft} phase="play" />
-  </TimerContainer>
-      </Header>
-      <QuestionContainer>
-        <QuestionText>{currentWord?.explanation}</QuestionText>
-      </QuestionContainer>
-      <AnswerContainer>
-        {Array.from({ length: correctWord.length }).map((_, index) => (
-          <AnswerBox key={index}>{userAnswer[index] || ''}</AnswerBox>
-        ))}
-      </AnswerContainer>
-      <HintIcon onClick={() => setShowHint(true)}>💡</HintIcon>
+      <Header
+        timeLeft={timeLeft}
+        lives={lives}
+        progress={words.map((_, i) => i <= currentQuestionIndex)}
+      />
+      <Question
+        question={currentWord?.explanation || ''}
+      />
+      <Answer
+      answerLength={correctWord.length}
+      userAnswer={userAnswer}
+      />
       {showHint && (
-        <Popup>
-          <p>{currentWord?.hint}</p>
-          <PopupButton onClick={() => setShowHint(false)}>알 것 같아요!</PopupButton>
-        </Popup>
+        <Popup
+          message={currentWord?.hint || ''}
+          onClose={() => setShowHint(false)}
+        />
       )}
-      <Keyboard>
-        {keyboardLetters.map((letter, index) => (
-          <LetterButton key={index} onClick={() => handleSelectLetter(letter)}>
-            {letter}
-          </LetterButton>
-        ))}
-      </Keyboard>
       {showCorrectPopup && (
-        <Popup>
-          <p>😃 정답!</p>
-          <PopupButton onClick={handleNextQuestion}>다음 문제</PopupButton>
-        </Popup>
+        <Popup
+          message="😃 정답!"
+          onClose={handleNextQuestion}
+        />
       )}
       {showIncorrectPopup && (
-        <Popup>
-          <p>😢 오답!</p>
-          <PopupButton onClick={handleCloseIncorrectPopup}>다시 도전해보세요!</PopupButton>
-        </Popup>
+        <Popup
+          message="😢 오답!"
+          onClose={handleCloseIncorrectPopup}
+        />
       )}
+      <Keyboard
+        letters={keyboardLetters}
+        onSelect={handleSelectLetter}
+      />
     </PageContainer>
   );
 };
@@ -194,176 +183,4 @@ const BackgroundContainer = styled.div`
   top: 630px; 
   background-color: #DEf9C4; /* 연두색 배경 */
   z-index: 0; /* 콘텐츠 뒤로 배치 */
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 390px;
-  height: 40px;
-  position: relative; /* 아이콘의 위치 조정 */
-`;
-
-const TimerContainer = styled.div`
-  position: absolute; 
-  top: 30px; 
-  justify-content: center;
-`;
-
-const LivesContainer = styled.div`
-  display: flex;
-  gap: 5px;
-  position: absolute;
-  top: 50px;
-  right: 10px;
-`;
-interface HeartProps {
-  filled: boolean;
-}
-
-const Heart = styled.div<HeartProps>`
-  width: 15px;
-  height: 15px;
-  background: ${(props) =>
-    props.filled
-      ? "url('/public/img/heart-icon.png')"
-      : "url('/public/img/heart-icon-empty.png')"};
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-`;
-
-const ProgressContainer = styled.div`
-  display: flex;
-  gap: 5px; /* ProgressBar 간 간격 */
-  justify-content: center; /* 중앙 정렬 */
-  flex: 1; /* 중앙에서 공간을 최대한 확보 */
-  z-index: 1; /* 다른 요소 위에 위치 */
-`;
-
-interface ProgressBarProps {
-  active: boolean;
-}
-
-const ProgressBar = styled.div<ProgressBarProps>`
-  width: 60px;
-  height: 5px;
-  background-color: ${(props) => (props.active ? '#50b498' : '#ccc')};
-`;
-
-const QuestionContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-top: 350px;
-  width: 310px; /* 사각형 너비 */
-  height: 107px; /* 사각형 높이 */
-  background-color: #50B498; /* 배경색 */
-  opacity: 0.8;
-  border-radius: 15px; /* 둥근 모서리 */
-  text-align: center; /* 텍스트 중앙 정렬 */
-`;
-
-const QuestionText = styled.p`
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff; /* 텍스트 색상 */
-  margin: 0; /* 상하 간격 제거 */
-  line-height: 1.5; /* 텍스트 줄 간격 */
-`;
-
-const AnswerContainer = styled.div`
-  display: flex;
-  gap: 10px;
-  margin: 30px 0;
-`;
-
-const AnswerBox = styled.div`
-  width: 40px;
-  height: 40px;
-  border: 2px solid #468585;
-  border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 18px;
-  font-weight: bold;
-`;
-
-const HintIcon = styled.button`
-  position: absolute;
-  top: 20px;
-  right: 35px;
-  transform: translateX(50%);
-  cursor: pointer;
-  background: none; /* 배경 제거 */
-  border: none; /* 테두리 제거 */
-  padding: 0; /* 기본 여백 제거 */
-
-  img {
-    width: 32px;
-    height: 32px;
-  }
-
-  &:focus {
-    outline: none; /* 버튼 클릭 시 나타나는 테두리 제거 */
-  }
-`;
-
-const Keyboard = styled.div`
-  position: absolute;
-  top: 680px;
-  bottom: 50px; /* 하단에서 50px 간격 */
-  display: grid;
-  grid-template-columns: repeat(6, 1fr); /* 6열 */
-  gap: 10px;
-  justify-content: center;
-  padding: 0 20px; /* 키보드 양쪽에 패딩 추가 */
-  z-index: 1;
-  max-height: 10vh; 
-`;
-
-const LetterButton = styled.button`
-  width: 50px;
-  height: 50px;
-  border: none;
-  background-color: #468585;
-  font-size: 20px;
-  font-weight: bold;
-  color: #fff;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background-color: #bbb;
-  }
-`;
-
-const Popup = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  text-align: center;
-`;
-
-const PopupButton = styled.button`
-  margin-top: 10px;
-  padding: 10px 20px;
-  border: none;
-  background-color: #50b498;
-  color: white;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
 `;
