@@ -116,6 +116,7 @@ const WordQuizGamePage = () => {
 
   return (
     <PageContainer>
+       <BackgroundContainer /> {/* Background 추가 */}
       <Header>
         <LivesContainer>
           {Array.from({ length: 3 }).map((_, index) => (
@@ -178,8 +179,18 @@ const PageContainer = styled.div`
   justify-content: flex-start;
   width: 100%;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #fff;
   padding: 20px;
+`;
+
+const BackgroundContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 630px; 
+  background-color: #DEf9C4; /* 연두색 배경 */
+  z-index: 0; /* 콘텐츠 뒤로 배치 */
 `;
 
 const Header = styled.div`
@@ -268,11 +279,15 @@ const HintButton = styled.button`
 
 const Keyboard = styled.div`
   position: absolute;
+  top: 680px;
   bottom: 50px; /* 하단에서 50px 간격 */
   display: grid;
   grid-template-columns: repeat(6, 1fr); /* 6열 */
   gap: 10px;
   justify-content: center;
+  padding: 0 20px; /* 키보드 양쪽에 패딩 추가 */
+  z-index: 1;
+  max-height: 10vh; 
 `;
 
 const LetterButton = styled.button`
