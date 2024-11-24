@@ -15,7 +15,7 @@ import ExchangePage from '../../pages/exchangePage/ExchangePage';
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<LoginPage />} />
       <Route path="/main" element={<MainPage />} />
       <Route path="/minigame" element={<MiniGamePage />} />
       <Route path="/flip-card/:level" element={<FlipCardGamePage />} />
