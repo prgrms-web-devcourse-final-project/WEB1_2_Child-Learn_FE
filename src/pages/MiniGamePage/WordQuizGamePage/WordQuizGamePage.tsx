@@ -215,10 +215,15 @@ interface HeartProps {
 }
 
 const Heart = styled.div<HeartProps>`
-  width: 20px;
-  height: 20px;
-  background-color: ${(props) => (props.filled ? 'red' : 'lightgray')};
-  clip-path: polygon(50% 0%, 100% 38%, 81% 100%, 50% 81%, 19% 100%, 0% 38%);
+  width: 15px;
+  height: 15px;
+  background: ${(props) =>
+    props.filled
+      ? "url('/public/img/heart-icon.png')"
+      : "url('/public/img/heart-icon-empty.png')"};
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 `;
 
 const ProgressContainer = styled.div`
