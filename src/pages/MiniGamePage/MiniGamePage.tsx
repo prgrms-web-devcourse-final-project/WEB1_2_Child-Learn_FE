@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUserStore } from '../../app/providers/state/zustand/userStore';
 import { useFlipCardStore } from '../../features/minigame/flipcardgame/model/filpCardStore'
+import { useWordQuizStore } from '../../features/minigame/wordquizgame/model/wordQuizStore'
 import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -8,6 +9,7 @@ import styled from 'styled-components';
 const MiniGamePage = () => {
   const { username, points, setUser } = useUserStore();
   const { isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed } = useFlipCardStore();
+  const { setLevel: setWordQuizLevel } = useWordQuizStore();
   const { setLotteries, isPlayable: isLotteryPlayable, setLastPlayedDate: setLotteryLastPlayedDate } = useLotteryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
@@ -40,6 +42,12 @@ const MiniGamePage = () => {
       navigate(`/flip-card/${level}`);
     }
   };  
+
+  // 낱말 퀴즈 플레이 핸들러
+  const handleWordQuizPlay = (level: 'beginner' | 'medium' | 'advanced') => {
+    setWordQuizLevel(level); // 난이도 설정
+    navigate(`/word-quiz/${level}`);
+  };
 
   // 로또(숫자를 맞혀라) 플레이 핸들러
   const handleLotteryPlay = () => {
@@ -158,6 +166,28 @@ const MiniGamePage = () => {
     </ModalButton>
   </>
 )}
+              </>
+            )}
+            {selectedGame === '낱말 퀴즈' && (
+              <>
+                <ModalButton
+                  level="beginner"
+                  onClick={() => handleWordQuizPlay('beginner')}
+                >
+                  쉬움
+                </ModalButton>
+                <ModalButton
+                  level="medium"
+                  onClick={() => handleWordQuizPlay('medium')}
+                >
+                  보통
+                </ModalButton>
+                <ModalButton
+                  level="advanced"
+                  onClick={() => handleWordQuizPlay('advanced')}
+                >
+                  어려움
+                </ModalButton>
               </>
             )}
           </ModalContent>
