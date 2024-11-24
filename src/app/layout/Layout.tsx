@@ -3,6 +3,7 @@ import styled, { createGlobalStyle } from 'styled-components';
 import { useLocation } from 'react-router-dom';
 import Header from '../../widgets/Header/index'; // Header 컴포넌트 import
 import FloatingGNB from '../../widgets/Footer/index';
+import { BackButton } from '../../widgets/BackButton/index';
 
 // 헤더를 숨길 페이지 경로들
 const HIDDEN_HEADER_PATHS = [
@@ -16,6 +17,8 @@ const HIDDEN_GNB_PATHS = [
   '/flip-card', '/word-quiz'
 ];
 
+// BackButton만 표시할 페이지 경로들
+const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz'];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -27,13 +30,17 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   const shouldShowGNB = !HIDDEN_GNB_PATHS.some((path) =>
     location.pathname.startsWith(path)
   );
+  const shouldShowBackButton = SHOW_BACK_BUTTON_PATHS.some((path) =>
+    location.pathname.startsWith(path)
+  );
 
   return (
     <>
       <GlobalStyles />
       <AppWrapper>
         <AppContainer>
-          {shouldShowHeader && <Header />}
+        {shouldShowHeader && <Header />}
+          {!shouldShowHeader && shouldShowBackButton && <BackButton />}
           <ScrollContainer>{children}</ScrollContainer>
           {shouldShowGNB && <FloatingGNB />}
         </AppContainer>
