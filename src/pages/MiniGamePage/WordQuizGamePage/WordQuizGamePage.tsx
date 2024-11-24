@@ -207,8 +207,8 @@ const LivesContainer = styled.div`
   display: flex;
   gap: 5px;
   position: absolute;
-  top: 10px;
-  left: 20px;
+  top: 50px;
+  right: 10px;
 `;
 interface HeartProps {
   filled: boolean;
@@ -243,8 +243,10 @@ const Timer = styled.div`
   font-size: 18px;
   font-weight: bold;
   position: absolute;
-  top: 10px;
-  right: 20px;
+  justify-content: center;
+  top: 50px;
+  left: 50%; /* 가로 중앙 정렬 */
+  transform: translateX(-50%); /* 중앙 정렬 보정 */
 `;
 
 const QuestionContainer = styled.div`
@@ -252,7 +254,7 @@ const QuestionContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 400px;
+  margin-top: 350px;
   width: 310px; /* 사각형 너비 */
   height: 107px; /* 사각형 높이 */
   background-color: #50B498; /* 배경색 */
@@ -272,7 +274,7 @@ const QuestionText = styled.p`
 const AnswerContainer = styled.div`
   display: flex;
   gap: 10px;
-  margin: 20px 0;
+  margin: 30px 0;
 `;
 
 const AnswerBox = styled.div`
@@ -289,14 +291,21 @@ const AnswerBox = styled.div`
 
 const HintIcon = styled.button`
   position: absolute;
-  top: 10px;
-  right: 10px; /* 화면 중앙에서 약간 오른쪽 */
+  top: 20px;
+  right: 35px;
   transform: translateX(50%);
   cursor: pointer;
+  background: none; /* 배경 제거 */
+  border: none; /* 테두리 제거 */
+  padding: 0; /* 기본 여백 제거 */
 
   img {
     width: 32px;
     height: 32px;
+  }
+
+  &:focus {
+    outline: none; /* 버튼 클릭 시 나타나는 테두리 제거 */
   }
 `;
 
