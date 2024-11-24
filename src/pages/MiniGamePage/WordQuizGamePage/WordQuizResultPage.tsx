@@ -1,20 +1,22 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import useWordQuizStore from './store/useWordQuizStore';
+import { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
 
 const WordQuizResultPage = () => {
-    const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
+  const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
   const navigate = useNavigate();
-  const { totalQuestions, correctAnswers, resetQuiz } = useWordQuizStore(); 
+  const { correctAnswers, resetQuiz, words } = useWordQuizStore();
 
-   // 별의 개수 계산 (최대 별 3개)
-   const stars = Math.min(correctAnswers, totalQuestions);
+  // 총 문제 수 계산 (words 배열의 길이)
+  const totalQuestions = words.length;
 
-   const handleNavigate = () => {
-     resetQuiz(); // 전역 상태 초기화
-     navigate('/minigame');
-   }; 
+  // 별의 개수 계산 (최대 별 3개)
+  const stars = Math.min(correctAnswers, 3); // 최대 별 3개
 
+  const handleNavigate = () => {
+    resetQuiz(); // 퀴즈 상태 초기화
+    navigate('/minigame'); // 미니게임 페이지로 이동
+  };
 
   return (
     <Container>
@@ -24,7 +26,7 @@ const WordQuizResultPage = () => {
           <Star key={index} src="/public/img/star.png" alt="Star" />
         ))}
       </StarsContainer>
-      <PointsText>총 {stars * 100} Points를 획득하셨습니다!</PointsText>
+      <PointsText>총 {correctAnswers * 100} Points를 획득하셨습니다!</PointsText>
       <NavigateButton onClick={handleNavigate}>
         미니게임 페이지로 돌아가기
       </NavigateButton>

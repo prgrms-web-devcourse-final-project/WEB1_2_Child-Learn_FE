@@ -122,6 +122,11 @@ const WordQuizGamePage = () => {
             <Heart key={index} filled={index < lives} />
           ))}
         </LivesContainer>
+        <ProgressContainer>
+          {Array.from({ length: words.length }).map((_, index) => (
+            <ProgressBar key={index} active={index <= currentQuestionIndex} />
+          ))}
+        </ProgressContainer>
         <Timer>⏰ {timeLeft < 10 ? `0${timeLeft}` : timeLeft}</Timer>
       </Header>
       <QuestionContainer>
@@ -197,6 +202,22 @@ const Heart = styled.div<HeartProps>`
   height: 20px;
   background-color: ${(props) => (props.filled ? 'red' : 'lightgray')};
   clip-path: polygon(50% 0%, 100% 38%, 81% 100%, 50% 81%, 19% 100%, 0% 38%);
+`;
+
+const ProgressContainer = styled.div`
+  display: flex;
+  gap: 5px;
+  align-items: center;
+`;
+
+interface ProgressBarProps {
+  active: boolean;
+}
+
+const ProgressBar = styled.div<ProgressBarProps>`
+  width: 20px;
+  height: 5px;
+  background-color: ${(props) => (props.active ? '#50b498' : '#ccc')};
 `;
 
 const Timer = styled.div`
