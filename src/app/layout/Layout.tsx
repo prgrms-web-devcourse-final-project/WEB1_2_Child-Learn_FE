@@ -23,6 +23,9 @@ const HIDDEN_GNB_PATHS = [
 const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz'];
 
 
+// BackButton을 숨길 페이지 경로 추가
+const HIDDEN_BACK_BUTTON_PATHS = ['/word-quiz/result'];
+
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   
@@ -33,9 +36,13 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   const shouldShowGNB = !HIDDEN_GNB_PATHS.some((path) =>
     location.pathname.startsWith(path)
   );
-  const shouldShowBackButton = SHOW_BACK_BUTTON_PATHS.some((path) =>
-    location.pathname.startsWith(path)
-  );
+  const shouldShowBackButton =
+    SHOW_BACK_BUTTON_PATHS.some((path) =>
+      location.pathname.startsWith(path)
+    ) &&
+    !HIDDEN_BACK_BUTTON_PATHS.some((path) =>
+      location.pathname.startsWith(path)
+    );
 
   return (
     <>

@@ -1,43 +1,82 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import useWordQuizStore from './store/useWordQuizStore';
-
-const sharedWords = [
-  { word: '시장', explanation: '기업의 주식 발행 가격 총액을 뜻하는 단어', hint: '첫 글자는 "시"입니다.' },
-  { word: '경제', explanation: '사람들의 재화와 서비스 교환에 대한 활동을 뜻하는 단어', hint: '첫 글자는 "경"입니다.' },
-  { word: '투자', explanation: '미래의 이익을 기대하며 자산을 구매하는 활동', hint: '첫 글자는 "투"입니다.' },
-];
+import { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
+import { Header } from '../../../features/minigame/wordquizgame/ui/Header';
+import { Question } from '../../../features/minigame/wordquizgame/ui/Question';
+import { Answer } from '../../../features/minigame/wordquizgame/ui/Answer';
+import { Keyboard } from '../../../features/minigame/wordquizgame/ui/KeyBoard';
+import { Popup } from '../../../features/minigame/wordquizgame/ui/Popup';
+import { Word } from '../../../features/minigame/wordquizgame/types/wordTypes';
 
 const WordQuizGamePage = () => {
-  const { level } = useParams();
-  const { incrementCorrectAnswers, decrementLives, resetQuiz, lives } = useWordQuizStore();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [userAnswer, setUserAnswer] = useState<string[]>([]);
-  const [showHint, setShowHint] = useState(false);
-  const [showCorrectPopup, setShowCorrectPopup] = useState(false);
-  const [showIncorrectPopup, setShowIncorrectPopup] = useState(false);
+  const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
+  const {
+    incrementCorrectAnswers,
+    decrementLives,
+    resetQuiz,
+    setLevel,
+    setWords,
+    lives,
+    words,
+    currentQuestionIndex,
+    nextQuestion,
+  } = useWordQuizStore();
+
+  const [timeLeft, setTimeLeft] = useState(60); // 남은 시간
+  const [userAnswer, setUserAnswer] = useState<string[]>([]); // 현재 유저 답변
+  const [showHint, setShowHint] = useState(false); // 힌트 표시 여부
+  const [showCorrectPopup, setShowCorrectPopup] = useState(false); // 정답 팝업 표시 여부
+  const [showIncorrectPopup, setShowIncorrectPopup] = useState(false); // 오답 팝업 표시 여부
+
   const navigate = useNavigate();
 
-  const alphabet = '가나다라마바사아자차카타파하';
-  const correctWord = sharedWords[currentQuestionIndex]?.word;
+  const currentWord = words[currentQuestionIndex]; // 현재 단어
+  const correctWord = currentWord?.word || ''; // 정답 단어
 
-  // 키보드 글자 생성 (currentQuestionIndex 변경 시 새로 생성)
+  // 키보드 글자 생성
+  const alphabet = '가나다라마바사아자차카타파하';
   const keyboardLetters = useMemo(() => {
-    const uniqueLetters = new Set<string>(correctWord.split('')); // 정답 단어의 모든 글자를 먼저 추가
-    while (uniqueLetters.size < 10) {
+    if (!correctWord) return [];
+    const uniqueLetters = new Set<string>(correctWord.split('')); // 정답 단어의 모든 글자를 추가
+    while (uniqueLetters.size < 12) {
       const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
       uniqueLetters.add(randomLetter);
     }
-    return Array.from(uniqueLetters).sort(() => Math.random() - 0.5); // 랜덤으로 섞음
-  }, [currentQuestionIndex]); // currentQuestionIndex가 변경될 때마다 갱신
+    return Array.from(uniqueLetters).sort(() => Math.random() - 0.5); // 랜덤 섞음
+  }, [correctWord]);
 
+  // 전체 단어 리스트
+  const wordList: Word[] = [
+    { word_id: 1, word: '시장', explanation: '기업의 주식 발행 가격 총액을 뜻하는 단어', hint: '첫 글자는 "시"입니다.' },
+    { word_id: 2, word: '경제', explanation: '사람들의 재화와 서비스 교환에 대한 활동을 뜻하는 단어', hint: '첫 글자는 "경"입니다.' },
+    { word_id: 3, word: '투자', explanation: '미래의 이익을 기대하며 자산을 구매하는 활동', hint: '첫 글자는 "투"입니다.' },
+    { word_id: 4, word: '관리자', explanation: '시스템을 운영하고 관리하는 역할을 맡은 사람', hint: '첫 글자는 "관"입니다.' },
+    { word_id: 5, word: '소프트웨어', explanation: '컴퓨터 프로그램과 관련된 모든 것', hint: '첫 글자는 "소"입니다.' },
+    { word_id: 6, word: '데이터베이스', explanation: '데이터를 체계적으로 저장하는 시스템', hint: '첫 글자는 "데"입니다.' },
+    { word_id: 7, word: '알고리즘', explanation: '문제를 해결하는 절차나 방법', hint: '첫 글자는 "알"입니다.' },
+    { word_id: 8, word: '컴퓨터', explanation: '정보를 처리하는 기계', hint: '첫 글자는 "컴"입니다.' },
+  ];
+
+  // 랜덤으로 3개의 단어 선택
+  const selectRandomWords = (list: Word[], count: number): Word[] => {
+    const shuffled = [...list].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  };
+
+  // 초기화: 난이도 설정 및 문제 리스트
+  useEffect(() => {
+    resetQuiz(); // 퀴즈 초기화
+    setLevel(level || 'beginner'); // 난이도 설정
+    const randomWords = selectRandomWords(wordList, 3); // 랜덤 단어 3개 선택
+    setWords(randomWords); // 문제 리스트 설정
+  }, [level, resetQuiz, setLevel, setWords]);
+
+  // 타이머 초기화
   useEffect(() => {
     let initialTime = 60;
     if (level === 'medium') initialTime = 40;
     if (level === 'advanced') initialTime = 20;
-
     setTimeLeft(initialTime);
   }, [level]);
 
@@ -51,10 +90,11 @@ const WordQuizGamePage = () => {
         return prev - 1;
       });
     }, 1000);
-  
-    return () => clearInterval(timer);
-  }, [navigate, level]);  
 
+    return () => clearInterval(timer);
+  }, [navigate, level]);
+
+  // 키보드 클릭 핸들러
   const handleSelectLetter = (letter: string) => {
     if (!correctWord || userAnswer.length >= correctWord.length) return;
 
@@ -64,27 +104,29 @@ const WordQuizGamePage = () => {
     if (updatedAnswer.join('') === correctWord) {
       incrementCorrectAnswers(); // 맞춘 문제 증가
       setShowCorrectPopup(true);
-    } else if (updatedAnswer.join('').length === correctWord.length) {
+    } else if (updatedAnswer.length === correctWord.length) {
       decrementLives(); // 목숨 감소
       setShowIncorrectPopup(true);
     }
   };
 
+  // 다음 문제로 이동
   const handleNextQuestion = () => {
     setShowCorrectPopup(false);
     setShowIncorrectPopup(false);
     setUserAnswer([]);
 
-    if (currentQuestionIndex + 1 < sharedWords.length) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    if (currentQuestionIndex + 1 < words.length) {
+      nextQuestion(); // 다음 문제로 이동
     } else {
       navigate(`/word-quiz/result/${level}`); // 모든 문제를 다 풀었을 때 결과 페이지로 이동
     }
   };
 
+  // 목숨이 0이 되면 결과 페이지로 이동
   useEffect(() => {
     if (lives === 0) {
-      navigate(`/word-quiz/result/${level}`); // 목숨이 0이 되었을 때 결과 페이지로 이동
+      navigate(`/word-quiz/result/${level}`);
     }
   }, [lives, level, navigate]);
 
@@ -93,59 +135,35 @@ const WordQuizGamePage = () => {
     setUserAnswer([]);
   };
 
-  const handleRestart = () => {
-    resetQuiz();
-    setCurrentQuestionIndex(0);
-    setTimeLeft(60);
-    setUserAnswer([]);
-  };
-
-  const currentWord = sharedWords[currentQuestionIndex];
-
   return (
     <PageContainer>
-      <Header>
-        <LivesContainer>
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Heart key={index} filled={index < lives} />
-          ))}
-        </LivesContainer>
-        <Timer>⏰ {timeLeft < 10 ? `0${timeLeft}` : timeLeft}</Timer>
-      </Header>
-      <QuestionContainer>
-        <QuestionText>{currentWord?.explanation}</QuestionText>
-      </QuestionContainer>
-      <AnswerContainer>
-        {Array.from({ length: currentWord?.word.length || 0 }).map((_, index) => (
-          <AnswerBox key={index}>{userAnswer[index] || ''}</AnswerBox>
-        ))}
-      </AnswerContainer>
-      <HintButton onClick={() => setShowHint(true)}>💡 힌트</HintButton>
-      {showHint && (
-        <Popup>
-          <p>{currentWord?.hint}</p>
-          <PopupButton onClick={() => setShowHint(false)}>알 것 같아요!</PopupButton>
-        </Popup>
-      )}
-      <Keyboard>
-        {keyboardLetters.map((letter, index) => (
-          <LetterButton key={index} onClick={() => handleSelectLetter(letter)}>
-            {letter}
-          </LetterButton>
-        ))}
-      </Keyboard>
+      <BackgroundContainer />
+      <Header
+        timeLeft={timeLeft}
+        lives={lives}
+        progress={words.map((_, i) => i <= currentQuestionIndex)}
+      />
+      <Question question={currentWord?.explanation || ''} />
+      <Answer answerLength={correctWord.length} userAnswer={userAnswer} />
+      <HintIcon onClick={() => setShowHint(true)}>💡</HintIcon>
+      {showHint && <Popup message={currentWord?.hint || ''} buttonText="알 것 같아요!" onClose={() => setShowHint(false)} />}
       {showCorrectPopup && (
-        <Popup>
-          <p>😃 정답!</p>
-          <PopupButton onClick={handleNextQuestion}>다음 문제</PopupButton>
-        </Popup>
-      )}
-      {showIncorrectPopup && (
-        <Popup>
-          <p>😢 오답!</p>
-          <PopupButton onClick={handleCloseIncorrectPopup}>다시 도전해보세요!</PopupButton>
-        </Popup>
-      )}
+  <Popup
+    message="😃 정답!"
+    buttonText="다음 문제"
+    onClose={handleNextQuestion}
+  />
+)}
+
+{showIncorrectPopup && (
+  <Popup
+    message="😢 오답!"
+    buttonText="다시 도전해봐요!"
+    onClose={handleCloseIncorrectPopup}
+  />
+)}
+
+      <Keyboard letters={keyboardLetters} onSelect={handleSelectLetter} />
     </PageContainer>
   );
 };
@@ -154,125 +172,41 @@ export default WordQuizGamePage;
 
 // Styled Components
 const PageContainer = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   width: 100%;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #fff;
   padding: 20px;
 `;
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 390px;
+const BackgroundContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 630px;
+  background-color: #DEf9C4;
+  z-index: 0;
 `;
 
-const LivesContainer = styled.div`
-  display: flex;
-  gap: 5px;
-`;
-interface HeartProps {
-  filled: boolean;
-}
-
-const Heart = styled.div<HeartProps>`
-  width: 20px;
-  height: 20px;
-  background-color: ${(props) => (props.filled ? 'red' : 'lightgray')};
-  clip-path: polygon(50% 0%, 100% 38%, 81% 100%, 50% 81%, 19% 100%, 0% 38%);
-`;
-
-const Timer = styled.div`
-  font-size: 18px;
-  font-weight: bold;
-`;
-
-const QuestionContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-`;
-
-const QuestionText = styled.p`
-  margin-top: 10px;
-  font-size: 16px;
-  text-align: center;
-`;
-
-const AnswerContainer = styled.div`
-  display: flex;
-  gap: 10px;
-  margin: 20px 0;
-`;
-
-const AnswerBox = styled.div`
-  width: 40px;
-  height: 40px;
-  border: 2px solid #ccc;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 18px;
-  font-weight: bold;
-`;
-
-const HintButton = styled.button`
-  background-color: #50b498;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
+const HintIcon = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  transform: translateX(50%);
   cursor: pointer;
-`;
-
-const Keyboard = styled.div`
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 20px;
-`;
-
-const LetterButton = styled.button`
-  width: 50px;
-  height: 50px;
-  border: none;
-  background-color: #ddd;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #bbb;
+  background: none; /* 배경 제거 */
+  border: none; /* 테두리 제거 */
+  padding: 0; /* 기본 여백 제거 */
+  img {
+    width: 32px;
+    height: 32px;
   }
-`;
-
-const Popup = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  text-align: center;
-`;
-
-const PopupButton = styled.button`
-  margin-top: 10px;
-  padding: 10px 20px;
-  border: none;
-  background-color: #50b498;
-  color: white;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
+  &:focus {
+    outline: none; /* 버튼 클릭 시 나타나는 테두리 제거 */
+  }
 `;

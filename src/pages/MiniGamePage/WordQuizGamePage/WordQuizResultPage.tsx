@@ -1,32 +1,30 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import useWordQuizStore from './store/useWordQuizStore';
+import { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
 
 const WordQuizResultPage = () => {
-    const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
   const navigate = useNavigate();
-  const { totalQuestions, correctAnswers, resetQuiz } = useWordQuizStore(); 
+  const { correctAnswers, resetQuiz } = useWordQuizStore();
 
-   // 별의 개수 계산 (최대 별 3개)
-   const stars = Math.min(correctAnswers, totalQuestions);
+  // 별의 개수 계산 (최대 별 3개)
+  const stars = Math.min(correctAnswers, 3); // 최대 별 3개
 
-   const handleNavigate = () => {
-     resetQuiz(); // 전역 상태 초기화
-     navigate('/minigame');
-   }; 
-
+  const handleNavigate = () => {
+    resetQuiz(); // 퀴즈 상태 초기화
+    navigate('/minigame'); // 미니게임 페이지로 이동
+  };
 
   return (
     <Container>
-      <CheckImage src="/public/img/Check.png" alt="result" />
+      <CheckImage/>
       <StarsContainer>
         {Array.from({ length: stars }).map((_, index) => (
           <Star key={index} src="/public/img/star.png" alt="Star" />
         ))}
       </StarsContainer>
-      <PointsText>총 {stars * 100} Points를 획득하셨습니다!</PointsText>
+      <PointsText>총 {correctAnswers * 100} Points를 획득하셨습니다!</PointsText>
       <NavigateButton onClick={handleNavigate}>
-        미니게임 페이지로 돌아가기
+        미니게임 페이지로 이동하기
       </NavigateButton>
     </Container>
   );
@@ -39,9 +37,10 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 100vh;
   background-color: #f5f5f5;
+  padding-top: 200px; /* 상단 여백 추가 */
 `;
 
 const CheckImage = styled.img`
@@ -74,7 +73,8 @@ const NavigateButton = styled.button`
   background-color: #50b498;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 100px;
+  width: 302px;
   font-size: 16px;
   cursor: pointer;
 
