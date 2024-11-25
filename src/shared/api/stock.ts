@@ -4,16 +4,27 @@ import { MidStock, StockWithDetails, StockPrice, TradeResponse, TradeAvailabilit
 const BASE_URL = '/api/v1/mid-stocks';
 
 export const stockApi = {
-  // 중급 종목 리스트 조회
-  getStockList: async (): Promise<{ data: MidStock[] }> => {
+  getStockList: async (): Promise<MidStock[]> => {
     try {
       const response = await fetch(`${BASE_URL}/list`);
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
-      console.log('Stock list response:', data); // 디버깅용
-      return data;
+      console.log('Stock API Response:', data); // 응답 데이터 확인
+      
+      // data가 바로 배열인 경우
+      if (Array.isArray(data)) {
+        return data;
+      }
+      // data 객체 안에 배열이 있는 경우
+      if (data && Array.isArray(data.data)) {
+        return data.data;
+      }
+      
+      throw new Error('Invalid response format');
     } catch (error) {
-      console.error('Failed to fetch stocks:', error);
+      console.error('Stock API Error:', error);
       throw error;
     }
   },

@@ -5,20 +5,7 @@ import StockSlider from '../../../features/Intermediate_chat/ui/StockSlider';
 import { MidStock } from '../../../features/Intermediate_chat/types/stock';
 import { stockApi } from '@/shared/api/stock';
 
-const PageContainer = styled.div`
-  padding: 20px;
-  background-color: #ffffff;
-  min-height: 100vh;
-`;
 
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 1.2rem;
-  color: #666;
-`;
 
 const IntermediatePage: React.FC = () => {
   const [stocks, setStocks] = useState<MidStock[]>([]);
@@ -27,8 +14,15 @@ const IntermediatePage: React.FC = () => {
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        const response = await stockApi.getStockList();
-        setStocks(response.data);
+        const response = await stockApi.getStockList() as { data: MidStock[] } | MidStock[];
+        
+        if (Array.isArray(response)) {
+          setStocks(response);
+        } else if ('data' in response) {
+          setStocks(response.data);
+        } else {
+          console.error('Unexpected response format:', response);
+        }
       } catch (error) {
         console.error('Failed to fetch stocks:', error);
       } finally {
@@ -39,7 +33,7 @@ const IntermediatePage: React.FC = () => {
     fetchStocks();
   }, []);
 
-  if (isLoading) {
+  if (isLoading || stocks.length === 0) {
     return (
       <PageContainer>
         <LoadingContainer>
@@ -55,5 +49,20 @@ const IntermediatePage: React.FC = () => {
     </PageContainer>
   );
 };
+
+const PageContainer = styled.div`
+  padding: 20px;
+  background-color: #ffffff;
+  min-height: 100vh;
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: #666;
+`;
 
 export default IntermediatePage;

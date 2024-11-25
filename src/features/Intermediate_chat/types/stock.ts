@@ -41,3 +41,7 @@ export interface StockWithDetails {
   holdings?: number;
   // 필요한 다른 속성들 추가
 }
+export interface MidStock {
+  midStockId: number;
+  midName: string;
+}

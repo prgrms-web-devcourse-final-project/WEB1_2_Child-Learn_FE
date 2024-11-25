@@ -1,5 +1,4 @@
-// features/Intermediate_chat/ui/StockSlider.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { stockApi } from '@/shared/api/stock';
 import { ChevronLeft, ChevronRight, Plus, Minus } from 'lucide-react';
@@ -22,6 +21,390 @@ interface StockSliderProps {
   stocks: MidStock[];
 }
 
+const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
+  // State declarations
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [showActions, setShowActions] = useState(false);
+  const [showTradeModal, setShowTradeModal] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
+  const [quantity, setQuantity] = useState(1);
+  const [price, setPrice] = useState('');
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [stockList, setStockList] = useState<MidStock[]>([]);
+  const [priceData, setPriceData] = useState<StockPrice[]>([]);
+  const [tradeAvailability, setTradeAvailability] = useState<TradeAvailability>({
+    isPossibleBuy: false,
+    isPossibleSell: false
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
+  const [hasTradedToday, setHasTradedToday] = useState(false);
+
+  const currentStock = useMemo(() => stockList[currentSlide], [stockList, currentSlide]);
+  const [showTradeCompletionModal, setShowTradeCompletionModal] = useState(false);
+
+  useEffect(() => {
+    if (Array.isArray(stocks) && stocks.length > 0) {
+      setStockList(stocks);
+      setIsLoading(false);
+    }
+  }, [stocks]);
+
+  const loadPriceData = async (stock: MidStock) => {
+    if (!stock?.midStockId) return;
+    try {
+      const data = await stockApi.getStockPrices(stock.midStockId);
+      if (Array.isArray(data) && data.length > 0) {
+        setPriceData(data);
+        setPrice(data[0].avgPrice.toString());
+        setTotalPrice(data[0].avgPrice * quantity);
+        const availability = await stockApi.checkTradeAvailability(stock.midStockId);
+        setTradeAvailability(availability);
+      }
+    } catch (err) {
+      setError('Failed to load price data');
+    }
+  };
+
+  useEffect(() => {
+    if (currentStock) {
+      loadPriceData(currentStock);
+    }
+  }, [currentStock]);
+
+  const handleNextSlide = () => {
+    const nextSlide = (currentSlide + 1) % stockList.length;
+    setCurrentSlide(nextSlide);
+    setShowActions(false);
+    setPriceData([]);
+    loadPriceData(stockList[nextSlide]);
+  };
+
+  const handlePrevSlide = () => {
+    const prevSlide = (currentSlide - 1 + stockList.length) % stockList.length;
+    setCurrentSlide(prevSlide);
+    setShowActions(false);
+    setPriceData([]);
+    loadPriceData(stockList[prevSlide]);
+  };
+
+  const handleTradeClick = async (type: 'buy' | 'sell') => {
+    if (hasTradedToday) {
+      setTradeType(type);
+      setShowLimitModal(true);
+      return;
+    }
+    setTradeType(type);
+    setShowTradeModal(true);
+    setQuantity(1);
+    if (priceData.length > 0) {
+      setPrice(priceData[0].avgPrice.toString());
+      setTotalPrice(priceData[0].avgPrice);
+    }
+  };
+
+  const handleTrade = async () => {
+    if (!currentStock || !price) return;
+    
+    try {
+      const tradePoint = parseInt(price.replace(/,/g, '')) * quantity;
+      
+      const result = await (tradeType === 'buy' 
+        ? stockApi.buyStock(currentStock.midStockId, tradePoint)
+        : stockApi.sellStock(currentStock.midStockId, tradePoint));
+
+      const currentPrice = parseInt(price.replace(/,/g, ''));
+      
+      setTradeResult({
+        success: !result.warning,
+        message: result.warning ? `${tradeType === 'buy' ? '매수' : '매도'} 실패` : `${tradeType === 'buy' ? '매수' : '매도'} 완료`,
+        tradeType: tradeType,
+        stockName: currentStock.midName,
+        price: tradePoint,
+        quantity: quantity,
+        totalPrice: tradePoint
+      });
+
+      if (!result.warning) {
+        setShowTradeModal(false);
+        setShowResultModal(true);
+        setHasTradedToday(true);
+      }
+      
+    } catch (err) {
+      console.error('Trade error:', err);
+      setTradeResult({
+        success: false,
+        message: '거래 처리 중 오류가 발생했습니다.',
+        tradeType: tradeType,
+        stockName: currentStock.midName,
+        price: parseInt(price.replace(/,/g, '')),
+        quantity: quantity,
+        totalPrice: 0
+      });
+      setShowResultModal(true);
+    }
+};
+
+  const handleQuantityChange = (delta: number) => {
+    const newQuantity = Math.max(1, quantity + delta);
+    setQuantity(newQuantity);
+    const numPrice = price === '' ? 0 : parseInt(price.replace(/,/g, ''));
+    setTotalPrice(numPrice * newQuantity);
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    if (value === '') {
+      setPrice('');
+      setTotalPrice(0);
+      return;
+    }
+    const numValue = parseInt(value);
+    setPrice(numValue.toLocaleString());
+    setTotalPrice(numValue * quantity);
+  };
+
+  if (isLoading || !stockList.length) {
+    return <div>Loading stocks...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!currentStock) {
+    return null;
+  }
+
+  return (
+    <SlideContainer>
+      <PrevButton onClick={handlePrevSlide} disabled={currentSlide === 0} $show={!showActions}>
+        <ChevronLeft size={24} />
+      </PrevButton>
+
+      <ChartContainer onClick={() => setShowActions(true)}>
+        {currentStock && priceData.length > 0 && (
+          <StockChart 
+            stockId={currentStock.midStockId}
+            title={`${currentStock.midName} 주가 차트`}
+            data={priceData}
+          />
+        )}
+      </ChartContainer>
+
+      {showActions && (
+        <>
+          <ActionButtons>
+            <BuyButton 
+              onClick={() => handleTradeClick('buy')} 
+              disabled={!tradeAvailability.isPossibleBuy}
+            >
+              매수
+            </BuyButton>
+            <SellButton 
+              onClick={() => handleTradeClick('sell')}
+              disabled={!tradeAvailability.isPossibleSell}
+            >
+              매도
+            </SellButton>
+          </ActionButtons>
+          
+          <ArticleContainer>
+            <ArticleComponent article={{
+              id: currentSlide + 1,
+              article_id: 1001,
+              stock_symbol: currentStock.midName,
+              trend_prediction: TrendPrediction.UP,
+              content: `${currentStock.midName} 분석...`,
+              relevance: Relevance.HIGH,
+              created_at: new Date().toISOString(),
+              duration: 60,
+              mid_stock_id: currentStock.midStockId,
+              adv_id: 1
+            }} />
+          </ArticleContainer>
+        </>
+      )}
+
+      {showTradeModal && (
+        <>
+          <ModalOverlay onClick={() => setShowTradeModal(false)} />
+          <ModalContainer>
+            <ModalTitle>
+              {tradeType === 'buy' ? '매수하기' : '매도하기'}
+            </ModalTitle>
+            
+            <ModalContent>
+              <FormGroup>
+                <Label>{currentStock.midName}</Label>
+                <Input
+                  type="text"
+                  value={price}
+                  onChange={handlePriceChange}
+                  placeholder={`${tradeType === 'buy' ? '매수가' : '매도가'}를 입력하세요`}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>수량</Label>
+                <QuantityControl>
+                  <QuantityButton
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={quantity <= 1}
+                  >
+                    <Minus size={16} />
+                  </QuantityButton>
+                  <QuantityInput
+                    type="text"
+                    value={quantity}
+                    disabled
+                  />
+                  <QuantityButton onClick={() => handleQuantityChange(1)}>
+                    <Plus size={16} />
+                  </QuantityButton>
+                </QuantityControl>
+              </FormGroup>
+
+              <FormGroup>
+                <Label>총 포인트</Label>
+                <Input
+                  type="text"
+                  value={totalPrice.toLocaleString()}
+                  disabled
+                />
+              </FormGroup>
+
+              <ButtonGroup>
+                <ConfirmButton 
+                  onClick={handleTrade}
+                  disabled={!price || price === '0'}
+                  type={tradeType}
+                >
+                  {tradeType === 'buy' ? '매수하기' : '매도하기'}
+                </ConfirmButton>
+                <CancelButton onClick={() => setShowTradeModal(false)}>
+                  나가기
+                </CancelButton>
+              </ButtonGroup>
+            </ModalContent>
+          </ModalContainer>
+        </>
+      )}
+
+      {showResultModal && tradeResult && (
+        <>
+           <ModalOverlay />
+          <ModalContainer>
+            <ModalTitle>
+              주식 {tradeResult.tradeType === 'buy' ? '매수' : '매도'}주문
+            </ModalTitle>
+            <ResultModalContent>
+              <ResultRow>
+                <ResultLabel>종목명</ResultLabel>
+                <ResultValue>{tradeResult.stockName}</ResultValue>
+              </ResultRow>
+              <ResultRow>
+                <ResultLabel>{tradeResult.tradeType === 'buy' ? '매수가격' : '매도가격'}</ResultLabel>
+                <ResultValue>{tradeResult.price.toLocaleString()}</ResultValue>
+              </ResultRow>
+              <ResultRow>
+                <ResultLabel>주문수량</ResultLabel>
+                <ResultValue>{tradeResult.quantity}</ResultValue>
+              </ResultRow>
+              <ResultRow>
+                <ResultLabel>포인트가격</ResultLabel>
+                <ResultValue>{tradeResult.totalPrice.toLocaleString()}</ResultValue>
+              </ResultRow>
+              <ResultButtonGroup>
+                <SingleButton 
+                  color="#1B63AB" 
+                  onClick={() => {
+                    setShowResultModal(false);
+                    setShowTradeCompletionModal(true);
+                  }}
+                >
+                  확인
+                </SingleButton>
+              </ResultButtonGroup>
+            </ResultModalContent>
+          </ModalContainer>
+        </>
+      )}
+
+{showTradeCompletionModal && tradeResult && (
+  <>
+    <ModalOverlay />
+    <ModalContainer>
+      <ModalTitle>
+        {tradeResult.tradeType === 'buy' ? '매수' : '매도'}가 완료되었습니다
+      </ModalTitle>
+      <CompletionModalContent>
+      <CompletionMessage>
+  {`${tradeResult.stockName} ${tradeResult.quantity}주를 
+  ${tradeResult.price.toLocaleString()}포인트에 ${tradeResult.tradeType === 'buy' ? '매수' : '매도'}하였습니다.`}
+</CompletionMessage>
+        <CompletionButtonGroup>
+        <CompletionButton 
+  onClick={() => setShowTradeCompletionModal(false)}
+  color="#1B63AB"
+>
+  확인
+</CompletionButton>
+        </CompletionButtonGroup>
+      </CompletionModalContent>
+    </ModalContainer>
+  </>
+)}
+
+
+      {showLimitModal && (
+        <>
+          <ModalOverlay />
+          <ModalContainer>
+            <ModalTitle>거래 제한</ModalTitle>
+            <LimitModalContent>
+              <LimitText>
+                오늘은 더 이상 {tradeType === 'buy' ? '매수' : '매도'}를 할 수 없습니다.
+              </LimitText>
+              <ResultButtonGroup>
+                <SingleButton color="#1B63AB" onClick={() => setShowLimitModal(false)}>
+                  확인
+                </SingleButton>
+              </ResultButtonGroup>
+            </LimitModalContent>
+          </ModalContainer>
+        </>
+      )}
+
+      <NextButton 
+        onClick={handleNextSlide} 
+        disabled={currentSlide === stockList.length - 1}
+        $show={!showActions}
+      >
+        <ChevronRight size={24} />
+      </NextButton>
+
+      <SlideIndicators $show={!showActions}>
+        {stockList.map((stock, index) => (
+          <Indicator
+            key={stock.midStockId}
+            $active={index === currentSlide}
+            onClick={() => {
+              setCurrentSlide(index);
+              setShowActions(false);
+            }}
+          />
+        ))}
+      </SlideIndicators>
+    </SlideContainer>
+  );
+};
+
+// Styled Components
 const SlideContainer = styled.div`
   width: 100%;
   max-width: 1200px;
@@ -67,27 +450,6 @@ const NextButton = styled(NavigationButton)`
   right: 10px;
 `;
 
-const SlideIndicators = styled.div<{ $show?: boolean }>`
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 16px;
-  visibility: ${props => props.$show ? 'visible' : 'hidden'};
-`;
-
-const Indicator = styled.div<{ $active: boolean }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: ${props => props.$active ? '#1B63AB' : '#ddd'};
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: ${props => props.$active ? '#1B63AB' : '#bbb'};
-  }
-`;
-
 const ChartContainer = styled.div`
   width: 100%;
   cursor: pointer;
@@ -114,7 +476,6 @@ const Button = styled.button`
 const BuyButton = styled(Button)`
   background: #1B63AB;
   color: white;
-
   &:hover {
     background: #145293;
   }
@@ -123,7 +484,6 @@ const BuyButton = styled(Button)`
 const SellButton = styled(Button)`
   background: #D75442;
   color: white;
-
   &:hover {
     background: #C04937;
   }
@@ -169,7 +529,6 @@ const ModalContent = styled.div`
 
 const FormGroup = styled.div`
   margin-bottom: 16px;
-  
   &:last-of-type {
     margin-bottom: 24px;
   }
@@ -239,7 +598,6 @@ const ButtonGroup = styled.div`
 `;
 
 const ResultModalContent = styled(ModalContent)`
-  text-align: left;
   padding: 0;
 `;
 
@@ -267,28 +625,9 @@ const ResultValue = styled.span`
 
 const ResultButtonGroup = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   margin: 0;
   border-top: 1px solid #eee;
-`;
-
-const ResultButton = styled.button<{ color: string }>`
-  width: 100%;
-  height: 48px;
-  border: none;
-  background: ${props => props.color};
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-
-  &:first-child {
-    border-right: 1px solid #eee;
-  }
-
-  &:hover {
-    opacity: 0.9;
-  }
 `;
 
 const LimitModalContent = styled(ModalContent)`
@@ -302,8 +641,13 @@ const LimitText = styled.p`
   font-size: 14px;
 `;
 
-const SingleButton = styled(ResultButton)`
-  grid-column: 1 / -1;
+const SingleButton = styled(Button)<{ color: string }>`
+  width: 100%;
+  background: ${props => props.color};
+  color: white;
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 
 const ConfirmButton = styled(Button)<{ type: 'buy' | 'sell' }>`
@@ -322,394 +666,49 @@ const CancelButton = styled(Button)`
   }
 `;
 
-const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
-  // 기본 상태
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [showActions, setShowActions] = useState(false);
-  const [showTradeModal, setShowTradeModal] = useState(false);
-  const [showResultModal, setShowResultModal] = useState(false);
-  const [showLimitModal, setShowLimitModal] = useState(false);
-  const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
-  const [quantity, setQuantity] = useState(1);
-  const [price, setPrice] = useState('');
-  const [totalPrice, setTotalPrice] = useState(0);
+const SlideIndicators = styled.div<{ $show?: boolean }>`
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  visibility: ${props => props.$show ? 'visible' : 'hidden'};
+`;
 
-  // API 관련 상태
-  const [stockList, setStockList] = useState<MidStock[]>(stocks);
-  const [priceData, setPriceData] = useState<StockPrice[]>([]);
-  const [tradeAvailability, setTradeAvailability] = useState<TradeAvailability>({
-    isPossibleBuy: false,
-    isPossibleSell: false
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
+const Indicator = styled.div<{ $active: boolean }>`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: ${props => props.$active ? '#1B63AB' : '#ddd'};
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 
-  // 주식 목록 로드
-  useEffect(() => {
-    const loadStocks = async () => {
-      try {
-        const response = await stockApi.getStockList();
-        console.log('Raw response:', response);
-        
-        // response.data가 있는지 확인하고, 배열인지 확인
-        if (response && response.data && Array.isArray(response.data)) {
-          console.log('Setting stock list:', response.data);
-          setStockList(response.data);
-        } else {
-          console.error('Invalid stock list format:', response);
-          setError('Invalid data format');
-        }
-        setIsLoading(false);
-      } catch (err) {
-        console.error('Failed to load stocks:', err);
-        setError('Failed to load stocks');
-        setIsLoading(false);
-      }
-    };
-    loadStocks();
-  }, []);
+  &:hover {
+    background-color: ${props => props.$active ? '#1B63AB' : '#bbb'};
+  }
+`;
+const CompletionModalContent = styled(ModalContent)`
+  text-align: center;
+  padding: 24px 20px;
+`;
 
-  const currentStock = stockList[currentSlide];
+const CompletionMessage = styled.p`
+  margin: 0 0 24px;
+  color: #333;
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: pre-line;
+`;
 
-  // 현재 주식의 가격 데이터 로드
-  useEffect(() => {
-    const loadPriceData = async () => {
-      if (!currentStock?.midStockId) {
-        console.log('No current stock or stockId');
-        return;
-      }
+const CompletionButtonGroup = styled(ResultButtonGroup)`
+  margin-top: 24px;
+`;
+
+const CompletionButton = styled(SingleButton).attrs({ color: '#1B63AB' })`
+  border-radius: 6px;
   
-      try {
-        console.log('Loading price data for stock:', currentStock.midStockId);
-        const data = await stockApi.getStockPrices(currentStock.midStockId);
-        console.log('Received price data:', data);
-        setPriceData(data);
-  
-        if (data.length > 0) {
-          setPrice(data[0].avgPrice.toString());
-          setTotalPrice(data[0].avgPrice * quantity);
-        }
-  
-        const availability = await stockApi.checkTradeAvailability(currentStock.midStockId);
-        setTradeAvailability(availability);
-      } catch (err) {
-        console.error('Error loading price data:', err);
-        setError('Failed to load price data');
-      }
-    };
-
-    loadPriceData();
-  }, [currentStock?.midStockId, quantity]);
-
-  const [limitMessage, setLimitMessage] = useState('');
-
-  const handleSingleButtonClick = () => {
-    setShowResultModal(false);
-    setShowLimitModal(false);
-  };
-
-  const handleTrade = async () => {
-    if (!currentStock || !price) return;
-  
-    try {
-      const tradePoint = parseInt(price.replace(/,/g, '')) * quantity;
-  
-      if (tradeType === 'buy') {
-        const result = await stockApi.buyStock(currentStock.midStockId, tradePoint);
-        setTradeResult({
-          success: !result.warning,
-          message: result.warning ? '매수 실패' : '매수 완료',
-          tradeType: 'buy',
-          stockName: currentStock.midName,
-          price: parseInt(price.replace(/,/g, '')),
-          quantity: quantity,
-          totalPrice: tradePoint
-        });
-      } else {
-        setTradeResult({
-          success: true,
-          message: '매도 완료',
-          tradeType: 'sell',
-          stockName: currentStock.midName,
-          price: parseInt(price.replace(/,/g, '')),
-          quantity: quantity,
-          totalPrice: tradePoint
-        });
-      }
-  
-      setShowTradeModal(false);
-      setShowResultModal(true);
-  
-      // 거래 결과 모달을 닫을 때 거래 제한 모달 표시
-      const handleCloseResultModal = () => {
-        setShowResultModal(false);
-        setShowLimitModal(true);
-        setLimitMessage('오늘은 더 이상 거래를 할 수 없습니다.');
-      };
-  
-      setTimeout(handleCloseResultModal, 2000); // 3초 후 실행
-  
-    } catch (err) {
-      setTradeResult({
-        success: false,
-        message: '거래 처리 중 오류가 발생했습니다.',
-        tradeType: tradeType,
-        stockName: currentStock.midName,
-        price: parseInt(price.replace(/,/g, '')),
-        quantity: quantity,
-        totalPrice: 0
-      });
-      setShowResultModal(true);
-    }
-  };
-
-  const handleTradeClick = async (type: 'buy' | 'sell') => {
-    if (type === 'buy' && !tradeAvailability.isPossibleBuy) {
-      setTradeType(type);
-      setShowLimitModal(true);
-      return;
-    }
-    if (type === 'sell' && !tradeAvailability.isPossibleSell) {
-      setTradeType(type);
-      setShowLimitModal(true);
-      return;
-    }
-
-    setTradeType(type);
-    setShowTradeModal(true);
-    setQuantity(1);
-    if (priceData.length > 0) {
-      setPrice(priceData[0].avgPrice.toString());
-      setTotalPrice(priceData[0].avgPrice);
-    }
-  };
-
-  const handlePrevSlide = () => {
-    setCurrentSlide(current => (current - 1 + stockList.length) % stockList.length);
-    setShowActions(false);
-  };
-
-  const handleNextSlide = () => {
-    setCurrentSlide(current => (current + 1) % stockList.length);
-    setShowActions(false);
-  };
-
-  const handleChartClick = () => {
-    setShowActions(true);
-  };
-
-  const handleQuantityChange = (delta: number) => {
-    const newQuantity = Math.max(1, quantity + delta);
-    setQuantity(newQuantity);
-    const numPrice = price === '' ? 0 : parseInt(price.replace(/,/g, ''));
-    setTotalPrice(numPrice * newQuantity);
-  };
-
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, '');
-    if (value === '') {
-      setPrice('');
-      setTotalPrice(0);
-      return;
-    }
-    const numValue = parseInt(value);
-    setPrice(numValue.toLocaleString());
-    setTotalPrice(numValue * quantity);
-  };
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!currentStock) return null;
-
-  return (
-    <SlideContainer>
-      <PrevButton 
-        onClick={handlePrevSlide} 
-        disabled={currentSlide === 0}
-        $show={!showActions}
-      >
-        <ChevronLeft size={24} />
-      </PrevButton>
-
-      <ChartContainer onClick={handleChartClick}>
-  {currentStock && priceData.length > 0 && (
-    <StockChart 
-      stockId={currentStock.midStockId}
-      title={`${currentStock.midName} 주가 차트`}
-      data={priceData}
-    />
-  )}
-  {(!currentStock || priceData.length === 0) && (
-    <div>Loading chart data...</div>
-  )}
-</ChartContainer>
-
-      {showActions && (
-        <>
-          <ActionButtons>
-            <BuyButton onClick={() => handleTradeClick('buy')}>매수</BuyButton>
-            <SellButton onClick={() => handleTradeClick('sell')}>매도</SellButton>
-          </ActionButtons>
-          
-          <ArticleContainer>
-            <ArticleComponent article={{
-              id: currentSlide + 1,
-              article_id: 1001,
-              stock_symbol: currentStock.midName,
-              trend_prediction: TrendPrediction.UP,
-              content: `${currentStock.midName} 분석...`,
-              relevance: Relevance.HIGH,
-              created_at: new Date().toISOString(),
-              duration: 60,
-              mid_stock_id: currentStock.midStockId,
-              adv_id: 1
-            }} />
-          </ArticleContainer>
-        </>
-      )}
-
-      {showTradeModal && (
-        <>
-          <ModalOverlay onClick={() => setShowTradeModal(false)} />
-          <ModalContainer>
-            <ModalTitle>
-              {tradeType === 'buy' ? '매수하기' : '매도하기'}
-            </ModalTitle>
-            
-            <ModalContent>
-              <FormGroup>
-                <Label>{currentStock.midName}</Label>
-                <Input
-                  type="text"
-                  value={price}
-                  onChange={handlePriceChange}
-                  placeholder={`${tradeType === 'buy' ? '매수가' : '매도가'}를 입력하세요`}
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>수량</Label>
-                <QuantityControl>
-                  <QuantityButton
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1}
-                  >
-                    <Minus size={16} />
-                  </QuantityButton>
-                  <QuantityInput
-                    type="text"
-                    value={quantity}
-                    disabled
-                  />
-                  <QuantityButton
-                    onClick={() => handleQuantityChange(1)}
-                  >
-                    <Plus size={16} />
-                  </QuantityButton>
-                </QuantityControl>
-              </FormGroup>
-
-              <FormGroup>
-                <Label>총 포인트</Label>
-                <Input
-                  type="text"
-                  value={totalPrice.toLocaleString()}
-                  disabled
-                />
-              </FormGroup>
-
-              <ButtonGroup>
-                <ConfirmButton 
-                  onClick={handleTrade}
-                  disabled={!price || price === '0'}
-                  type={tradeType}
-                >
-                  {tradeType === 'buy' ? '매수하기' : '매도하기'}
-                </ConfirmButton>
-                <CancelButton onClick={() => setShowTradeModal(false)}>
-                  나가기
-                </CancelButton>
-              </ButtonGroup>
-            </ModalContent>
-          </ModalContainer>
-        </>
-      )}
-
-{showResultModal && tradeResult && (
-  <>
-    <ModalOverlay />
-    <ModalContainer>
-      <ModalTitle>
-        주식 {tradeResult.tradeType === 'buy' ? '매수' : '매도'}주문
-      </ModalTitle>
-      <ResultModalContent>
-        <ResultRow>
-          <ResultLabel>종목명</ResultLabel>
-          <ResultValue>{tradeResult.stockName}</ResultValue>
-        </ResultRow>
-        <ResultRow>
-          <ResultLabel>{tradeResult.tradeType === 'buy' ? '매수가격' : '매도가격'}</ResultLabel>
-          <ResultValue>{tradeResult.price.toLocaleString()}</ResultValue>
-        </ResultRow>
-        <ResultRow>
-          <ResultLabel>주문수량</ResultLabel>
-          <ResultValue>{tradeResult.quantity}</ResultValue>
-        </ResultRow>
-        <ResultRow>
-          <ResultLabel>포인트가격</ResultLabel>
-          <ResultValue>{tradeResult.totalPrice.toLocaleString()}</ResultValue>
-        </ResultRow>
-        <ResultButtonGroup>
-          <SingleButton 
-            color="#1B63AB" 
-            onClick={handleSingleButtonClick}
-          >
-            확인
-          </SingleButton>
-        </ResultButtonGroup>
-      </ResultModalContent>
-    </ModalContainer>
-  </>
-)}
-
-{showLimitModal && (
-  <>
-    <ModalOverlay onClick={() => setShowLimitModal(false)} />
-    <ModalContainer>
-      <ModalTitle>거래 제한</ModalTitle>
-      <LimitModalContent>
-        <LimitText>{limitMessage || '현재 거래가 불가능합니다.'}</LimitText>
-        <SingleButton color="#1B63AB" onClick={() => setShowLimitModal(false)}>
-          확인
-        </SingleButton>
-      </LimitModalContent>
-    </ModalContainer>
-  </>
-)}
-
-      <NextButton 
-        onClick={handleNextSlide} 
-        disabled={currentSlide === stockList.length - 1}
-        $show={!showActions}
-      >
-        <ChevronRight size={24} />
-      </NextButton>
-
-      <SlideIndicators $show={!showActions}>
-        {stockList.map((_, index) => (
-          <Indicator
-            key={index}
-            $active={index === currentSlide}
-            onClick={() => {
-              setCurrentSlide(index);
-              setShowActions(false);
-            }}
-          />
-        ))}
-      </SlideIndicators>
-    </SlideContainer>
-  );
-};
+  &:hover {
+    background: #145293;
+  }
+`;
 
 export default StockSlider;
