@@ -45,7 +45,7 @@ const WordQuizGamePage = () => {
     }
     return Array.from(uniqueLetters).sort(() => Math.random() - 0.5); // 랜덤 섞음
   }, [correctWord]);
-  
+
   // 전체 단어 리스트
   const wordList: Word[] = [
     { word_id: 1, word: '시장', explanation: '기업의 주식 발행 가격 총액을 뜻하는 단어', hint: '첫 글자는 "시"입니다.' },
@@ -145,9 +145,24 @@ const WordQuizGamePage = () => {
       />
       <Question question={currentWord?.explanation || ''} />
       <Answer answerLength={correctWord.length} userAnswer={userAnswer} />
-      {showHint && <Popup message={currentWord?.hint || ''} onClose={() => setShowHint(false)} />}
-      {showCorrectPopup && <Popup message="😃 정답!" onClose={handleNextQuestion} />}
-      {showIncorrectPopup && <Popup message="😢 오답!" onClose={handleCloseIncorrectPopup} />}
+      <HintIcon onClick={() => setShowHint(true)}>💡</HintIcon>
+      {showHint && <Popup message={currentWord?.hint || ''} buttonText="알 것 같아요!" onClose={() => setShowHint(false)} />}
+      {showCorrectPopup && (
+  <Popup
+    message="😃 정답!"
+    buttonText="다음 문제"
+    onClose={handleNextQuestion}
+  />
+)}
+
+{showIncorrectPopup && (
+  <Popup
+    message="😢 오답!"
+    buttonText="다시 도전해봐요!"
+    onClose={handleCloseIncorrectPopup}
+  />
+)}
+
       <Keyboard letters={keyboardLetters} onSelect={handleSelectLetter} />
     </PageContainer>
   );
@@ -176,4 +191,22 @@ const BackgroundContainer = styled.div`
   top: 630px;
   background-color: #DEf9C4;
   z-index: 0;
+`;
+
+const HintIcon = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  transform: translateX(50%);
+  cursor: pointer;
+  background: none; /* 배경 제거 */
+  border: none; /* 테두리 제거 */
+  padding: 0; /* 기본 여백 제거 */
+  img {
+    width: 32px;
+    height: 32px;
+  }
+  &:focus {
+    outline: none; /* 버튼 클릭 시 나타나는 테두리 제거 */
+  }
 `;

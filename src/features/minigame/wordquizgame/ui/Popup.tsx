@@ -2,13 +2,14 @@ import styled from 'styled-components';
 
 interface PopupProps {
   message: string;
+  buttonText: string;
   onClose: () => void;
 }
 
-export const Popup = ({ message, onClose }: PopupProps) => (
+export const Popup = ({ message, buttonText, onClose }: PopupProps) => (
   <PopupContainer>
     <p>{message}</p>
-    <PopupButton onClick={onClose}>확인</PopupButton>
+    <PopupButton onClick={onClose}>{buttonText}</PopupButton>
   </PopupContainer>
 );
 

@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
 
