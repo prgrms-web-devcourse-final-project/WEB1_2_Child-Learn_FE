@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
-import { generateStockData } from '../model/stock';
 import { ChartWrapper, ChartHeader, ChartTitle, ChartContent } from './index';
 import { ChartData } from '../types/stock';
 
@@ -69,15 +68,14 @@ export const StockChart = ({ stockId, title, data }: StockChartProps) => {
   });
 
   useEffect(() => {
-    const mockData = generateStockData(stockId);
     setChartData(prev => ({
       ...prev,
       series: [{
         name: 'Stock Price',
-        data: mockData
+        data: data
       }]
     }));
-  }, [stockId]);
+  }, [data, stockId]);
 
   return (
     <ChartWrapper>

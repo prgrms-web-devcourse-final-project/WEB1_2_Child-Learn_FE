@@ -1,3 +1,4 @@
+// features/Intermediate_chat/ui/StockSlider.tsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { stockApi } from '@/shared/api/stock';
@@ -7,8 +8,20 @@ import { TrendPrediction, Relevance } from '../../article/type/article';
 import { MidStock, StockPrice, TradeAvailability } from '../types/stock';
 import StockChart from '@/shared/ui/Intermediate/StockChat';
 
+interface TradeResult {
+  success: boolean;
+  message: string;
+  tradeType: 'buy' | 'sell';
+  stockName: string;
+  price: number;
+  quantity: number;
+  totalPrice: number;
+}
 
-// 메인 컨테이너: 전체 슬라이더를 감싸는 컨테이너
+interface StockSliderProps {
+  stocks: MidStock[];
+}
+
 const SlideContainer = styled.div`
   width: 100%;
   max-width: 1200px;
@@ -19,7 +32,6 @@ const SlideContainer = styled.div`
   border-radius: 20px;
 `;
 
-// 좌/우 네비게이션 버튼의 기본 스타일 ($show prop으로 버튼 표시/숨김 제어)
 const NavigationButton = styled.button<{ $show?: boolean }>`
   position: absolute;
   top: 50%;
@@ -47,17 +59,14 @@ const NavigationButton = styled.button<{ $show?: boolean }>`
   }
 `;
 
-// 이전 버튼 (왼쪽 위치)
 const PrevButton = styled(NavigationButton)`
   left: 10px;
 `;
 
-// 다음 버튼 (오른쪽 위치)
 const NextButton = styled(NavigationButton)`
   right: 10px;
 `;
 
-// 하단 슬라이드 인디케이터 컨테이너 ($show prop으로 표시/숨김 제어)
 const SlideIndicators = styled.div<{ $show?: boolean }>`
   display: flex;
   justify-content: center;
@@ -66,7 +75,6 @@ const SlideIndicators = styled.div<{ $show?: boolean }>`
   visibility: ${props => props.$show ? 'visible' : 'hidden'};
 `;
 
-// 각 인디케이터 점 ($active prop으로 현재 슬라이드 표시)
 const Indicator = styled.div<{ $active: boolean }>`
   width: 8px;
   height: 8px;
@@ -80,7 +88,11 @@ const Indicator = styled.div<{ $active: boolean }>`
   }
 `;
 
-// 매수/매도 버튼을 감싸는 컨테이너
+const ChartContainer = styled.div`
+  width: 100%;
+  cursor: pointer;
+`;
+
 const ActionButtons = styled.div`
   display: flex;
   justify-content: center;
@@ -88,7 +100,6 @@ const ActionButtons = styled.div`
   margin-top: 16px;
 `;
 
-// 기본 버튼 스타일
 const Button = styled.button`
   height: 40px;
   border: none;
@@ -100,7 +111,6 @@ const Button = styled.button`
   padding: 0 24px;
 `;
 
-// 매수 버튼 스타일 (파란색 계열)
 const BuyButton = styled(Button)`
   background: #1B63AB;
   color: white;
@@ -110,7 +120,6 @@ const BuyButton = styled(Button)`
   }
 `;
 
-// 매도 버튼 스타일 (빨간색 계열)
 const SellButton = styled(Button)`
   background: #D75442;
   color: white;
@@ -120,12 +129,10 @@ const SellButton = styled(Button)`
   }
 `;
 
-// 기사 컨테이너
 const ArticleContainer = styled.div`
   margin-top: 20px;
 `;
 
-// 모달 오버레이 (어두운 배경)
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -136,7 +143,6 @@ const ModalOverlay = styled.div`
   z-index: 100;
 `;
 
-// 모달 컨테이너
 const ModalContainer = styled.div`
   position: fixed;
   top: 50%;
@@ -149,7 +155,6 @@ const ModalContainer = styled.div`
   z-index: 101;
 `;
 
-// 모달 제목
 const ModalTitle = styled.div`
   text-align: center;
   padding: 16px;
@@ -158,12 +163,10 @@ const ModalTitle = styled.div`
   border-bottom: 1px solid #eee;
 `;
 
-// 모달 내용 컨테이너
 const ModalContent = styled.div`
   padding: 20px;
 `;
 
-// 폼 그룹 (라벨 + 입력 필드 세트)
 const FormGroup = styled.div`
   margin-bottom: 16px;
   
@@ -172,14 +175,12 @@ const FormGroup = styled.div`
   }
 `;
 
-// 입력 필드 라벨
 const Label = styled.div`
   font-size: 14px;
   color: #333;
   margin-bottom: 8px;
 `;
 
-// 기본 입력 필드
 const Input = styled.input`
   width: 100%;
   height: 40px;
@@ -196,14 +197,12 @@ const Input = styled.input`
   }
 `;
 
-// 수량 조절 컨테이너
 const QuantityControl = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
 `;
 
-// 수량 조절 버튼 (+/- 버튼)
 const QuantityButton = styled.button`
   display: flex;
   align-items: center;
@@ -226,14 +225,12 @@ const QuantityButton = styled.button`
   }
 `;
 
-// 수량 입력 필드
 const QuantityInput = styled(Input)`
   width: 80px;
   text-align: center;
   padding: 0;
 `;
 
-// 매수/매도 모달의 버튼 그룹 (2개의 버튼)
 const ButtonGroup = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -241,83 +238,89 @@ const ButtonGroup = styled.div`
   margin-top: 0;
 `;
 
-// 결과/제한 모달의 버튼 그룹 (가운데 정렬된 1개의 버튼)
-const ResultButtonGroup = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 0;
-`;
-
-// 모달 내 기본 버튼
-const ModalButton = styled(Button)`
-  width: 100%;
-`;
-
-// 매수/매도 확인 버튼 (type prop에 따라 색상 변경)
-const ConfirmButton = styled(ModalButton)<{ type?: 'buy' | 'sell' }>`
-  background: ${props => props.type === 'sell' ? '#D75442' : '#1B63AB'};
-  color: white;
-
-  &:hover {
-    background: ${props => props.type === 'sell' ? '#C04937' : '#145293'};
-  }
-`;
-
-// 결과/제한 모달의 확인 버튼
-const SingleButton = styled(ModalButton)`
-  width: 120px;
-  background: #1B63AB;
-  color: white;
-
-  &:hover {
-    background: #145293;
-  }
-`;
-
-// 취소 버튼
-const CancelButton = styled(ModalButton)`
-  background: #f0f0f0;
-  color: #666;
-
-  &:hover {
-    background: #e5e5e5;
-  }
-`;
-
-// 결과 모달 내용 (가운데 정렬)
 const ResultModalContent = styled(ModalContent)`
-  text-align: center;
+  text-align: left;
+  padding: 0;
 `;
 
-// 결과 텍스트
-const ResultText = styled.p`
-  margin: 20px 0;
-  font-size: 16px;
+const ResultRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid #eee;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ResultLabel = styled.span`
+  color: #666;
+  font-size: 14px;
+`;
+
+const ResultValue = styled.span`
   color: #333;
+  font-size: 14px;
+  font-weight: 500;
 `;
 
-// 제한 모달 내용 (가운데 정렬)
+const ResultButtonGroup = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0;
+  border-top: 1px solid #eee;
+`;
+
+const ResultButton = styled.button<{ color: string }>`
+  width: 100%;
+  height: 48px;
+  border: none;
+  background: ${props => props.color};
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:first-child {
+    border-right: 1px solid #eee;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
 const LimitModalContent = styled(ModalContent)`
   text-align: center;
-  padding: 30px 20px;
+  padding: 24px 20px;
 `;
 
-// 제한 텍스트
 const LimitText = styled.p`
-  margin: 0;
-  margin-bottom: 15px;
-  font-size: 16px;
+  margin: 0 0 24px;
   color: #333;
+  font-size: 14px;
 `;
 
-const ChartContainer = styled.div`
-  width: 100%;
-  cursor: pointer;
+const SingleButton = styled(ResultButton)`
+  grid-column: 1 / -1;
 `;
 
-interface StockSliderProps {
-  stocks: MidStock[];
-}
+const ConfirmButton = styled(Button)<{ type: 'buy' | 'sell' }>`
+  background: ${props => props.type === 'buy' ? '#1B63AB' : '#D75442'};
+  color: white;
+  &:hover {
+    background: ${props => props.type === 'buy' ? '#145293' : '#C04937'};
+  }
+`;
+
+const CancelButton = styled(Button)`
+  background: #D75442;
+  color: white;
+  &:hover {
+    background: #C04937;
+  }
+`;
 
 const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
   // 기본 상태
@@ -340,22 +343,26 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tradeResult, setTradeResult] = useState<{
-    success: boolean;
-    message: string;
-    points?: number;
-  } | null>(null);
-
-  const currentStock = stockList[currentSlide];
+  const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
 
   // 주식 목록 로드
   useEffect(() => {
     const loadStocks = async () => {
       try {
-        const data = await stockApi.getStockList();
-        setStockList(data);
+        const response = await stockApi.getStockList();
+        console.log('Raw response:', response);
+        
+        // response.data가 있는지 확인하고, 배열인지 확인
+        if (response && response.data && Array.isArray(response.data)) {
+          console.log('Setting stock list:', response.data);
+          setStockList(response.data);
+        } else {
+          console.error('Invalid stock list format:', response);
+          setError('Invalid data format');
+        }
         setIsLoading(false);
       } catch (err) {
+        console.error('Failed to load stocks:', err);
         setError('Failed to load stocks');
         setIsLoading(false);
       }
@@ -363,24 +370,27 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
     loadStocks();
   }, []);
 
+  const currentStock = stockList[currentSlide];
+
   // 현재 주식의 가격 데이터 로드
   useEffect(() => {
     const loadPriceData = async () => {
-      if (!currentStock) return;
-
+      if (!currentStock?.midStockId) {
+        console.log('No current stock or stockId');
+        return;
+      }
+  
       try {
-        console.log('Fetching price data for stock:', currentStock.midStockId);
+        console.log('Loading price data for stock:', currentStock.midStockId);
         const data = await stockApi.getStockPrices(currentStock.midStockId);
         console.log('Received price data:', data);
         setPriceData(data);
-
-        // 현재가(마지막 평균가)를 초기 거래가로 설정
+  
         if (data.length > 0) {
           setPrice(data[0].avgPrice.toString());
           setTotalPrice(data[0].avgPrice * quantity);
         }
-
-        // 거래 가능 여부 확인
+  
         const availability = await stockApi.checkTradeAvailability(currentStock.midStockId);
         setTradeAvailability(availability);
       } catch (err) {
@@ -390,54 +400,71 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
     };
 
     loadPriceData();
-  }, [currentStock]);
+  }, [currentStock?.midStockId, quantity]);
 
-  // 거래 처리
+  const [limitMessage, setLimitMessage] = useState('');
+
+  const handleSingleButtonClick = () => {
+    setShowResultModal(false);
+    setShowLimitModal(false);
+  };
+
   const handleTrade = async () => {
     if (!currentStock || !price) return;
-
+  
     try {
       const tradePoint = parseInt(price.replace(/,/g, '')) * quantity;
-
+  
       if (tradeType === 'buy') {
         const result = await stockApi.buyStock(currentStock.midStockId, tradePoint);
         setTradeResult({
           success: !result.warning,
-          message: result.warning ? '거래가 실패했습니다.' : '매수가 완료되었습니다.',
+          message: result.warning ? '매수 실패' : '매수 완료',
+          tradeType: 'buy',
+          stockName: currentStock.midName,
+          price: parseInt(price.replace(/,/g, '')),
+          quantity: quantity,
+          totalPrice: tradePoint
         });
       } else {
-        const result = await stockApi.sellStock(currentStock.midStockId);
         setTradeResult({
           success: true,
-          message: '매도가 완료되었습니다.',
-          points: result.earnedPoints
+          message: '매도 완료',
+          tradeType: 'sell',
+          stockName: currentStock.midName,
+          price: parseInt(price.replace(/,/g, '')),
+          quantity: quantity,
+          totalPrice: tradePoint
         });
       }
-
+  
       setShowTradeModal(false);
       setShowResultModal(true);
-
-      // 거래 후 거래 가능 여부 다시 확인
-      const availability = await stockApi.checkTradeAvailability(currentStock.midStockId);
-      setTradeAvailability(availability);
+  
+      // 거래 결과 모달을 닫을 때 거래 제한 모달 표시
+      const handleCloseResultModal = () => {
+        setShowResultModal(false);
+        setShowLimitModal(true);
+        setLimitMessage('오늘은 더 이상 거래를 할 수 없습니다.');
+      };
+  
+      setTimeout(handleCloseResultModal, 2000); // 3초 후 실행
+  
     } catch (err) {
-      if (err instanceof Error && err.message === 'Insufficient balance') {
-        setTradeResult({
-          success: false,
-          message: '잔액이 부족합니다.'
-        });
-      } else {
-        setTradeResult({
-          success: false,
-          message: '거래 처리 중 오류가 발생했습니다.'
-        });
-      }
+      setTradeResult({
+        success: false,
+        message: '거래 처리 중 오류가 발생했습니다.',
+        tradeType: tradeType,
+        stockName: currentStock.midName,
+        price: parseInt(price.replace(/,/g, '')),
+        quantity: quantity,
+        totalPrice: 0
+      });
       setShowResultModal(true);
     }
   };
 
   const handleTradeClick = async (type: 'buy' | 'sell') => {
-    // 거래 가능 여부 확인
     if (type === 'buy' && !tradeAvailability.isPossibleBuy) {
       setTradeType(type);
       setShowLimitModal(true);
@@ -506,15 +533,17 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
       </PrevButton>
 
       <ChartContainer onClick={handleChartClick}>
-        {priceData.length > 0 && (  // 데이터가 있을 때만 렌더링
-          <StockChart 
-            stockId={currentStock.midStockId} 
-            title={`${currentStock.midName} 주가 차트`}
-            data={priceData}
-          />
-        )}
-        {priceData.length === 0 && <div>Loading chart data...</div>}  // 로딩 상태 표시
-      </ChartContainer>
+  {currentStock && priceData.length > 0 && (
+    <StockChart 
+      stockId={currentStock.midStockId}
+      title={`${currentStock.midName} 주가 차트`}
+      data={priceData}
+    />
+  )}
+  {(!currentStock || priceData.length === 0) && (
+    <div>Loading chart data...</div>
+  )}
+</ChartContainer>
 
       {showActions && (
         <>
@@ -607,48 +636,57 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
         </>
       )}
 
-      {showResultModal && tradeResult && (
-        <>
-          <ModalOverlay />
-          <ModalContainer>
-            <ModalTitle>
-              거래 결과
-            </ModalTitle>
-            <ModalContent>
-              <ResultText>{tradeResult.message}</ResultText>
-              {tradeResult.points !== undefined && (
-                <ResultText>획득 포인트: {tradeResult.points.toLocaleString()}</ResultText>
-              )}
-              <ResultButtonGroup>
-                <SingleButton onClick={() => setShowResultModal(false)}>
-                  확인
-                </SingleButton>
-              </ResultButtonGroup>
-            </ModalContent>
-          </ModalContainer>
-        </>
-      )}
+{showResultModal && tradeResult && (
+  <>
+    <ModalOverlay />
+    <ModalContainer>
+      <ModalTitle>
+        주식 {tradeResult.tradeType === 'buy' ? '매수' : '매도'}주문
+      </ModalTitle>
+      <ResultModalContent>
+        <ResultRow>
+          <ResultLabel>종목명</ResultLabel>
+          <ResultValue>{tradeResult.stockName}</ResultValue>
+        </ResultRow>
+        <ResultRow>
+          <ResultLabel>{tradeResult.tradeType === 'buy' ? '매수가격' : '매도가격'}</ResultLabel>
+          <ResultValue>{tradeResult.price.toLocaleString()}</ResultValue>
+        </ResultRow>
+        <ResultRow>
+          <ResultLabel>주문수량</ResultLabel>
+          <ResultValue>{tradeResult.quantity}</ResultValue>
+        </ResultRow>
+        <ResultRow>
+          <ResultLabel>포인트가격</ResultLabel>
+          <ResultValue>{tradeResult.totalPrice.toLocaleString()}</ResultValue>
+        </ResultRow>
+        <ResultButtonGroup>
+          <SingleButton 
+            color="#1B63AB" 
+            onClick={handleSingleButtonClick}
+          >
+            확인
+          </SingleButton>
+        </ResultButtonGroup>
+      </ResultModalContent>
+    </ModalContainer>
+  </>
+)}
 
-      {showLimitModal && (
-        <>
-          <ModalOverlay />
-          <ModalContainer>
-            <ModalTitle>
-              거래 제한
-            </ModalTitle>
-            <LimitModalContent>
-              <LimitText>
-                현재 {tradeType === 'buy' ? '매수' : '매도'}가 불가능합니다.
-              </LimitText>
-              <ResultButtonGroup>
-                <SingleButton onClick={() => setShowLimitModal(false)}>
-                  확인
-                </SingleButton>
-              </ResultButtonGroup>
-            </LimitModalContent>
-          </ModalContainer>
-        </>
-      )}
+{showLimitModal && (
+  <>
+    <ModalOverlay onClick={() => setShowLimitModal(false)} />
+    <ModalContainer>
+      <ModalTitle>거래 제한</ModalTitle>
+      <LimitModalContent>
+        <LimitText>{limitMessage || '현재 거래가 불가능합니다.'}</LimitText>
+        <SingleButton color="#1B63AB" onClick={() => setShowLimitModal(false)}>
+          확인
+        </SingleButton>
+      </LimitModalContent>
+    </ModalContainer>
+  </>
+)}
 
       <NextButton 
         onClick={handleNextSlide} 

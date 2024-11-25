@@ -27,8 +27,8 @@ const IntermediatePage: React.FC = () => {
   useEffect(() => {
     const fetchStocks = async () => {
       try {
-        const data = await stockApi.getStockList();
-        setStocks(data);
+        const response = await stockApi.getStockList();
+        setStocks(response.data);
       } catch (error) {
         console.error('Failed to fetch stocks:', error);
       } finally {
