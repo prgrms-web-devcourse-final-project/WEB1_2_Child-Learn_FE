@@ -8,39 +8,36 @@ const EXCHANGE_RATE = 100; // 100 포인트 = 1 코인
 const ExchangePage = () => {
   const { currentPoints, currentCoins } = useUserStore();
   const { point, coin, setPoint, setCoin, addExchangeDetail } = useCoinPointStore();
-  const [exchangePoints, setExchangePoints] = useState(0); // 입력된 환전 포인트
-  const [exchangeCoins, setExchangeCoins] = useState(0); // 입력된 환전 코인
+  const [exchangePoints, setExchangePoints] = useState(''); // 입력된 환전 포인트
+  const [exchangeCoins, setExchangeCoins] = useState(''); // 입력된 환전 코인
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
-  // 상태 동기화
   useEffect(() => {
-    setPoint({ currentPoints });
-    setCoin({ currentCoins });
+    setPoint({ currentPoints: currentPoints || 2000 }); // 기본값 2000 설정
+    setCoin({ currentCoins: currentCoins || 10 }); // 기본값 10 설정
   }, [currentPoints, currentCoins, setPoint, setCoin]);
-
-  // 계산된 환전에 필요한 포인트
-  const requiredPoints = exchangeCoins * EXCHANGE_RATE;
 
   // 최대 환전 가능 코인 계산
   const maxExchangeableCoins = Math.floor(point.currentPoints / EXCHANGE_RATE);
 
   const handleExchange = () => {
-    if (exchangePoints <= 0 || exchangePoints > point.currentPoints) {
+    const pointsToExchange = Number(exchangePoints);
+    const coinsToExchange = Number(exchangeCoins);
+
+    if (pointsToExchange <= 0 || pointsToExchange > point.currentPoints) {
       alert('환전 가능한 포인트를 입력해주세요.');
       return;
     }
 
-    const coinsToReceive = Math.floor(exchangePoints / EXCHANGE_RATE);
-
     // 상태 업데이트
-    setPoint({ currentPoints: point.currentPoints - exchangePoints });
-    setCoin({ currentCoins: coin.currentCoins + coinsToReceive });
+    setPoint({ currentPoints: point.currentPoints - pointsToExchange });
+    setCoin({ currentCoins: coin.currentCoins + coinsToExchange });
 
     addExchangeDetail({
       exchangeId: Date.now(),
       memberId: 1, // 예시로 사용
-      pointsExchanged: exchangePoints,
-      coinsReceived: coinsToReceive,
+      pointsExchanged: pointsToExchange,
+      coinsReceived: coinsToExchange,
       createdAt: new Date().toISOString(),
     });
 
@@ -60,19 +57,26 @@ const ExchangePage = () => {
         <Input
           type="number"
           value={exchangePoints}
-          onChange={(e) => setExchangePoints(Number(e.target.value))}
+          onChange={(e) => {
+            const value = e.target.value;
+            setExchangePoints(value);
+            setExchangeCoins(String(Math.floor(Number(value) / EXCHANGE_RATE)));
+          }}
+          placeholder="포인트 입력"
         />
-        <Result>환전될 코인: {Math.floor(exchangePoints / EXCHANGE_RATE)}</Result>
         <MaxExchangeable>
           최대 환전 가능: {maxExchangeableCoins} 코인
         </MaxExchangeable>
-        <Label>환전할 코인</Label>
         <Input
           type="number"
           value={exchangeCoins}
-          onChange={(e) => setExchangeCoins(Number(e.target.value))}
+          onChange={(e) => {
+            const value = e.target.value;
+            setExchangeCoins(value);
+            setExchangePoints(String(Number(value) * EXCHANGE_RATE));
+          }}
+          placeholder="코인 입력"
         />
-        <Result>필요한 포인트: {requiredPoints}</Result>
         <MaxExchangeable>
           최대 환전 가능: {maxExchangeableCoins} 코인
         </MaxExchangeable>
@@ -82,9 +86,7 @@ const ExchangePage = () => {
 
       {isPopupVisible && (
         <Popup
-          message={`환전이 완료되었습니다!\n사용된 포인트: ${exchangePoints}, 받은 코인: ${Math.floor(
-            exchangePoints / EXCHANGE_RATE
-          )}`}
+          message={`환전이 완료되었습니다!\n사용된 포인트: ${exchangePoints}, 받은 코인: ${exchangeCoins}`}
           buttonText="확인"
           onClose={() => setIsPopupVisible(false)}
         />
