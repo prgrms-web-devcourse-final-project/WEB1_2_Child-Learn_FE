@@ -16,7 +16,7 @@ const WordQuizResultPage = () => {
 
   return (
     <Container>
-      <CheckImage src="/public/img/Check.png" alt="result" />
+      <CheckImage/>
       <StarsContainer>
         {Array.from({ length: stars }).map((_, index) => (
           <Star key={index} src="/public/img/star.png" alt="Star" />
@@ -24,7 +24,7 @@ const WordQuizResultPage = () => {
       </StarsContainer>
       <PointsText>총 {correctAnswers * 100} Points를 획득하셨습니다!</PointsText>
       <NavigateButton onClick={handleNavigate}>
-        미니게임 페이지로 돌아가기
+        미니게임 페이지로 이동하기
       </NavigateButton>
     </Container>
   );
@@ -37,9 +37,10 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 100vh;
   background-color: #f5f5f5;
+  padding-top: 200px; /* 상단 여백 추가 */
 `;
 
 const CheckImage = styled.img`
@@ -72,7 +73,8 @@ const NavigateButton = styled.button`
   background-color: #50b498;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 100px;
+  width: 302px;
   font-size: 16px;
   cursor: pointer;
 

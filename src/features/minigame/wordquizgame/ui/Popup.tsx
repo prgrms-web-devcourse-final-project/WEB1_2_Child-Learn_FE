@@ -24,6 +24,7 @@ const PopupContainer = styled.div`
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
+  width: 303px;
 `;
 
 const PopupButton = styled.button`
@@ -35,4 +36,5 @@ const PopupButton = styled.button`
   border-radius: 10px;
   font-size: 16px;
   cursor: pointer;
+  width: 175px;
 `;
