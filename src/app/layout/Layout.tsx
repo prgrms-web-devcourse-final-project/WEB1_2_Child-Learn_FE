@@ -23,7 +23,6 @@ const HIDDEN_GNB_PATHS = [
   '/auth/signup',
   '/flip-card',
   '/word-quiz',
-  ,
   '/fast-navigation',
 ];
 
