@@ -13,6 +13,8 @@ const HIDDEN_HEADER_PATHS = [
   '/auth/signup',
   '/flip-card',
   '/word-quiz',
+  ,
+  '/exchange',
 ];
 
 // GNB를 숨길 페이지 경로들
@@ -25,7 +27,10 @@ const HIDDEN_GNB_PATHS = [
 ];
 
 // BackButton만 표시할 페이지 경로들
-const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz'];
+const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz', '/exchange'];
+
+// BackButton을 숨길 페이지 경로 추가
+const HIDDEN_BACK_BUTTON_PATHS = ['/word-quiz/result'];
 
 // 정확한 경로 매칭을 위한 함수
 const isExactPath = (currentPath: string, targetPath: string) => {
@@ -48,9 +53,11 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
     isExactPath(location.pathname, path)
   );
 
-  const shouldShowBackButton = SHOW_BACK_BUTTON_PATHS.some((path) =>
-    isExactPath(location.pathname, path)
-  );
+  const shouldShowBackButton =
+    SHOW_BACK_BUTTON_PATHS.some((path) => location.pathname.startsWith(path)) &&
+    !HIDDEN_BACK_BUTTON_PATHS.some((path) =>
+      isExactPath(location.pathname, path)
+    );
 
   return (
     <>

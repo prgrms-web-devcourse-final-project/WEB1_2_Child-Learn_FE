@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useUserStore } from '../../app/providers/state/zustand/userStore';
 import { useFlipCardStore } from '../../features/minigame/flipcardgame/model/filpCardStore'
+import { useWordQuizStore } from '../../features/minigame/wordquizgame/model/wordQuizStore'
 import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const MiniGamePage = () => {
-  const { username, points, setUser } = useUserStore();
+  const { username, currentPoints, setUser } = useUserStore();
   const { isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed } = useFlipCardStore();
+  const { isPlayable: isWordQuizPlayable, setLastPlayedDate: setWordQuizLastPlayedDate } = useWordQuizStore();
   const { setLotteries, isPlayable: isLotteryPlayable, setLastPlayedDate: setLotteryLastPlayedDate } = useLotteryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
@@ -23,7 +25,8 @@ const MiniGamePage = () => {
       updatedAt: '2024-11-20',
       gameCount: 5,
       birth: '2002-05-06',
-      points: 2000,
+      currentPoints: 2000, // 초기 포인트 설정
+      currentCoins: 10,    // 초기 코인 설정
     });
 
     // 로또 초기 데이터 설정
@@ -40,6 +43,15 @@ const MiniGamePage = () => {
       navigate(`/flip-card/${level}`);
     }
   };  
+
+  // 낱말 퀴즈 플레이 핸들러
+  const handleWordQuizPlay = async (level: 'beginner' | 'medium' | 'advanced') => {
+    if (isWordQuizPlayable(level)) {
+      const today = new Date().toISOString().split('T')[0];
+      setWordQuizLastPlayedDate(level, today); // 마지막 플레이 날짜 업데이트
+      navigate(`/word-quiz/${level}`);
+    }
+  };
 
   // 로또(숫자를 맞혀라) 플레이 핸들러
   const handleLotteryPlay = () => {
@@ -73,7 +85,7 @@ const MiniGamePage = () => {
         </GreetingContainer>
         <PointsContainer>
           <img src="/icons/coins 1.png" alt="Coin Icon" />
-          {points} P
+          {currentPoints} P
         </PointsContainer>
       </Header>
   
@@ -158,6 +170,31 @@ const MiniGamePage = () => {
     </ModalButton>
   </>
 )}
+              </>
+            )}
+            {selectedGame === '낱말 퀴즈' && (
+              <>
+                <ModalButton
+                  level="beginner"
+                  onClick={() => handleWordQuizPlay('beginner')}
+                  disabled={!isWordQuizPlayable('beginner')}
+                >
+                  쉬움
+                </ModalButton>
+                <ModalButton
+                  level="medium"
+                  onClick={() => handleWordQuizPlay('medium')}
+                  disabled={!isWordQuizPlayable('medium')}
+                >
+                  보통
+                </ModalButton>
+                <ModalButton
+                  level="advanced"
+                  onClick={() => handleWordQuizPlay('advanced')}
+                  disabled={!isWordQuizPlayable('advanced')}
+                >
+                  어려움
+                </ModalButton>
               </>
             )}
           </ModalContent>
