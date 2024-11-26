@@ -38,7 +38,8 @@ export const StockChart: React.FC<StockChartProps> = ({ stockId, title, data = [
         },
         animations: {
           enabled: false
-        }
+        },
+      
       },
       title: {
         text: title,
@@ -56,8 +57,9 @@ export const StockChart: React.FC<StockChartProps> = ({ stockId, title, data = [
             downward: '#1B63AB'   // 하락 파란색
           },
           wick: {
-            useFillColor: true
-          }
+            useFillColor: true,
+            show: false  // wick 숨기기
+          },
         }
       },
       xaxis: {

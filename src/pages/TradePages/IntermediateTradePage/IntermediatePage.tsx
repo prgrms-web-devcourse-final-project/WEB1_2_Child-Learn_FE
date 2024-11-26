@@ -50,7 +50,7 @@ const IntermediatePage: React.FC = () => {
 };
 
 const PageContainer = styled.div`
-  padding: 20px;
+  padding: 25px;
   background-color: #ffffff;
   min-height: 100vh;
 `;

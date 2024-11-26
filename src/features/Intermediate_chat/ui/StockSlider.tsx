@@ -172,6 +172,16 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
     setPrice(numValue.toLocaleString());
     setTotalPrice(numValue * quantity);
   };
+ 
+  const handleOutButtonClick = () => {
+    if (showActions) {
+      // 차트가 선택된 상태라면 차트 선택 해제
+      setShowActions(false);
+    } else {
+      // 차트가 선택되지 않은 상태라면 메인으로 이동
+      navigate('/main');
+    }
+  };
 
   if (isLoading || !stockList.length) {
     return <div>Loading stocks...</div>;
@@ -188,12 +198,12 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
 
   return (
     <SlideContainer>
- <HeaderWrapper>
-   <OutButton onClick={() => navigate('/main')}>
-     <img src="/img/out.png" alt="나가기" />
-   </OutButton>
-   <StyledPointBadge points={2000} />
- </HeaderWrapper>
+    <HeaderWrapper>
+      <OutButton onClick={handleOutButtonClick}>
+        <img src="/img/out.png" alt="나가기" />
+      </OutButton>
+      <StyledPointBadge points={2000} />
+    </HeaderWrapper>
  <PrevButton onClick={handlePrevSlide} disabled={currentSlide === 0} $show={!showActions}>
   <img src="/img/arrow2.png" alt="이전" />
 </PrevButton>
@@ -333,7 +343,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
               </ResultRow>
               <ResultButtonGroup>
                 <SingleButton 
-                  color="#1B63AB" 
+                  color="#50b498" 
                   onClick={() => {
                     setShowResultModal(false);
                     setShowTradeCompletionModal(true);
@@ -357,7 +367,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
       <CompletionModalContent>
       <CompletionMessage>
   {`${tradeResult.stockName} ${tradeResult.quantity}주를 
-  ${tradeResult.price.toLocaleString()}포인트에 ${tradeResult.tradeType === 'buy' ? '매수' : '매도'}하였습니다.`}
+  ${tradeResult.totalPrice.toLocaleString()}포인트에 ${tradeResult.tradeType === 'buy' ? '매수' : '매도'}하였습니다.`}
 </CompletionMessage>
         <CompletionButtonGroup>
         <CompletionButton 
@@ -383,7 +393,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
                 오늘은 더 이상 {tradeType === 'buy' ? '매수' : '매도'}를 할 수 없습니다.
               </LimitText>
               <ResultButtonGroup>
-                <SingleButton color="#1B63AB" onClick={() => setShowLimitModal(false)}>
+                <SingleButton color="#50b498" onClick={() => setShowLimitModal(false)}>
                   확인
                 </SingleButton>
               </ResultButtonGroup>
@@ -676,7 +686,7 @@ const ConfirmButton = styled(Button)<{ type: 'buy' | 'sell' }>`
   background: ${props => props.type === 'buy' ? '#1B63AB' : '#1B63AB'};
   color: white;
   &:hover {
-    background: ${props => props.type === 'buy' ? '#145293' : '#1B63AB'};
+    background: ${props => props.type === 'buy' ? '#1B63AB' : '#1B63AB'};
   }
 `;
 
@@ -725,11 +735,11 @@ const CompletionButtonGroup = styled(ResultButtonGroup)`
   margin-top: 24px;
 `;
 
-const CompletionButton = styled(SingleButton).attrs({ color: '#1B63AB' })`
+const CompletionButton = styled(SingleButton).attrs({ color: '#50B498' })`
   border-radius: 6px;
   
   &:hover {
-    background: #145293;
+    background: #50B498;
   }
 `;
 
@@ -754,8 +764,6 @@ const OutButton = styled.button`
    height: 22px;
  }
 `;
-
-
 
 
 

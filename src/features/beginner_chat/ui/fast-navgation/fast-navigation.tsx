@@ -1,3 +1,4 @@
+// ui/fast-navgation/fast-navigation.tsx
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
@@ -223,7 +224,7 @@ const GraphExplanationPage = () => {
         <span>크기를 확인할 수 있어요</span>
       </ArrowWithText> 
 
-      
+    
 
       <TopBar>
         <ExitButton onClick={() => navigate(-1)}>
