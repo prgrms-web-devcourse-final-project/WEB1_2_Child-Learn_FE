@@ -8,13 +8,14 @@ import { withQuery } from './providers/withQuery';
 import { useEffect } from 'react';
 import { silentRefresh } from '@/features/auth/login/lib/setupInterceptors';
 import { useAuthStore } from '@/entities/User/model/store/authStore';
+import { ToastContainer, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const accessToken = useAuthStore((state) => state.accessToken); // 👈 추가
+  const accessToken = useAuthStore((state) => state.accessToken);
 
   useEffect(() => {
-    // 인증은 됐지만 accessToken이 없을 때만 refresh
     if (isAuthenticated && !accessToken) {
       silentRefresh();
     }
@@ -23,6 +24,19 @@ function App() {
   return (
     <StyleSheetManager shouldForwardProp={(prop) => prop !== 'isSelected'}>
       <BrowserRouter>
+        <ToastContainer // 👈 Layout 밖으로 이동
+          position="top-center"
+          autoClose={4000}
+          hideProgressBar
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable={false}
+          pauseOnHover
+          closeButton={false}
+          transition={Slide}
+        />
         <Layout>
           <Router />
         </Layout>

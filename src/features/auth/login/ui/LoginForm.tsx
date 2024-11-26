@@ -3,13 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { AuthInput } from '@/shared/ui/AuthInput/AuthInput';
 import { AuthButton } from '@/shared/ui/AuthButton/AuthButton';
-import { useLogin } from '../lib/queries'; // import 경로 변경
+import { useLogin } from '../lib/queries';
 import { LoginRequest } from '../model/types';
-import { useToast } from '@/shared/lib/toast/ToastContext';
+import showToast from '@/shared/lib/toast'; // 변경
 
 export const LoginForm = () => {
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const { mutate, isPending } = useLogin();
 
   const [formData, setFormData] = useState<LoginRequest>({
@@ -25,15 +24,18 @@ export const LoginForm = () => {
     }));
   };
 
-  // 제출 핸들러 수정
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     mutate(formData, {
       onSuccess: () => {
-        navigate('/main'); // 성공시 페이지 이동
+        showToast.success('로그인에 성공하였습니다!');
+        setTimeout(() => {
+          // 👈 약간의 딜레이 추가
+          navigate('/main');
+        }, 100);
       },
       onError: (error) => {
-        showToast(error.message || '로그인에 실패했습니다.');
+        showToast.error(error.message || '로그인에 실패했습니다.'); // 👈 변경
         setFormData((prev) => ({
           ...prev,
           pw: '',
@@ -70,8 +72,6 @@ export const LoginForm = () => {
       </InputGroup>
 
       <AuthButton type="submit" disabled={isPending}>
-        {' '}
-        {/* 👈 isLoading → isPending */}
         {isPending ? '로그인 중...' : '로그인'}
       </AuthButton>
 

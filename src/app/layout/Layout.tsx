@@ -1,7 +1,6 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import { ToastProvider } from '@/shared/lib/toast/ToastContext';
 import Header from '../../widgets/Header/index';
 import FloatingGNB from '../../widgets/Footer/index';
 import { BackButton } from '../../widgets/BackButton/index';
@@ -63,12 +62,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       <GlobalStyles />
       <AppWrapper>
         <AppContainer>
-          <ToastProvider>
-            {shouldShowHeader && <Header />}
-            {!shouldShowHeader && shouldShowBackButton && <BackButton />}
-            <ScrollContainer>{children}</ScrollContainer>
-            {shouldShowGNB && <FloatingGNB />}
-          </ToastProvider>
+          {shouldShowHeader && <Header />}
+          {!shouldShowHeader && shouldShowBackButton && <BackButton />}
+          <ScrollContainer>{children}</ScrollContainer>
+          {shouldShowGNB && <FloatingGNB />}
         </AppContainer>
       </AppWrapper>
     </>
@@ -153,6 +150,80 @@ const GlobalStyles = createGlobalStyle`
       font-size: 14px;
     }
   }
+
+  /* Toast 컨테이너 위치 설정 */
+  .Toastify__toast-container {
+    width: auto !important;
+    max-width: 350px !important;
+    top: 1rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    padding: 0 !important;
+  }
+
+  /* 공통 Toast 스타일 */
+  .Toastify__toast {
+    margin: 0 auto !important;
+    min-height: unset !important;
+    padding: 16px 24px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    font-family: 'Roboto', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  /* Toast 내부 컨텐츠 스타일 */
+  .Toastify__toast-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: center !important;
+    justify-content: center !important;
+    flex: none !important;
+  }
+
+  /* 불필요한 요소 제거 */
+  .Toastify__toast-icon,
+  .Toastify__close-button {
+    display: none !important;
+  }
+
+  /* 타입별 배경색 설정 */
+  .Toastify__toast--error {
+    background-color: #ef4444 !important;
+    color: white !important;
+  }
+
+  .Toastify__toast--success {
+    background-color: #10b981 !important;
+    color: white !important;
+  }
+
+  .Toastify__toast--info {
+    background-color: #3b82f6 !important;
+    color: white !important;
+  }
+
+  /* 나타나는 애니메이션 */
+  .Toastify__toast-enter {
+    transform: translateY(-150%) !important;
+  }
+
+  .Toastify__toast-enter-active {
+    transform: translateY(0) !important;
+    transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+  }
+
+  /* 사라지는 애니메이션 */
+  .Toastify__toast-exit {
+    transform: translateY(0) !important;
+  }
+
+  .Toastify__toast-exit-active {
+    transform: translateY(-150%) !important;
+    transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+  }
+
 `;
 
 const AppWrapper = styled.div`
