@@ -3,20 +3,23 @@ import { StyleSheetManager } from 'styled-components';
 import { Layout } from '../app/layout/Layout';
 import Router from './router/Router';
 import { withAuth } from './providers/withAuth';
-import { CookiesProvider } from 'react-cookie';
+import { withCookie } from './providers/withCookie';
+import { useEffect } from 'react';
+import { silentRefresh } from '@/features/auth/login/lib/setupInterceptors';
 
 function App() {
+  useEffect(() => {
+    silentRefresh();
+  }, []);
   return (
-    <CookiesProvider>
-      <StyleSheetManager shouldForwardProp={(prop) => prop !== 'isSelected'}>
-        <BrowserRouter>
-          <Layout>
-            <Router />
-          </Layout>
-        </BrowserRouter>
-      </StyleSheetManager>
-    </CookiesProvider>
+    <StyleSheetManager shouldForwardProp={(prop) => prop !== 'isSelected'}>
+      <BrowserRouter>
+        <Layout>
+          <Router />
+        </Layout>
+      </BrowserRouter>
+    </StyleSheetManager>
   );
 }
 
-export default withAuth(App);
+export default withAuth(withCookie(App)); // withCookie 추가

@@ -6,7 +6,6 @@ import { User } from '@/entities/User/model/types';
 interface AuthState {
   isAuthenticated: boolean;
   accessToken: string | null;
-  refreshToken: string | null;
   user: User | null;
 
   setAuth: (
@@ -14,24 +13,20 @@ interface AuthState {
     user: User
   ) => void;
   logout: () => void;
-  updateTokens: (tokens: { accessToken: string; refreshToken: string }) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      isAuthenticated: !!TokenService.getAccessToken(),
-      accessToken: TokenService.getAccessToken(),
-      refreshToken: TokenService.getRefreshToken(),
+      isAuthenticated: false,
+      accessToken: null,
       user: null,
 
       setAuth: (tokens, user) => {
-        TokenService.setAccessToken(tokens.accessToken);
         TokenService.setRefreshToken(tokens.refreshToken);
         set({
           isAuthenticated: true,
           accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
           user,
         });
       },
@@ -41,22 +36,13 @@ export const useAuthStore = create<AuthState>()(
         set({
           isAuthenticated: false,
           accessToken: null,
-          refreshToken: null,
           user: null,
-        });
-      },
-
-      updateTokens: (tokens) => {
-        TokenService.setAccessToken(tokens.accessToken);
-        TokenService.setRefreshToken(tokens.refreshToken);
-        set({
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
         });
       },
     }),
     {
       name: 'auth-storage',
+      partialize: (state) => ({ user: state.user }), // accessToken은 저장하지 않음
     }
   )
 );

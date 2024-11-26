@@ -1,7 +1,31 @@
-import axios from 'axios';
 import { baseApi } from '@/shared/api/base';
 import { useAuthStore } from '@/entities/User/model/store/authStore';
 import { loginApi } from './loginApi';
+import { AUTH_CONFIG } from '@/shared/config';
+
+export const silentRefresh = async () => {
+  try {
+    const response = await loginApi.refresh();
+    useAuthStore.getState().setAuth(
+      {
+        accessToken: response.accessToken,
+        refreshToken: '',
+      },
+      response.user
+    );
+
+    setTimeout(
+      silentRefresh,
+      AUTH_CONFIG.accessTokenExpiresIn - AUTH_CONFIG.refreshTokenGracePeriod
+    );
+  } catch (error) {
+    useAuthStore.getState().logout();
+    const event = new CustomEvent('AUTH_ERROR', {
+      detail: '로그인이 만료되었습니다. 다시 로그인해주세요.',
+    });
+    window.dispatchEvent(event);
+  }
+};
 
 export const setupAuthInterceptors = () => {
   baseApi.interceptors.request.use(
@@ -22,38 +46,12 @@ export const setupAuthInterceptors = () => {
 
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
-
         try {
-          const refreshToken = useAuthStore.getState().refreshToken;
-
-          // refreshToken이 없으면 바로 로그아웃
-          if (!refreshToken) {
-            useAuthStore.getState().logout();
-            throw new Error('인증이 만료되었습니다.');
-          }
-
-          const { accessToken, refreshToken: newRefreshToken } =
-            await loginApi.refresh(refreshToken);
-
-          useAuthStore
-            .getState()
-            .updateTokens({ accessToken, refreshToken: newRefreshToken });
+          await silentRefresh();
           return baseApi(originalRequest);
         } catch (refreshError) {
-          useAuthStore.getState().logout();
-          if (axios.isAxiosError(refreshError)) {
-            throw new Error(
-              refreshError.response?.data?.message || '인증이 만료되었습니다.'
-            );
-          }
-          throw new Error('인증이 만료되었습니다.');
+          return Promise.reject(refreshError);
         }
-      }
-
-      if (axios.isAxiosError(error)) {
-        throw new Error(
-          error.response?.data?.message || '요청 처리 중 오류가 발생했습니다.'
-        );
       }
       return Promise.reject(error);
     }

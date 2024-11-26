@@ -1,9 +1,16 @@
 import axios from 'axios';
 import { baseApi } from '@/shared/api/base';
 import { API_CONFIG } from '@/shared/config';
-import { LoginRequest, LoginResponse, RefreshResponse } from '../model/types';
+import { LoginRequest, LoginResponse } from '../model/types';
+import { User } from '@/entities/User/model/types';
+
+interface RefreshResponse {
+  accessToken: string;
+  user: User; // User 타입은 기존 타입 사용
+}
 
 export const loginApi = {
+  // 일반 로그인
   login: async (data: LoginRequest): Promise<LoginResponse> => {
     try {
       const response = await baseApi.post<LoginResponse>(
@@ -19,11 +26,11 @@ export const loginApi = {
     }
   },
 
-  refresh: async (refreshToken: string): Promise<RefreshResponse> => {
+  // refreshToken은 쿠키에서 자동 전송되므로 파라미터 제거
+  refresh: async () => {
     try {
       const response = await baseApi.post<RefreshResponse>(
-        API_CONFIG.endpoints.refresh,
-        { refreshToken }
+        API_CONFIG.endpoints.refresh
       );
       return response.data;
     } catch (error) {
