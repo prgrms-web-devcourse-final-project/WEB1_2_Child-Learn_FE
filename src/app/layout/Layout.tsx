@@ -13,7 +13,6 @@ const HIDDEN_HEADER_PATHS = [
   '/auth/signup',
   '/flip-card',
   '/word-quiz',
-  ,
   '/exchange',
 ];
 
