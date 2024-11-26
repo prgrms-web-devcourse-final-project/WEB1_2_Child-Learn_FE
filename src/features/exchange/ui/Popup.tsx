@@ -8,13 +8,13 @@ interface PopupProps {
   onClose: () => void;
 }
 
-const Popup = ({ message, pointsUsed = 0, coinsGained = 0, buttonText, onClose }: PopupProps) => (
+const Popup = ({ message, pointsUsed, coinsGained, buttonText, onClose }: PopupProps) => (
   <PopupContainer>
     <Message>{message}</Message>
     <DetailsContainer>
       <DetailBox>
         <DetailTitle>소모된 포인트</DetailTitle>
-        <DetailValue>{pointsUsed.toLocaleString()}</DetailValue>
+        <DetailValue>{pointsUsed?.toLocaleString()}</DetailValue>
       </DetailBox>
       <DetailBox>
         <DetailTitle>획득한 코인</DetailTitle>

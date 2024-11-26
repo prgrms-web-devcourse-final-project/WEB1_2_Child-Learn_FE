@@ -33,7 +33,7 @@ const ExchangePage = () => {
     if (pointsToExchange <= 0 || pointsToExchange > point.currentPoints) {
       setPopupMessage('환전 가능한 포인트를 입력해주세요!');
       setPopupButtonText('다시 입력하기');
-      setPopupDetails({});
+      setPopupDetails({ pointsUsed: 0, coinsGained: 0 });
       setIsPopupVisible(true);
       return;
     }
@@ -50,6 +50,13 @@ const ExchangePage = () => {
       createdAt: new Date().toISOString(),
     });
 
+    // 환전 성공 시 팝업 데이터 설정
+  setPopupMessage('환전이 완료되었습니다!');
+  setPopupButtonText('환전 종료하기');
+  setPopupDetails({
+    pointsUsed: pointsToExchange,
+    coinsGained: coinsToExchange,
+  });
     setIsPopupVisible(true); // 팝업 표시
   };
 
