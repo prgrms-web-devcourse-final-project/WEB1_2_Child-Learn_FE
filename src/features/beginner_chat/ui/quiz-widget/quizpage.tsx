@@ -1,9 +1,10 @@
+// ui/quizpage.tsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import QuizCard from '../ui/quizcard';
-import { FastGraph } from './fastgraph';
-import { BeginQuiz } from '../types/quiz';
-import { BeginStock } from '../types/stock';
+import QuizCard from './quizcard';
+import { FastGraph } from '../fast-graph/fast-graph';
+import { BeginQuiz } from '../../model/types/quiz';
+import { BeginStock } from '../../model/types/stock';
 
 const PageContainer = styled.div`
   padding: 16px;

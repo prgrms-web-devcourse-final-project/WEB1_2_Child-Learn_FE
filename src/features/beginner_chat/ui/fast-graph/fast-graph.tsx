@@ -1,95 +1,9 @@
+// ui/fast-graph/fast-graph.tsx
 import React from 'react';
 import styled from 'styled-components';
 import ReactApexChart from 'react-apexcharts';
+import { useNavigate } from 'react-router-dom';
 
-const GraphContainer = styled.div`
-  width: 355px;
-  background: white;
-  padding: 5;
-  margin-bottom: 20px;
-`;
-
-const GraphHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-`;
-
-const GraphTitle = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 20px;
-`;
-
-const StaminaIndicator = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #666;
-  font-size: 14px;
-
-  &::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background-color: #f4a261;
-    border-radius: 50%;
-  }
-`;
-
-const Select = styled.select`
-  padding: 6px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  background: white;
-  color: #666;
-  outline: none;
-  font-size: 14px;
-  cursor: pointer;
-
-  &:hover {
-    border-color: #ccc;
-  }
-`;
-
-const TopBar = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  width: 100%;
-`;
-
-const ExitButton = styled.div`
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  img {
-    width: 24px;
-    height: 24px;
-  }
-`;
-
-const Points = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: #ffffff;
-  padding: 10px 12px;
-  border-radius: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  img {
-    width: 20px;
-    height: 20px;
-  }
-
-  span {
-    color: #666;
-    font-size: 14px;
-  }
-`;
 
 interface GraphData {
   value: number;
@@ -101,6 +15,7 @@ interface FastGraphProps {
 }
 
 export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
+  const navigate = useNavigate();
   const days = ['월', '화', '수', '목', '금', '토', '일'];
   const today = new Date().getDay();
   const adjustedToday = today === 0 ? 6 : today - 1;
@@ -216,17 +131,137 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
     },
   };
 
+  const GraphContainer = styled.div`
+  width: 355px;
+  background: white;
+  padding: 5;
+  margin-bottom: 20px;
+`;
+
+const GraphHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+`;
+
+const GraphTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+`;
+
+const StaminaIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+  font-size: 14px;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: #f4a261;
+    border-radius: 50%;
+  }
+`;
+
+const Select = styled.select`
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  outline: none;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #ccc;
+  }
+`;
+
+const TopBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  width: 100%;
+`;
+
+const ExitButton = styled.div`
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  img {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+const Points = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  padding: 10px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  img {
+    width: 20px;
+    height: 20px;
+  }
+
+  span {
+    color: #666;
+    font-size: 14px;
+  }
+`;
+
+// 새로운 Header 컨테이너 추가
+const HeaderWrapper = styled.div`
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 10px;
+`;
+
+const OutButton = styled.button`
+ background: none;
+ border: none;
+ cursor: pointer;
+ padding: 0;
+ z-index: 10;
+ 
+ img {
+   width: 22px;
+   height: 22px;
+ }
+`;
+
+const StyledPointBadge = styled.div<{ points: number }>`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  font-size: 14px;
+`;
+
   return (
     <GraphContainer>
-      <TopBar>
-        <ExitButton>
-          <img src="/img/out.png" alt="exit" />
-        </ExitButton>
-        <Points>
-          <img src="/img/coins.png" alt="points" />
-          <span>DB에서 가지고 오기</span>
-        </Points>
-      </TopBar>
+      <HeaderWrapper>
+        
+   <OutButton onClick={() => navigate('/main')}>
+     <img src="/img/out.png" alt="나가기" />
+   </OutButton>
+   <StyledPointBadge points={2000} />
+ </HeaderWrapper>
       <GraphHeader>
         <GraphTitle>
           <StaminaIndicator>
@@ -251,4 +286,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
       />
     </GraphContainer>
   );
+
+
+  
 };

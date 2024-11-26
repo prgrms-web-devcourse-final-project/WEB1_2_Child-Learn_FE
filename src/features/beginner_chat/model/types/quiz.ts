@@ -1,3 +1,4 @@
+// types/quiz.ts
 export interface BeginQuiz {
     quiz_id: number;
     content: string;
