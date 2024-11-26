@@ -27,18 +27,29 @@ const HIDDEN_GNB_PATHS = [
 // BackButton만 표시할 페이지 경로들
 const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz'];
 
+// 정확한 경로 매칭을 위한 함수
+const isExactPath = (currentPath: string, targetPath: string) => {
+  // 정확히 같거나, auth 경로인 경우 해당 경로로 시작하는지 확인
+  if (targetPath.startsWith('/auth/')) {
+    return currentPath.startsWith(targetPath);
+  }
+  // 그 외의 경우 정확히 일치하는지 확인
+  return currentPath === targetPath;
+};
+
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
-  // 동적 경로를 처리하기 위한 조건
   const shouldShowHeader = !HIDDEN_HEADER_PATHS.some((path) =>
-    location.pathname.startsWith(path)
+    isExactPath(location.pathname, path)
   );
+
   const shouldShowGNB = !HIDDEN_GNB_PATHS.some((path) =>
-    location.pathname.startsWith(path)
+    isExactPath(location.pathname, path)
   );
+
   const shouldShowBackButton = SHOW_BACK_BUTTON_PATHS.some((path) =>
-    location.pathname.startsWith(path)
+    isExactPath(location.pathname, path)
   );
 
   return (
@@ -47,8 +58,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       <AppWrapper>
         <AppContainer>
           <ToastProvider>
-            {' '}
-            {/* 여기에 추가 */}
             {shouldShowHeader && <Header />}
             {!shouldShowHeader && shouldShowBackButton && <BackButton />}
             <ScrollContainer>{children}</ScrollContainer>

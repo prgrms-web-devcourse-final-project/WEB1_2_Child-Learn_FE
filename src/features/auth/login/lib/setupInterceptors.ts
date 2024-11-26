@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { baseApi } from '@/shared/api/base';
-import { TokenService } from '@/shared/lib/token';
+import { useAuthStore } from '@/entities/User/model/store/authStore';
 import { loginApi } from './loginApi';
 
 export const setupAuthInterceptors = () => {
   baseApi.interceptors.request.use(
     (config) => {
-      const token = TokenService.getAccessToken();
+      const token = useAuthStore.getState().accessToken;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -24,17 +24,23 @@ export const setupAuthInterceptors = () => {
         originalRequest._retry = true;
 
         try {
-          const refreshToken = TokenService.getRefreshToken();
+          const refreshToken = useAuthStore.getState().refreshToken;
+
+          // refreshToken이 없으면 바로 로그아웃
+          if (!refreshToken) {
+            useAuthStore.getState().logout();
+            throw new Error('인증이 만료되었습니다.');
+          }
+
           const { accessToken, refreshToken: newRefreshToken } =
             await loginApi.refresh(refreshToken);
 
-          TokenService.setAccessToken(accessToken);
-          TokenService.setRefreshToken(newRefreshToken);
-
+          useAuthStore
+            .getState()
+            .updateTokens({ accessToken, refreshToken: newRefreshToken });
           return baseApi(originalRequest);
         } catch (refreshError) {
-          TokenService.clearTokens();
-          // refreshError가 axios 에러인지 체크
+          useAuthStore.getState().logout();
           if (axios.isAxiosError(refreshError)) {
             throw new Error(
               refreshError.response?.data?.message || '인증이 만료되었습니다.'
@@ -44,7 +50,6 @@ export const setupAuthInterceptors = () => {
         }
       }
 
-      // 일반적인 에러 처리
       if (axios.isAxiosError(error)) {
         throw new Error(
           error.response?.data?.message || '요청 처리 중 오류가 발생했습니다.'
