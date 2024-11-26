@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { BeginQuiz } from '../types/quiz';
+import { BeginQuiz } from '../../model/types/quiz';
 
 const Container = styled.div`
   width: 100%;
@@ -116,7 +116,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onAnswer, selectedAnswer }) =
         
         <OptionsContainer>
           <OptionButton 
-            $isSelected={selectedAnswer === 'O'}  // $ prefix 추가
+            $isSelected={selectedAnswer === 'O'}
             onClick={() => onAnswer('O')}
             disabled={!!selectedAnswer}
           >
@@ -125,7 +125,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onAnswer, selectedAnswer }) =
           </OptionButton>
           
           <OptionButton 
-            $isSelected={selectedAnswer === 'X'}  // $ prefix 추가
+            $isSelected={selectedAnswer === 'X'}
             onClick={() => onAnswer('X')}
             disabled={!!selectedAnswer}
           >

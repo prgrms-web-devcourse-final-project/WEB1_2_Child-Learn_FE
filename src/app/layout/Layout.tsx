@@ -16,12 +16,15 @@ const HIDDEN_HEADER_PATHS = [
 ];
 
 // GNB를 숨길 페이지 경로들
+
 const HIDDEN_GNB_PATHS = [
   '/',
   '/auth/login',
   '/auth/signup',
   '/flip-card',
   '/word-quiz',
+  ,
+  '/fast-navigation',
 ];
 
 // BackButton만 표시할 페이지 경로들
