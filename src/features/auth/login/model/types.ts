@@ -4,7 +4,15 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  jwt: string;
-  memberId: number;
+  id: number;
+  loginId: string;
   username: string;
+  birth: string;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface RefreshResponse {
+  accessToken: string;
+  refreshToken: string;
 }

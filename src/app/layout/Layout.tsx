@@ -1,20 +1,25 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import Header from '../../widgets/Header/index'; // Header 컴포넌트 import
+import { ToastProvider } from '@/shared/lib/toast/ToastContext';
+import Header from '../../widgets/Header/index';
 import FloatingGNB from '../../widgets/Footer/index';
 import { BackButton } from '../../widgets/BackButton/index';
 
 // 헤더를 숨길 페이지 경로들
 const HIDDEN_HEADER_PATHS = [
-  '/auth/login', '/auth/signup',
-  '/flip-card', '/word-quiz'
+  '/auth/login',
+  '/auth/signup',
+  '/flip-card',
+  '/word-quiz',
 ];
 
 // GNB를 숨길 페이지 경로들
 const HIDDEN_GNB_PATHS = [
-  '/auth/login', '/auth/signup',
-  '/flip-card', '/word-quiz'
+  '/auth/login',
+  '/auth/signup',
+  '/flip-card',
+  '/word-quiz',
 ];
 
 // BackButton만 표시할 페이지 경로들
@@ -22,7 +27,7 @@ const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz'];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  
+
   // 동적 경로를 처리하기 위한 조건
   const shouldShowHeader = !HIDDEN_HEADER_PATHS.some((path) =>
     location.pathname.startsWith(path)
@@ -39,10 +44,14 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       <GlobalStyles />
       <AppWrapper>
         <AppContainer>
-        {shouldShowHeader && <Header />}
-          {!shouldShowHeader && shouldShowBackButton && <BackButton />}
-          <ScrollContainer>{children}</ScrollContainer>
-          {shouldShowGNB && <FloatingGNB />}
+          <ToastProvider>
+            {' '}
+            {/* 여기에 추가 */}
+            {shouldShowHeader && <Header />}
+            {!shouldShowHeader && shouldShowBackButton && <BackButton />}
+            <ScrollContainer>{children}</ScrollContainer>
+            {shouldShowGNB && <FloatingGNB />}
+          </ToastProvider>
         </AppContainer>
       </AppWrapper>
     </>

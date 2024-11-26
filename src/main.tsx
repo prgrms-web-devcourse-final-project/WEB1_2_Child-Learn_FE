@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { CookiesProvider } from 'react-cookie';
 import './index.css';
 import App from './app/App.tsx';
 
@@ -14,10 +15,11 @@ if (process.env.NODE_ENV === 'development') {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <CookiesProvider>
+      <App />
+    </CookiesProvider>
   </StrictMode>
 );
 
 import * as msw from 'msw';
-
 console.log(msw);
