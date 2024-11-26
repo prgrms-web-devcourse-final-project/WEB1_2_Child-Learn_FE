@@ -8,17 +8,17 @@ import { BackButton } from '../../widgets/BackButton/index';
 // 헤더를 숨길 페이지 경로들
 const HIDDEN_HEADER_PATHS = [
   '/auth/login', '/auth/signup',
-  '/flip-card', '/word-quiz', '/exchange'
+  '/flip-card', '/word-quiz', '/exchange', '/avatar'
 ];
 
 // GNB를 숨길 페이지 경로들
 const HIDDEN_GNB_PATHS = [
   '/auth/login', '/auth/signup',
-  '/flip-card', '/word-quiz'
+  '/flip-card', '/word-quiz', '/avatar'
 ];
 
 // BackButton만 표시할 페이지 경로들
-const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz', '/exchange'];
+const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz', '/exchange', '/avatar'];
 
 // BackButton을 숨길 페이지 경로 추가
 const HIDDEN_BACK_BUTTON_PATHS = ['/word-quiz/result'];
