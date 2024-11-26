@@ -128,7 +128,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
         message: result.warning ? `${tradeType === 'buy' ? '매수' : '매도'} 실패` : `${tradeType === 'buy' ? '매수' : '매도'} 완료`,
         tradeType: tradeType,
         stockName: currentStock.midName,
-        price: tradePoint,
+        price: parseInt(price.replace(/,/g, '')),
         quantity: quantity,
         totalPrice: tradePoint
       });
@@ -268,15 +268,15 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
                     onClick={() => handleQuantityChange(-1)}
                     disabled={quantity <= 1}
                   >
-                    <Minus size={16} />
-                  </QuantityButton>
+                  <img src="/img/minus.png" alt="감소" />
+                    </QuantityButton>
                   <QuantityInput
                     type="text"
                     value={quantity}
                     disabled
                   />
                   <QuantityButton onClick={() => handleQuantityChange(1)}>
-                    <Plus size={16} />
+                    <img src="/img/plus.png" alt="증가" />
                   </QuantityButton>
                 </QuantityControl>
               </FormGroup>
@@ -545,21 +545,21 @@ const ModalContent = styled.div`
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 16px;
+  margin-bottom: 15px;
   &:last-of-type {
     margin-bottom: 24px;
   }
 `;
 
 const Label = styled.div`
-  font-size: 14px;
+  font-size: 13px;
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 `;
 
 const Input = styled.input`
-  width: 100%;
-  height: 40px;
+  width: 70%;
+  height: 35px;
   padding: 0 12px;
   border: 1px solid #eaeaea;
   border-radius: 6px;
@@ -576,20 +576,25 @@ const Input = styled.input`
 const QuantityControl = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
 `;
 
 const QuantityButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 25px;
+  height: 35px;
   border: 1px solid #eaeaea;
-  border-radius: 4px;
+  border-radius: 5px;
   background: white;
   color: #666;
   cursor: pointer;
+
+  img {
+    width: 12px;
+    height: 12px;
+  }
 
   &:hover {
     background: #f5f5f5;
@@ -602,7 +607,7 @@ const QuantityButton = styled.button`
 `;
 
 const QuantityInput = styled(Input)`
-  width: 80px;
+  width: 43px;
   text-align: center;
   padding: 0;
 `;
@@ -668,10 +673,10 @@ const SingleButton = styled(Button)<{ color: string }>`
 `;
 
 const ConfirmButton = styled(Button)<{ type: 'buy' | 'sell' }>`
-  background: ${props => props.type === 'buy' ? '#1B63AB' : '#D75442'};
+  background: ${props => props.type === 'buy' ? '#1B63AB' : '#1B63AB'};
   color: white;
   &:hover {
-    background: ${props => props.type === 'buy' ? '#145293' : '#C04937'};
+    background: ${props => props.type === 'buy' ? '#145293' : '#1B63AB'};
   }
 `;
 
@@ -695,12 +700,12 @@ const Indicator = styled.div<{ $active: boolean }>`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: ${props => props.$active ? '#1B63AB' : '#ddd'};
+  background-color: ${props => props.$active ? '#50B498' : '#ddd'};
   cursor: pointer;
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: ${props => props.$active ? '#1B63AB' : '#bbb'};
+    background-color: ${props => props.$active ? '#50B498' : '#bbb'};
   }
 `;
 const CompletionModalContent = styled(ModalContent)`

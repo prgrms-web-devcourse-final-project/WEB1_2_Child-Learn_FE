@@ -10,9 +10,9 @@ const mockStocks: MidStock[] = [
 
 
 const samsungPrices = [
- { highPrice: 730, lowPrice: 680, avgPrice: 700, priceDate: "2024-11-26" },
- { highPrice: 730, lowPrice: 680, avgPrice: 700, priceDate: "2024-11-25" },
- { highPrice: 720, lowPrice: 680, avgPrice: 700, priceDate: "2024-11-24" },
+ { highPrice: 750, lowPrice: 680, avgPrice: 740, priceDate: "2024-11-26" },
+ { highPrice: 730, lowPrice: 680, avgPrice: 730, priceDate: "2024-11-25" },
+ { highPrice: 720, lowPrice: 680, avgPrice: 710, priceDate: "2024-11-24" },
  { highPrice: 710, lowPrice: 670, avgPrice: 690, priceDate: "2024-11-23" },
  { highPrice: 730, lowPrice: 690, avgPrice: 710, priceDate: "2024-11-22" },
  { highPrice: 740, lowPrice: 700, avgPrice: 720, priceDate: "2024-11-21" },
