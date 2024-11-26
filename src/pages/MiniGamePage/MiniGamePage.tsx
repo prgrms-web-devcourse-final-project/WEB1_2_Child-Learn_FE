@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const MiniGamePage = () => {
-  const { username, points, setUser } = useUserStore();
+  const { username, currentPoints, setUser } = useUserStore();
   const { isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed } = useFlipCardStore();
   const { isPlayable: isWordQuizPlayable, setLastPlayedDate: setWordQuizLastPlayedDate } = useWordQuizStore();
   const { setLotteries, isPlayable: isLotteryPlayable, setLastPlayedDate: setLotteryLastPlayedDate } = useLotteryStore();
@@ -25,7 +25,8 @@ const MiniGamePage = () => {
       updatedAt: '2024-11-20',
       gameCount: 5,
       birth: '2002-05-06',
-      points: 2000,
+      currentPoints: 2000, // 초기 포인트 설정
+      currentCoins: 10,    // 초기 코인 설정
     });
 
     // 로또 초기 데이터 설정
@@ -84,7 +85,7 @@ const MiniGamePage = () => {
         </GreetingContainer>
         <PointsContainer>
           <img src="/icons/coins 1.png" alt="Coin Icon" />
-          {points} P
+          {currentPoints} P
         </PointsContainer>
       </Header>
   
