@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { stockApi } from '@/shared/api/stock';
-import { ChevronLeft, ChevronRight, Plus, Minus } from 'lucide-react';
 import ArticleComponent from '../../article/article';
 import { TrendPrediction, Relevance } from '../../article/type/article';
 import { MidStock, StockPrice, TradeAvailability } from '../types/stock';
