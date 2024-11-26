@@ -13,6 +13,9 @@ const ExchangePage = () => {
   const { point, coin, setPoint, setCoin, addExchangeDetail } = useCoinPointStore();
   const [exchangePoints, setExchangePoints] = useState(''); // 입력된 환전 포인트
   const [exchangeCoins, setExchangeCoins] = useState(''); // 입력된 환전 코인
+  const [popupMessage, setPopupMessage] = useState(''); // 팝업 메시지
+  const [popupDetails, setPopupDetails] = useState<{ pointsUsed?: number; coinsGained?: number }>({}); // 팝업 상세 정보
+  const [popupButtonText, setPopupButtonText] = useState(''); // 팝업 버튼 텍스트
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
   useEffect(() => {
@@ -28,7 +31,10 @@ const ExchangePage = () => {
     const coinsToExchange = Number(exchangeCoins);
 
     if (pointsToExchange <= 0 || pointsToExchange > point.currentPoints) {
-      alert('환전 가능한 포인트를 입력해주세요.');
+      setPopupMessage('환전 가능한 포인트를 입력해주세요!');
+      setPopupButtonText('다시 입력하기');
+      setPopupDetails({});
+      setIsPopupVisible(true);
       return;
     }
 
@@ -78,8 +84,10 @@ const ExchangePage = () => {
 
       {isPopupVisible && (
         <Popup
-          message={`환전이 완료되었습니다!\n사용된 포인트: ${exchangePoints}, 받은 코인: ${exchangeCoins}`}
-          buttonText="확인"
+          message={popupMessage}
+          pointsUsed={popupDetails.pointsUsed}
+          coinsGained={popupDetails.coinsGained}
+          buttonText={popupButtonText}
           onClose={() => setIsPopupVisible(false)}
         />
       )}
