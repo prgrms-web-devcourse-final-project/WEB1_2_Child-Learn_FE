@@ -6,6 +6,8 @@ import ArticleComponent from '../../article/article';
 import { TrendPrediction, Relevance } from '../../article/type/article';
 import { MidStock, StockPrice, TradeAvailability } from '../types/stock';
 import StockChart from '@/shared/ui/Intermediate/StockChat';
+import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
+import { useNavigate } from 'react-router-dom';
 
 interface TradeResult {
   success: boolean;
@@ -21,8 +23,13 @@ interface StockSliderProps {
   stocks: MidStock[];
 }
 
+const StyledPointBadge = styled(PointBadge)`
+  z-index: 10;
+`;
+
 const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
   // State declarations
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showActions, setShowActions] = useState(false);
   const [showTradeModal, setShowTradeModal] = useState(false);
@@ -116,8 +123,6 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
         ? stockApi.buyStock(currentStock.midStockId, tradePoint)
         : stockApi.sellStock(currentStock.midStockId, tradePoint));
 
-      const currentPrice = parseInt(price.replace(/,/g, ''));
-      
       setTradeResult({
         success: !result.warning,
         message: result.warning ? `${tradeType === 'buy' ? '매수' : '매도'} 실패` : `${tradeType === 'buy' ? '매수' : '매도'} 완료`,
@@ -180,11 +185,18 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
     return null;
   }
 
+
   return (
     <SlideContainer>
-      <PrevButton onClick={handlePrevSlide} disabled={currentSlide === 0} $show={!showActions}>
-        <ChevronLeft size={24} />
-      </PrevButton>
+ <HeaderWrapper>
+   <OutButton onClick={() => navigate('/main')}>
+     <img src="/img/out.png" alt="나가기" />
+   </OutButton>
+   <StyledPointBadge points={2000} />
+ </HeaderWrapper>
+ <PrevButton onClick={handlePrevSlide} disabled={currentSlide === 0} $show={!showActions}>
+  <img src="/img/arrow2.png" alt="이전" />
+</PrevButton>
 
       <ChartContainer onClick={() => setShowActions(true)}>
         {currentStock && priceData.length > 0 && (
@@ -380,13 +392,10 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
         </>
       )}
 
-      <NextButton 
-        onClick={handleNextSlide} 
-        disabled={currentSlide === stockList.length - 1}
-        $show={!showActions}
-      >
-        <ChevronRight size={24} />
-      </NextButton>
+      
+<NextButton onClick={handleNextSlide} disabled={currentSlide === stockList.length - 1} $show={!showActions}>
+  <img src="/img/arrow2.png" alt="다음" />
+</NextButton>
 
       <SlideIndicators $show={!showActions}>
         {stockList.map((stock, index) => (
@@ -432,6 +441,11 @@ const NavigationButton = styled.button<{ $show?: boolean }>`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: ${props => props.$show ? 'flex' : 'none'};
 
+  img {
+    width: 24px;
+    height: 24px;
+  }
+
   &:hover {
     background: rgba(255, 255, 255, 1);
   }
@@ -443,11 +457,14 @@ const NavigationButton = styled.button<{ $show?: boolean }>`
 `;
 
 const PrevButton = styled(NavigationButton)`
-  left: 10px;
+  left: 1px;
+  img {
+    transform: rotate(180deg);  
+  }
 `;
 
 const NextButton = styled(NavigationButton)`
-  right: 10px;
+  right: 1px;
 `;
 
 const ChartContainer = styled.div`
@@ -710,5 +727,31 @@ const CompletionButton = styled(SingleButton).attrs({ color: '#1B63AB' })`
     background: #145293;
   }
 `;
+
+
+// 새로운 Header 컨테이너 추가
+const HeaderWrapper = styled.div`
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 10px;
+`;
+
+const OutButton = styled.button`
+ background: none;
+ border: none;
+ cursor: pointer;
+ padding: 0;
+ z-index: 10;
+ 
+ img {
+   width: 22px;
+   height: 22px;
+ }
+`;
+
+
+
+
 
 export default StockSlider;

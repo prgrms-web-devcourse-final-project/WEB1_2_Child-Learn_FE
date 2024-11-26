@@ -6,7 +6,6 @@ import { MidStock } from '../../../features/Intermediate_chat/types/stock';
 import { stockApi } from '@/shared/api/stock';
 
 
-
 const IntermediatePage: React.FC = () => {
   const [stocks, setStocks] = useState<MidStock[]>([]);
   const [isLoading, setIsLoading] = useState(true);
