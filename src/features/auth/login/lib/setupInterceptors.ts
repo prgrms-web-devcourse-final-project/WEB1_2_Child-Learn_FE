@@ -44,6 +44,12 @@ export const setupAuthInterceptors = () => {
     async (error) => {
       const originalRequest = error.config;
 
+      // 로그인 요청 실패는 바로 에러 반환
+      if (originalRequest.url?.includes('/member/login')) {
+        return Promise.reject(error);
+      }
+
+      // 인증된 요청에서 401 발생시에만 토큰 갱신 시도
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
         try {

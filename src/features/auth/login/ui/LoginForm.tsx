@@ -3,22 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { AuthInput } from '@/shared/ui/AuthInput/AuthInput';
 import { AuthButton } from '@/shared/ui/AuthButton/AuthButton';
-import { useLogin } from '../model/useLogin';
+import { useLogin } from '../lib/queries'; // import 경로 변경
 import { LoginRequest } from '../model/types';
 import { useToast } from '@/shared/lib/toast/ToastContext';
 
 export const LoginForm = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { login, isLoading } = useLogin();
+  const { mutate, isPending } = useLogin();
 
-  // 폼 상태 관리
   const [formData, setFormData] = useState<LoginRequest>({
     loginId: '',
     pw: '',
   });
 
-  // 입력 핸들러
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -27,24 +25,21 @@ export const LoginForm = () => {
     }));
   };
 
-  // 제출 핸들러
-  const handleSubmit = async (e: React.FormEvent) => {
+  // 제출 핸들러 수정
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await login(formData);
-      navigate('/main');
-    } catch (error) {
-      // 에러 메시지를 토스트로 표시
-      showToast(
-        error instanceof Error ? error.message : '로그인에 실패했습니다.'
-      );
-
-      // 폼 초기화는 선택사항
-      setFormData((prev) => ({
-        ...prev,
-        pw: '', // 비밀번호만 초기화
-      }));
-    }
+    mutate(formData, {
+      onSuccess: () => {
+        navigate('/main'); // 성공시 페이지 이동
+      },
+      onError: (error) => {
+        showToast(error.message || '로그인에 실패했습니다.');
+        setFormData((prev) => ({
+          ...prev,
+          pw: '',
+        }));
+      },
+    });
   };
 
   return (
@@ -74,8 +69,10 @@ export const LoginForm = () => {
         />
       </InputGroup>
 
-      <AuthButton type="submit" disabled={isLoading}>
-        {isLoading ? '로그인 중...' : '로그인'}
+      <AuthButton type="submit" disabled={isPending}>
+        {' '}
+        {/* 👈 isLoading → isPending */}
+        {isPending ? '로그인 중...' : '로그인'}
       </AuthButton>
 
       <OrText>또는 계정 연동</OrText>

@@ -5,4 +5,5 @@ export const baseApi = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // 쿠키 송수신을 위한 설정
 });
