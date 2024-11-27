@@ -12,6 +12,7 @@ import FlipCardGamePage from '../../pages/MiniGamePage/FlipCardGamePage/FlipCard
 import WordQuizGamePage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizGamePage';
 import WordQuizResultPage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizResultPage';
 import AvatarPage from '../../pages/AvatarPage/AvatarPage';
+import AvatarDetailPage from "../../pages/AvatarPage/AvatarDetailPage";
 import ExchangePage from '../../pages/exchangePage/ExchangePage';
 
 
@@ -28,6 +29,7 @@ export default function Router() {
       <Route path="/word-quiz/:level" element={<WordQuizGamePage />} />
       <Route path="/word-quiz/result/:level" element={<WordQuizResultPage />} />
       <Route path="/avatar" element={<AvatarPage />} />
+      <Route path="/avatar/details/:category/:product" element={<AvatarDetailPage />} />
       <Route path="/exchange" element={<ExchangePage />} />
       <Route path="/article" element={<ArticlePage />} /> {/* 경로 수정 */}
       <Route path="/quiz" element={<QuizPage />} />
