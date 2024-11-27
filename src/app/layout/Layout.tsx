@@ -1,47 +1,62 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import Header from '../../widgets/Header/index'; // Header 컴포넌트 import
+import Header from '../../widgets/Header/index';
 import FloatingGNB from '../../widgets/Footer/index';
 import { BackButton } from '../../widgets/BackButton/index';
 
 // 헤더를 숨길 페이지 경로들
 const HIDDEN_HEADER_PATHS = [
-  '/auth/login', '/auth/signup',
-  '/flip-card', '/word-quiz', '/exchange'
+  '/',
+  '/auth/login',
+  '/auth/signup',
+  '/flip-card',
+  '/word-quiz',
+  '/exchange',
 ];
 
 // GNB를 숨길 페이지 경로들
 
 const HIDDEN_GNB_PATHS = [
-  '/auth/login', '/auth/signup',
-  '/flip-card', '/word-quiz',
-  '/fast-navigation'
+  '/',
+  '/auth/login',
+  '/auth/signup',
+  '/flip-card',
+  '/word-quiz',
+  '/fast-navigation',
 ];
 
 // BackButton만 표시할 페이지 경로들
 const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz', '/exchange'];
 
-
 // BackButton을 숨길 페이지 경로 추가
 const HIDDEN_BACK_BUTTON_PATHS = ['/word-quiz/result'];
 
+// 정확한 경로 매칭을 위한 함수
+const isExactPath = (currentPath: string, targetPath: string) => {
+  // 정확히 같거나, auth 경로인 경우 해당 경로로 시작하는지 확인
+  if (targetPath.startsWith('/auth/')) {
+    return currentPath.startsWith(targetPath);
+  }
+  // 그 외의 경우 정확히 일치하는지 확인
+  return currentPath === targetPath;
+};
+
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  
-  // 동적 경로를 처리하기 위한 조건
+
   const shouldShowHeader = !HIDDEN_HEADER_PATHS.some((path) =>
-    location.pathname.startsWith(path)
+    isExactPath(location.pathname, path)
   );
+
   const shouldShowGNB = !HIDDEN_GNB_PATHS.some((path) =>
-    location.pathname.startsWith(path)
+    isExactPath(location.pathname, path)
   );
+
   const shouldShowBackButton =
-    SHOW_BACK_BUTTON_PATHS.some((path) =>
-      location.pathname.startsWith(path)
-    ) &&
+    SHOW_BACK_BUTTON_PATHS.some((path) => location.pathname.startsWith(path)) &&
     !HIDDEN_BACK_BUTTON_PATHS.some((path) =>
-      location.pathname.startsWith(path)
+      isExactPath(location.pathname, path)
     );
 
   return (
@@ -49,7 +64,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       <GlobalStyles />
       <AppWrapper>
         <AppContainer>
-        {shouldShowHeader && <Header />}
+          {shouldShowHeader && <Header />}
           {!shouldShowHeader && shouldShowBackButton && <BackButton />}
           <ScrollContainer>{children}</ScrollContainer>
           {shouldShowGNB && <FloatingGNB />}
@@ -137,6 +152,80 @@ const GlobalStyles = createGlobalStyle`
       font-size: 14px;
     }
   }
+
+  /* Toast 컨테이너 위치 설정 */
+  .Toastify__toast-container {
+    width: auto !important;
+    max-width: 350px !important;
+    top: 1rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    padding: 0 !important;
+  }
+
+  /* 공통 Toast 스타일 */
+  .Toastify__toast {
+    margin: 0 auto !important;
+    min-height: unset !important;
+    padding: 16px 24px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    font-family: 'Roboto', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  /* Toast 내부 컨텐츠 스타일 */
+  .Toastify__toast-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: center !important;
+    justify-content: center !important;
+    flex: none !important;
+  }
+
+  /* 불필요한 요소 제거 */
+  .Toastify__toast-icon,
+  .Toastify__close-button {
+    display: none !important;
+  }
+
+  /* 타입별 배경색 설정 */
+  .Toastify__toast--error {
+    background-color: #ef4444 !important;
+    color: white !important;
+  }
+
+  .Toastify__toast--success {
+    background-color: #10b981 !important;
+    color: white !important;
+  }
+
+  .Toastify__toast--info {
+    background-color: #3b82f6 !important;
+    color: white !important;
+  }
+
+  /* 나타나는 애니메이션 */
+  .Toastify__toast-enter {
+    transform: translateY(-150%) !important;
+  }
+
+  .Toastify__toast-enter-active {
+    transform: translateY(0) !important;
+    transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+  }
+
+  /* 사라지는 애니메이션 */
+  .Toastify__toast-exit {
+    transform: translateY(0) !important;
+  }
+
+  .Toastify__toast-exit-active {
+    transform: translateY(-150%) !important;
+    transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+  }
+
 `;
 
 const AppWrapper = styled.div`

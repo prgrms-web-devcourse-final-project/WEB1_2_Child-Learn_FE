@@ -1,14 +1,14 @@
 import { http, HttpResponse } from 'msw';
-import { BASE_URL } from '@/shared/api/base';
+import { API_CONFIG } from '@/shared/config';
 import { JoinRequest, JoinResponse } from '@/features/auth/signup/model/types';
 
 export const signUpHandlers = [
   http.post<never, JoinRequest>(
-    `${BASE_URL}/member/join`,
+    `${API_CONFIG.baseURL}/member/join`, // BASE_URL을 API_CONFIG.baseURL로 변경
     async ({ request }) => {
-      console.log('MSW intercepted request:', request.url); // 추가
+      console.log('MSW intercepted request:', request.url);
       const data = await request.json();
-      console.log('Request data:', data); // 추가
+      console.log('Request data:', data);
 
       // 유효성 검사
       if (

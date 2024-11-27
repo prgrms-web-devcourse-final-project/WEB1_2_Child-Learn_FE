@@ -1,6 +1,19 @@
 import styled from 'styled-components';
 import { LoginForm } from '@/features/auth/login/ui/LoginForm';
 
+export const LoginPage = () => {
+  return (
+    <PageContainer>
+      <ContentContainer>
+        <LogoContainer>
+          <img src="/img/logo.png" alt="아이주주" />
+        </LogoContainer>
+        <LoginForm />
+      </ContentContainer>
+    </PageContainer>
+  );
+};
+
 const PageContainer = styled.div`
   min-height: 100%;
   display: flex;
@@ -25,16 +38,3 @@ const LogoContainer = styled.div`
     margin: 0 auto;
   }
 `;
-
-export const LoginPage = () => {
-  return (
-    <PageContainer>
-      <ContentContainer>
-        <LogoContainer>
-          <img src="/img/logo.png" alt="아이주주" />
-        </LogoContainer>
-        <LoginForm />
-      </ContentContainer>
-    </PageContainer>
-  );
-};

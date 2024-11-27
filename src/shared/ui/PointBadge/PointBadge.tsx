@@ -1,16 +1,24 @@
 import styled from 'styled-components';
+import { useUserInfo } from '@/entities/User/lib/queries';
 
-interface PointBadgeProps {
-  points: number;
-}
+export const PointBadge = () => {
+  const { data: userInfo } = useUserInfo();
 
-export const PointBadge = ({ points }: PointBadgeProps) => {
+  const formatPoints = (points: number = 0) => {
+    if (points >= 10000) {
+      // 1만 이상일 때: 1.5만 P, 2.3만 P 형식
+      return `${(points / 10000).toFixed(1)}만 P`;
+    }
+    // 1만 미만일 때: 1,000 P, 9,999 P 형식
+    return `${points.toLocaleString()} P`;
+  };
+
   return (
     <Container>
       <PointIconWrapper>
         <PointIcon src="/img/coins.png" alt="포인트" />
       </PointIconWrapper>
-      {points.toLocaleString()} P
+      {formatPoints(userInfo?.points)}
     </Container>
   );
 };
