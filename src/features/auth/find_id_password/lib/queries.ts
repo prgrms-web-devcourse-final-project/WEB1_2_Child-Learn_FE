@@ -26,16 +26,13 @@ export const useFindId = () => {
 export const useResetPassword = () => {
   return useMutation({
     mutationFn: (data: ResetPasswordRequest) => resetPassword(data),
-    onSuccess: () => {
-      showToast.success('임시 비밀번호를 이메일로 전송했습니다.');
-    },
     onError: (error: any) => {
       if (axios.isAxiosError(error)) {
         showToast.error(
-          error.response?.data?.message || '비밀번호 재설정에 실패했습니다.'
+          error.response?.data?.message || '비밀번호 찾기에 실패했습니다.'
         );
       } else {
-        showToast.error('비밀번호 재설정에 실패했습니다.');
+        showToast.error('비밀번호 찾기에 실패했습니다.');
       }
     },
   });
