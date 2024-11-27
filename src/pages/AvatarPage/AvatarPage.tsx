@@ -7,7 +7,7 @@ import { useUserStore } from "../../app/providers/state/zustand/userStore";
 
 function AvatarPage() {
   const { avatar, setAvatar } = useAvatarStore();
-  const { marketItems, setMarketItems, loadMarketItems } = useItemStore();
+  const { marketItems, loadMarketItems } = useItemStore();
   const { gameCount } = useUserStore();
   const navigate = useNavigate();
 
@@ -51,7 +51,7 @@ function AvatarPage() {
       pre_hat: avatar?.pre_hat || undefined,
     });
   }, [setAvatar]);
-  
+
   const filteredItems = marketItems.filter((item) => item.prd_type === activeTab);
 
    // 모달 확인 버튼 클릭 핸들러
@@ -82,15 +82,20 @@ function AvatarPage() {
           모자
         </Tab>
       </Tabs>
+      <Divider />
       <ItemGrid>
       {filteredItems.map((item) => (
           <ItemCard
             key={item.prd_id}
             purchased={item.purchased}
+            isEquipped={
+              (item.prd_type === "background" && avatar?.cur_background === item.prd_name) ||
+              (item.prd_type === "pet" && avatar?.cur_pet === item.prd_name) ||
+              (item.prd_type === "hat" && avatar?.cur_hat === item.prd_name)
+            }
             onClick={() => navigate(`/avatar/details/${item.prd_type}/${item.prd_name}`)} // category와 product를 URL에 포함
           >
             <ItemImage src={item.prd_image} alt={item.prd_name} />
-            <ItemName purchased={item.purchased}>{item.prd_name}</ItemName>
           </ItemCard>
         ))}
       </ItemGrid>
@@ -120,7 +125,7 @@ const Container = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 24px;
+  font-size: 17px;
   margin-bottom: 20px;
 `;
 
@@ -183,40 +188,76 @@ const AvatarImage = styled.img`
 
 const Tabs = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   margin: 20px 0;
 `;
 
 const Tab = styled.button<{ active: boolean }>`
   padding: 10px 20px;
   margin: 0 5px;
-  font-size: 16px;
-  border: none;
+  font-size: 10px;
+   border: 0.5px solid ${(props) => (props.active ? "#50B498" : "#E3E3E3")};
   border-radius: 20px;
-  background-color: ${(props) => (props.active ? "#50B498" : "#e0e0e0")};
-  color: ${(props) => (props.active ? "white" : "#333")};
+  background-color: ${(props) => (props.active ? "#50B498" : "#fff")};
+  color: ${(props) => (props.active ? "white" : "#50B498")};
   cursor: pointer;
 
   &:hover {
-    background-color: ${(props) => (props.active ? "#0056b3" : "#ccc")};
+    background-color: ${(props) => (props.active ? "#468585" : "#fff")};
   }
+`;
+
+const Divider = styled.div`
+  width: 100%;
+  height: 1px;
+  background-color: #C8C8C8;
+  margin: 20px 0;
 `;
 
 const ItemGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin: 20px 0;
 `;
 
-const ItemCard = styled.div<{ purchased: boolean }>`
+const ItemCard = styled.div<{ purchased: boolean; isEquipped: boolean }>`
   position: relative;
-  padding: 10px;
   text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 10px;
+  width: 100px; 
+  height: 100px; 
   background-color: #fff;
   opacity: ${(props) => (props.purchased ? 1 : 0.5)};
+  filter: ${(props) => (props.purchased ? "none" : "brightness(50%)")};
+  cursor: pointer;
+  overflow: hidden;
+
+  &:hover {
+    filter: ${(props) => (props.purchased ? "brightness(90%)" : "none")};
+  }
+
+  &::before {
+    content: ${(props) => (props.purchased ? "''" : "url('/public/img/lock-alt.png')")};
+    display: ${(props) => (props.purchased ? "none" : "block")};
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+
+  &::after {
+    content: ${(props) => (props.isEquipped ? "'장착중'" : "''")};
+    display: ${(props) => (props.isEquipped ? "block" : "none")};
+    position: absolute;
+    top: 5px; /* 좌상단 위치로 변경 */
+    left: 5px; /* 좌상단 위치로 변경 */
+    background-color: #50b498;
+    color: white;
+    font-size: 5px;
+    padding: 5px;
+    border-radius: 10px;
+    z-index: 3;
+  }
 `;
 
 const ItemImage = styled.img`
@@ -226,15 +267,10 @@ const ItemImage = styled.img`
   margin-bottom: 10px;
 `;
 
-const ItemName = styled.p<{ purchased: boolean }>`
-  font-size: 14px;
-  color: ${(props) => (props.purchased ? "#000" : "#aaa")};
-`;
-
 const Footer = styled.p`
   font-size: 14px;
-  color: #666;
-  margin-top: 20px;
+  color: #000000;
+  margin-top: 200px;
 `;
 
 // Modal styles
