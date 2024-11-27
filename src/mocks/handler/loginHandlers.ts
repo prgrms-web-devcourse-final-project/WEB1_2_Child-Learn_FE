@@ -12,20 +12,23 @@ export const loginHandlers = [
     if (loginId === 'test' && pw === 'test123') {
       return new Response(
         JSON.stringify({
-          id: 1,
-          loginId: 'test',
-          username: '테스트계정',
-          birth: '1998-03-24',
-          accessToken: 'test_access_token_123',
+          accessToken: 'mock_access_token_123',
+          refreshToken: 'mock_refresh_token_123',
+          user: {
+            id: 3,
+            loginId: 'test2',
+            username: 'hana',
+            email: 'test2@test2.com',
+            birth: '1998-03-24',
+            points: 1000,
+            createdAt: '2024-11-25T03:21:27.685497',
+            updatedAt: '2024-11-25T04:01:31.934454',
+          },
         }),
         {
           status: 200,
           headers: {
             'Content-Type': 'application/json',
-            'Set-Cookie': [
-              'refreshToken=test_refresh_token_456; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800', // 7일
-              // 필요한 경우 추가 쿠키
-            ].join(', '),
           },
         }
       );
@@ -46,43 +49,28 @@ export const loginHandlers = [
   }),
 
   // 토큰 갱신 핸들러
-  http.post(`${API_CONFIG.baseURL}/member/refresh`, async ({ request }) => {
-    // 쿠키 확인 로직 추가
-    const cookies = request.headers.get('cookie');
-    if (!cookies?.includes('refreshToken=')) {
-      return new Response(
-        JSON.stringify({
-          message: 'Refresh token not found',
-          error: 'INVALID_TOKEN',
-        }),
-        {
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-
+  http.post(`${API_CONFIG.baseURL}/member/refresh`, async () => {
     await delay(100);
 
+    // 개발 환경에서는 항상 새로운 토큰 발급
     return new Response(
       JSON.stringify({
-        accessToken: `new_access_token_${Date.now()}`,
+        accessToken: 'new_mock_access_token_123',
         user: {
-          id: 1,
-          loginId: 'test',
-          username: '테스트계정',
+          id: 3,
+          loginId: 'test2',
+          username: 'hana',
+          email: 'test2@test2.com',
           birth: '1998-03-24',
+          points: 1000,
+          createdAt: '2024-11-25T03:21:27.685497',
+          updatedAt: '2024-11-25T04:01:31.934454',
         },
       }),
       {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Set-Cookie': [
-            `refreshToken=new_refresh_token_${Date.now()}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=604800`,
-          ].join(', '),
         },
       }
     );
