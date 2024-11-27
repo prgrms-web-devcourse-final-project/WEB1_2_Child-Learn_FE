@@ -34,7 +34,10 @@ function AvatarPage() {
       pre_hat: avatar?.pre_hat || undefined,
     });  
     
-    setMarketItems([
+    setMarketItems((prevMarketItems) =>
+      prevMarketItems.length > 0
+        ? prevMarketItems // 기존 아이템 유지
+        :[
       {
         prd_id: 1,
         prd_name: "미래 도시",
