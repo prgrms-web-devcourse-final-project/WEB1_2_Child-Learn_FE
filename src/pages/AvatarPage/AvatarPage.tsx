@@ -3,13 +3,16 @@ import styled from "styled-components";
 import { useAvatarStore } from "../../features/avatar/model/avatarStore";
 import { useItemStore } from "../../features/avatar/model/itemStore";
 import { useNavigate } from "react-router-dom";
+import { useUserStore } from "../../app/providers/state/zustand/userStore";
 
 function AvatarPage() {
   const { avatar, setAvatar } = useAvatarStore();
   const { marketItems, setMarketItems } = useItemStore();
+  const { gameCount } = useUserStore();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<"background" | "pet" | "hat">("background");
+  const [isRestrictedModalOpen, setIsRestrictedModalOpen] = useState(false); 
 
   const currentBackground = marketItems.find(
     (item) => item.prd_name === avatar?.cur_background
@@ -22,6 +25,13 @@ function AvatarPage() {
   const currentHat = marketItems.find(
     (item) => item.prd_name === avatar?.cur_hat
   )?.prd_image;
+
+   // 페이지 접근 제약 조건 확인
+   useEffect(() => {
+    if (gameCount < 5) {
+      setIsRestrictedModalOpen(true); // 모달 열기
+    }
+  }, [gameCount]);
 
   // 초기 데이터 설정
   useEffect(() => {
@@ -196,6 +206,12 @@ function AvatarPage() {
   
   const filteredItems = marketItems.filter((item) => item.prd_type === activeTab);
 
+   // 모달 확인 버튼 클릭 핸들러
+   const handleRestrictedModalClose = () => {
+    setIsRestrictedModalOpen(false); // 모달 닫기
+    navigate(-1); // 이전 페이지로 이동
+  };
+
   return (
     <Container>
       <Title>내 캐릭터 꾸미기</Title>
@@ -231,6 +247,18 @@ function AvatarPage() {
         ))}
       </ItemGrid>
       <Footer>더 많은 아이템이 추가될 예정입니다!</Footer>
+      {/* 제약 조건 모달 */}
+      {isRestrictedModalOpen && (
+        <ModalOverlay>
+          <ModalContent>
+            <ModalTitle>
+              {" "}
+              [초급] 모의투자를 5회 이상 진행해야 이용하실 수 있습니다.
+            </ModalTitle>
+            <ModalButton onClick={handleRestrictedModalClose}>확인</ModalButton>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </Container>
   );
 }
@@ -359,4 +387,43 @@ const Footer = styled.p`
   font-size: 14px;
   color: #666;
   margin-top: 20px;
+`;
+
+// Modal styles
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 300px;
+`;
+
+const ModalTitle = styled.h2`
+  margin-bottom: 15px;
+`;
+
+const ModalButton = styled.button`
+  padding: 10px 20px;
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #c9302c;
+  }
 `;
