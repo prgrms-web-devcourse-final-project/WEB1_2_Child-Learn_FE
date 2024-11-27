@@ -1,38 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
+import { MarketItem } from "../../features/avatar/types/marketItemTypes";
 import { useItemStore } from "../../features/avatar/model/itemStore";
 import { useAvatarStore } from "../../features/avatar/model/avatarStore";
 import { useUserStore } from "../../app/providers/state/zustand/userStore";
 
 
 const AvatarDetailPage = () => {
-  const { marketItems, setMarketItems } = useItemStore();
+  const { marketItems, loadMarketItems, setMarketItems } = useItemStore();
   const { avatar, updateAvatarItem } = useAvatarStore();
   const { currentCoins, setUser } = useUserStore();
   const { category, product } = useParams();
 
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
   const [modalMessage, setModalMessage] = useState("");
+  const [selectedItem, setSelectedItem] = useState<MarketItem | null>(null);
 
-  // 선택된 아이템
-  const selectedItem = marketItems.find(
-    (item) => item.prd_type === category && item.prd_name === product
-  );
+   // marketItems 로드 및 selectedItem 설정
+   useEffect(() => {
+    if (marketItems.length === 0) {
+      loadMarketItems(); // localStorage나 기본 데이터를 불러옵니다.
+    }
 
-  if (!selectedItem) {
-    return <div>아이템을 찾을 수 없습니다.</div>;
-  }
+    const item = marketItems.find(
+      (item) => item.prd_type === category && item.prd_name === product
+    );
+    setSelectedItem(item || null);
+  }, [marketItems, category, product, loadMarketItems]);
 
    // 현재 상태와 선택된 아이템을 조합하여 표시할 배경과 펫 계산
    const computedBackground =
-   category === "background" ? selectedItem.prd_image : marketItems.find((item) => item.prd_name === avatar?.cur_background)?.prd_image;
+   category === "background" ? selectedItem?.prd_image : marketItems.find((item) => item.prd_name === avatar?.cur_background)?.prd_image;
 
  const computedPet =
-   category === "pet" ? selectedItem.prd_image : marketItems.find((item) => item.prd_name === avatar?.cur_pet)?.prd_image;
+   category === "pet" ? selectedItem?.prd_image : marketItems.find((item) => item.prd_name === avatar?.cur_pet)?.prd_image;
 
    const computedHat =
-   category === "hat" ? selectedItem.prd_image : marketItems.find((item) => item.prd_name === avatar?.cur_hat)?.prd_image;
+   category === "hat" ? selectedItem?.prd_image : marketItems.find((item) => item.prd_name === avatar?.cur_hat)?.prd_image;
 
    // 현재 장착 여부 확인
    const isEquipped =
@@ -42,7 +47,7 @@ const AvatarDetailPage = () => {
 
  // 버튼 상태 결정
  let buttonText: string;
- if (selectedItem.purchased) {
+ if (selectedItem?.purchased) {
    buttonText = isEquipped ? "장착 해제하기" : "장착하기";
  } else {
    buttonText = "구매하기";
@@ -50,6 +55,10 @@ const AvatarDetailPage = () => {
 
     // 구매 확인 모달에서 구매 버튼 클릭 시 처리
   const handlePurchaseConfirm = () => {
+    if (!selectedItem) {
+      return;
+    }
+    
     if (currentCoins < selectedItem.prd_price) {
       // 코인이 부족한 경우
       setIsModalOpen(false);
@@ -61,7 +70,7 @@ const AvatarDetailPage = () => {
     // 구매 가능한 경우
     setMarketItems(
       marketItems.map((item) =>
-        item.prd_id === selectedItem.prd_id
+        item.prd_id === selectedItem?.prd_id
           ? { ...item, purchased: true }
           : item
       )
@@ -74,7 +83,7 @@ const AvatarDetailPage = () => {
 
   // 버튼 클릭 핸들러
   const handleButtonClick = () => {
-    if (!selectedItem.purchased) {
+    if (!selectedItem?.purchased) {
       // 구매 모달 열기
       setIsModalOpen(true);
       return;
@@ -103,10 +112,10 @@ const AvatarDetailPage = () => {
       </CharacterPreview>
       <DetailSection>
         <ItemTitle>
-          {selectedItem.prd_name}
-          <ItemPrice>{selectedItem.prd_price} Coin</ItemPrice>
+          {selectedItem?.prd_name}
+          <ItemPrice>{selectedItem?.prd_price} Coin</ItemPrice>
         </ItemTitle>
-        <ItemDescription>{selectedItem.prd_description}</ItemDescription>
+        <ItemDescription>{selectedItem?.prd_description}</ItemDescription>
         <ActionButton onClick={handleButtonClick}>{buttonText}</ActionButton>
       </DetailSection>
 
@@ -115,7 +124,7 @@ const AvatarDetailPage = () => {
         <ModalOverlay>
           <ModalContent>
             <ModalTitle>정말로 구매하시겠습니까?</ModalTitle>
-            <ModalPreview src={selectedItem.prd_image} alt={selectedItem.prd_name} />
+            <ModalPreview src={selectedItem?.prd_image} alt={selectedItem?.prd_name} />
             <ModalActions>
               <ModalButton onClick={handlePurchaseConfirm} confirm>
                 구매

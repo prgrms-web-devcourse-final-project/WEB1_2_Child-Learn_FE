@@ -31,7 +31,7 @@ const MiniGamePage = () => {
       email: 'minnie@example.com',
       createdAt: '2024-01-01',
       updatedAt: '2024-11-20',
-      gameCount: 2,
+      gameCount: 5,
       birth: '2002-05-06',
       currentPoints: 2000, // 초기 포인트 설정
       currentCoins: 200, // 초기 코인 설정
