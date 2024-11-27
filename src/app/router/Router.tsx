@@ -13,14 +13,12 @@ import WordQuizGamePage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuiz
 import WordQuizResultPage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizResultPage';
 import CharacterPage from '../../pages/characterPage/CharacterPage';
 import ExchangePage from '../../pages/exchangePage/ExchangePage';
+import AdvancedTradePage from '@/pages/TradePages/AdvancedTradePage/AdvancedTradePage';
 
 
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/article" element={<ArticlePage />} /> 
-      <Route path="/fast-navigation" element={<GraphExplanationPage />} />
       <Route path="/" element={<LoginPage />} />
       <Route path="/main" element={<MainPage />} />
       <Route path="/minigame" element={<MiniGamePage />} />
@@ -29,12 +27,15 @@ export default function Router() {
       <Route path="/word-quiz/result/:level" element={<WordQuizResultPage />} />
       <Route path="/character" element={<CharacterPage />} />
       <Route path="/exchange" element={<ExchangePage />} />
-      <Route path="/article" element={<ArticlePage />} /> {/* 경로 수정 */}
       <Route path="/quiz" element={<QuizPage />} />
-      <Route path="/intermediate" element={<IntermediatePage />} />
-      <Route path="*" element={<div>Page not found</div>} />
+      <Route path="*"element={<div>Page not found</div>} />
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignUpPage />} />
+      {/* 차트 페이지 */}
+      <Route path="/advanced" element={<AdvancedTradePage />} />
+      <Route path="/article" element={<ArticlePage />} />
+      <Route path="/intermediate" element={<IntermediatePage />} />
+      <Route path="/fast-navigation" element={<GraphExplanationPage />} />
     </Routes>
   );
 }
