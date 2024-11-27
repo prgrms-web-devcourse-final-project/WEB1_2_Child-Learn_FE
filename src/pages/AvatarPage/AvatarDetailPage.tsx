@@ -79,7 +79,7 @@ const AvatarDetailPage = () => {
     }
 
     if (isEquipped) {
-      // 장착 해제 로직
+      // 장착 해제 로직 
       updateAvatarItem(category as "background" | "pet" | "hat", "");
       alert(`${selectedItem.prd_name} 장착 해제 완료!`);
     } else {
