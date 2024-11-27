@@ -2,6 +2,7 @@
 import styled from 'styled-components';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUserInfo } from '@/entities/User/lib/queries';
 import { InfoCard } from '@/shared/ui/InfoCard/InfoCard';
 import { MenuCard } from '@/shared/ui/MenuCard/MenuCard';
 import { AttendanceCard } from '@/features/mainpage/ui/AttendanceCard';
@@ -10,6 +11,8 @@ import { DifficultyModal } from '@/features/mainpage/ui/DifficultyModal';
 
 const MainPage = () => {
   const navigate = useNavigate();
+  const { data: userInfo, isLoading } = useUserInfo();
+
   const handleAttendance = () => {
     // 출석 처리 로직 (API 호출 등)
   };
@@ -65,8 +68,10 @@ const MainPage = () => {
           <WhiteBackground />
           {/* 환영 메시지 & 포인트 */}
           <WelcomeSection>
-            <WelcomeText>반가워요, 희주 님! 😊</WelcomeText>
-            <PointBadge points={2000} />
+            <WelcomeText>
+              반가워요, {userInfo?.username || '사용자'} 님! 😊
+            </WelcomeText>
+            <PointBadge />
           </WelcomeSection>
 
           {/* 출석체크 카드 */}

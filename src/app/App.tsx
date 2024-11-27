@@ -16,15 +16,18 @@ function App() {
   const accessToken = useAuthStore((state) => state.accessToken);
 
   useEffect(() => {
+    // accessToken이 없고 isAuthenticated가 true일 때만 리프레시 시도
     if (isAuthenticated && !accessToken) {
-      silentRefresh();
+      silentRefresh().catch(() => {
+        // 실패 시 처리는 silentRefresh 내부에서 함
+      });
     }
   }, [isAuthenticated, accessToken]);
 
   return (
     <StyleSheetManager shouldForwardProp={(prop) => prop !== 'isSelected'}>
       <BrowserRouter>
-        <ToastContainer // 👈 Layout 밖으로 이동
+        <ToastContainer
           position="top-center"
           autoClose={4000}
           hideProgressBar

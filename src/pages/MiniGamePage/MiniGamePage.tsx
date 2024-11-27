@@ -1,16 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useUserStore } from '../../app/providers/state/zustand/userStore';
-import { useFlipCardStore } from '../../features/minigame/flipcardgame/model/filpCardStore'
-import { useWordQuizStore } from '../../features/minigame/wordquizgame/model/wordQuizStore'
+import { useFlipCardStore } from '../../features/minigame/flipcardgame/model/filpCardStore';
+import { useWordQuizStore } from '../../features/minigame/wordquizgame/model/wordQuizStore';
 import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const MiniGamePage = () => {
   const { username, currentPoints, setUser } = useUserStore();
-  const { isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed } = useFlipCardStore();
-  const { isPlayable: isWordQuizPlayable, setLastPlayedDate: setWordQuizLastPlayedDate } = useWordQuizStore();
-  const { setLotteries, isPlayable: isLotteryPlayable, setLastPlayedDate: setLotteryLastPlayedDate } = useLotteryStore();
+  const { isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed } =
+    useFlipCardStore();
+  const {
+    isPlayable: isWordQuizPlayable,
+    setLastPlayedDate: setWordQuizLastPlayedDate,
+  } = useWordQuizStore();
+  const {
+    setLotteries,
+    isPlayable: isLotteryPlayable,
+    setLastPlayedDate: setLotteryLastPlayedDate,
+  } = useLotteryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -26,26 +34,40 @@ const MiniGamePage = () => {
       gameCount: 5,
       birth: '2002-05-06',
       currentPoints: 2000, // 초기 포인트 설정
-      currentCoins: 10,    // 초기 코인 설정
+      currentCoins: 10, // 초기 코인 설정
     });
 
     // 로또 초기 데이터 설정
     setLotteries([
-      { roundNumber: 1, drawDate: new Date('2024-11-15'), winningNumbers: [3, 7, 12, 24, 36], status: '진행 중' },
-      { roundNumber: 2, drawDate: new Date('2024-11-22'), winningNumbers: [1, 4, 9, 16, 25], status: '대기' },
+      {
+        roundNumber: 1,
+        drawDate: new Date('2024-11-15'),
+        winningNumbers: [3, 7, 12, 24, 36],
+        status: '진행 중',
+      },
+      {
+        roundNumber: 2,
+        drawDate: new Date('2024-11-22'),
+        winningNumbers: [1, 4, 9, 16, 25],
+        status: '대기',
+      },
     ]);
   }, [setUser, setLotteries]);
 
   // 카드 뒤집기 플레이 핸들러
-  const handleFlipCardPlay = async (level: 'beginner' | 'medium' | 'advanced') => {
+  const handleFlipCardPlay = async (
+    level: 'beginner' | 'medium' | 'advanced'
+  ) => {
     if (isCardPlayable(level)) {
       setCardLastPlayed(level, new Date());
       navigate(`/flip-card/${level}`);
     }
-  };  
+  };
 
   // 낱말 퀴즈 플레이 핸들러
-  const handleWordQuizPlay = async (level: 'beginner' | 'medium' | 'advanced') => {
+  const handleWordQuizPlay = async (
+    level: 'beginner' | 'medium' | 'advanced'
+  ) => {
     if (isWordQuizPlayable(level)) {
       const today = new Date().toISOString().split('T')[0];
       setWordQuizLastPlayedDate(level, today); // 마지막 플레이 날짜 업데이트
@@ -61,7 +83,6 @@ const MiniGamePage = () => {
     }
   };
 
-
   const openModal = (game: string) => {
     setSelectedGame(game);
     setModalVisible(true);
@@ -76,7 +97,7 @@ const MiniGamePage = () => {
     <PageContainer>
       {/* 고정 배경 */}
       <BackgroundContainer />
-  
+
       {/* 헤더 섹션 */}
       <Header>
         <GreetingContainer>
@@ -88,7 +109,7 @@ const MiniGamePage = () => {
           {currentPoints} P
         </PointsContainer>
       </Header>
-  
+
       {/* 메인 콘텐츠 */}
       <MainContent>
         <TopSection>
@@ -97,7 +118,7 @@ const MiniGamePage = () => {
             <StyledLink to="/character">내 캐릭터 꾸미러 가기</StyledLink>
           </div>
         </TopSection>
-  
+
         <TopSection>
           <div>
             <p>오늘 미니게임으로 획득한 포인트</p>
@@ -105,37 +126,41 @@ const MiniGamePage = () => {
           </div>
           <StyledLink to="/exchange">환전하러 가기</StyledLink>
         </TopSection>
-  
+
         <GameGrid>
-  {/* 낱말 퀴즈 */}
-  <GameCard onClick={() => openModal('낱말 퀴즈')}>
-    <CardTitle>낱말 퀴즈</CardTitle>
-    <p>100 Point</p>
-  </GameCard>
+          {/* 낱말 퀴즈 */}
+          <GameCard onClick={() => openModal('낱말 퀴즈')}>
+            <CardTitle>낱말 퀴즈</CardTitle>
+            <p>100 Point</p>
+          </GameCard>
 
-  {/* OX 퀴즈 */}
-  <GameCard onClick={() => openModal('OX 퀴즈')}>
-    <CardTitle>OX 퀴즈</CardTitle>
-    <p>0~100 Point</p>
-  </GameCard>
+          {/* OX 퀴즈 */}
+          <GameCard onClick={() => openModal('OX 퀴즈')}>
+            <CardTitle>OX 퀴즈</CardTitle>
+            <p>0~100 Point</p>
+          </GameCard>
 
-  {/* 카드 뒤집기 */}
-  <GameCard onClick={() => openModal('카드 뒤집기')}>
-    <CardTitle>카드 뒤집기</CardTitle>
-    <p>100 Point</p>
-  </GameCard>
+          {/* 카드 뒤집기 */}
+          <GameCard onClick={() => openModal('카드 뒤집기')}>
+            <CardTitle>카드 뒤집기</CardTitle>
+            <p>100 Point</p>
+          </GameCard>
 
-  {/* 로또 */}
-  <GameCard
-    onClick={() => isLotteryPlayable() && handleLotteryPlay()}
-    style={!isLotteryPlayable() ? { backgroundColor: 'gray', cursor: 'not-allowed' } : {}}
-  >
-    <CardTitle>숫자를 맞혀라!</CardTitle>
-    <p>10~1000 Point</p>
-  </GameCard>
-</GameGrid>
+          {/* 로또 */}
+          <GameCard
+            onClick={() => isLotteryPlayable() && handleLotteryPlay()}
+            style={
+              !isLotteryPlayable()
+                ? { backgroundColor: 'gray', cursor: 'not-allowed' }
+                : {}
+            }
+          >
+            <CardTitle>숫자를 맞혀라!</CardTitle>
+            <p>10~1000 Point</p>
+          </GameCard>
+        </GameGrid>
       </MainContent>
-  
+
       {/* 모달 */}
       {modalVisible && selectedGame && (
         <ModalOverlay>
@@ -146,30 +171,30 @@ const MiniGamePage = () => {
             {selectedGame === '카드 뒤집기' && (
               <>
                 {selectedGame === '카드 뒤집기' && (
-  <>
-    <ModalButton
-      level="beginner"
-      onClick={() => handleFlipCardPlay('beginner')}
-      disabled={!isCardPlayable('beginner')}
-    >
-      쉬움
-    </ModalButton>
-    <ModalButton
-      level="medium"
-      onClick={() => handleFlipCardPlay('medium')}
-      disabled={!isCardPlayable('medium')}
-    >
-      보통
-    </ModalButton>
-    <ModalButton
-      level="advanced"
-      onClick={() => handleFlipCardPlay('advanced')}
-      disabled={!isCardPlayable('advanced')}
-    >
-      어려움
-    </ModalButton>
-  </>
-)}
+                  <>
+                    <ModalButton
+                      level="beginner"
+                      onClick={() => handleFlipCardPlay('beginner')}
+                      disabled={!isCardPlayable('beginner')}
+                    >
+                      쉬움
+                    </ModalButton>
+                    <ModalButton
+                      level="medium"
+                      onClick={() => handleFlipCardPlay('medium')}
+                      disabled={!isCardPlayable('medium')}
+                    >
+                      보통
+                    </ModalButton>
+                    <ModalButton
+                      level="advanced"
+                      onClick={() => handleFlipCardPlay('advanced')}
+                      disabled={!isCardPlayable('advanced')}
+                    >
+                      어려움
+                    </ModalButton>
+                  </>
+                )}
               </>
             )}
             {selectedGame === '낱말 퀴즈' && (
@@ -201,7 +226,7 @@ const MiniGamePage = () => {
         </ModalOverlay>
       )}
     </PageContainer>
-  );  
+  );
 };
 
 export default MiniGamePage;
@@ -221,7 +246,7 @@ const BackgroundContainer = styled.div`
   left: 0;
   right: 0;
   top: 250px;
-  background-color: #DEF9C4; /* 연두색 배경 */
+  background-color: #def9c4; /* 연두색 배경 */
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
 `;
@@ -229,7 +254,7 @@ const BackgroundContainer = styled.div`
 const Header = styled.header`
   position: relative;
   width: 100%;
-  display: flex; 
+  display: flex;
   padding: 10px 20px;
   justify-content: space-between;
   align-items: center;
@@ -256,6 +281,7 @@ const GreetingContainer = styled.div`
     font-size: 0.8rem;
     font-weight: bold;
     color: #333;
+  }
 `;
 
 const PointsContainer = styled.div`
@@ -263,14 +289,14 @@ const PointsContainer = styled.div`
   align-items: center;
   justify-content: center;
   /*position: absolute;*/
-  top: 15px; 
-  right: 20px; 
-  width: 91px; 
-  height: 34px; 
-  background-color: #50B498;
+  top: 15px;
+  right: 20px;
+  width: 91px;
+  height: 34px;
+  background-color: #50b498;
   border-radius: 20px; /* 둥근 모서리 */
   font-weight: bold;
-  color: #ffffff; 
+  color: #ffffff;
   font-size: 11px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
@@ -297,8 +323,8 @@ const TopSection = styled.div`
   background-color: rgba(80, 180, 152, 0.8); /* #50B498의 opacity 80% */
   color: white; /* 텍스트 색상 흰색 */
   border-radius: 15px; /* 모서리를 둥글게 */
-  width: 310px; 
-  height: 107px; 
+  width: 310px;
+  height: 107px;
   padding: 15px; /* 내부 여백 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
   position: relative; /* 텍스트 정렬 및 추가 요소를 위한 기준 */
@@ -315,7 +341,6 @@ const TopSection = styled.div`
     margin: 0;
   }
 `;
-
 
 const StyledLink = styled(Link)`
   display: flex; /* 텍스트와 가운데 정렬을 위한 플렉스 박스 */
@@ -347,7 +372,7 @@ const GameCard = styled.div`
   width: 179px;
   height: 177px;
   background-color: #fff;
-  border: 1px solid #F2F0F8;
+  border: 1px solid #f2f0f8;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -407,7 +432,9 @@ const ModalContent = styled.div`
   z-index: 1010;
 `;
 
-const ModalButton = styled.button<{ level: 'beginner' | 'medium' | 'advanced' }>`
+const ModalButton = styled.button<{
+  level: 'beginner' | 'medium' | 'advanced';
+}>`
   width: 100%;
   margin-top: 10px;
   padding: 10px;
@@ -419,8 +446,8 @@ const ModalButton = styled.button<{ level: 'beginner' | 'medium' | 'advanced' }>
     level === 'beginner'
       ? '#9CDBA6'
       : level === 'medium'
-      ? '#50B498'
-      : '#468585'};
+        ? '#50B498'
+        : '#468585'};
   color: white;
 
   &:hover {
@@ -428,8 +455,8 @@ const ModalButton = styled.button<{ level: 'beginner' | 'medium' | 'advanced' }>
       level === 'beginner'
         ? '#8BCF96'
         : level === 'medium'
-        ? '#44997E'
-        : '#3A7572'};
+          ? '#44997E'
+          : '#3A7572'};
   }
 
   &:disabled {
