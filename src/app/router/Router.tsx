@@ -13,6 +13,7 @@ import WordQuizGamePage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuiz
 import WordQuizResultPage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizResultPage';
 import CharacterPage from '../../pages/characterPage/CharacterPage';
 import ExchangePage from '../../pages/exchangePage/ExchangePage';
+import AdvancedTradePage from '@/pages/TradePages/AdvancedTradePage/AdvancedTradePage';
 import showToast from '@/shared/lib/toast';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -50,10 +51,14 @@ export default function Router() {
       <Route path="/character" element={<CharacterPage />} />
       <Route path="/exchange" element={<ExchangePage />} />
       <Route path="/quiz" element={<QuizPage />} />
-      <Route path="/intermediate" element={<IntermediatePage />} />
-      <Route path="*" element={<div>Page not found</div>} />
+      <Route path="*"element={<div>Page not found</div>} />
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignUpPage />} />
+      {/* 차트 페이지 */}
+      <Route path="/advanced" element={<AdvancedTradePage />} />
+      <Route path="/article" element={<ArticlePage />} />
+      <Route path="/intermediate" element={<IntermediatePage />} />
+      <Route path="/fast-navigation" element={<GraphExplanationPage />} />
     </Routes>
   );
 }
