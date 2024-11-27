@@ -3,6 +3,7 @@ import { postHandlers } from './postHandlers';
 import { userHandlers } from './userHandlers';
 import { loginHandlers } from './loginHandlers';
 import { intermediateHandlers } from './IntermediateHandlers';
+import { loginUserHandlers } from './loginUserHandlers';
 
 export const handlers = [
   ...signUpHandlers,
@@ -10,4 +11,5 @@ export const handlers = [
   ...userHandlers,
   ...loginHandlers,
   ...intermediateHandlers,
+  ...loginUserHandlers,
 ];

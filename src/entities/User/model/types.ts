@@ -10,3 +10,14 @@ export interface UserState {
   isLoading: boolean;
   error: string | null;
 }
+
+export interface UserInfo {
+  id: number;
+  loginId: string;
+  email: string;
+  username: string;
+  birth: string;
+  points: number;
+  createdAt: string;
+  updatedAt: string;
+}
