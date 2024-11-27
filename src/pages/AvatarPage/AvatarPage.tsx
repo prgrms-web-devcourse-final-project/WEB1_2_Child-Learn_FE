@@ -19,6 +19,10 @@ function AvatarPage() {
     (item) => item.prd_name === avatar?.cur_pet
   )?.prd_image;
 
+  const currentHat = marketItems.find(
+    (item) => item.prd_name === avatar?.cur_hat
+  )?.prd_image;
+
   // 초기 데이터 설정
   useEffect(() => {
     // 초기 아바타 상태를 현재 상태를 유지하거나 새로운 값을 설정
@@ -200,6 +204,7 @@ function AvatarPage() {
           {!currentBackground && <Placeholder />}
           <AvatarImage src="/img/avatar.png" alt="캐릭터" />
           {currentPet && <PetImage src={currentPet} alt="펫" />}
+          {currentHat && <HatImage src={currentHat} alt="모자" />}
         </BackgroundPlaceholder>
       </CharacterPreview>
       <Tabs>
@@ -282,6 +287,16 @@ const PetImage = styled.img`
   left: 5px; /* 배경 왼쪽으로 약간 나감 */
   object-fit: contain;
   z-index: 2;
+`;
+
+const HatImage = styled.img`
+  position: absolute;
+  width: 60px; /* 모자 크기 */
+  height: 40px; /* 모자 높이 */
+  top: 20px; /* 캐릭터 머리 위에 위치 */
+  left: 50%;
+  transform: translateX(-40%); /* 중앙 정렬 */
+  z-index: 3; /* 캐릭터보다 위에 표시 */
 `;
 
 const AvatarImage = styled.img`
