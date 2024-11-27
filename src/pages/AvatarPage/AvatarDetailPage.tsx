@@ -3,14 +3,17 @@ import styled from "styled-components";
 import { useParams } from "react-router-dom";
 import { useItemStore } from "../../features/avatar/model/itemStore";
 import { useAvatarStore } from "../../features/avatar/model/avatarStore";
+import { useUserStore } from "../../app/providers/state/zustand/userStore";
 
 
 const AvatarDetailPage = () => {
   const { marketItems, setMarketItems } = useItemStore();
   const { avatar, updateAvatarItem } = useAvatarStore();
+  const { currentCoins, setUser } = useUserStore();
   const { category, product } = useParams();
 
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
+  const [modalMessage, setModalMessage] = useState("");
 
   // 선택된 아이템
   const selectedItem = marketItems.find(
@@ -45,8 +48,17 @@ const AvatarDetailPage = () => {
    buttonText = "구매하기";
  }
 
-   // 구매 처리 핸들러
-   const handlePurchaseConfirm = () => {
+    // 구매 확인 모달에서 구매 버튼 클릭 시 처리
+  const handlePurchaseConfirm = () => {
+    if (currentCoins < selectedItem.prd_price) {
+      // 코인이 부족한 경우
+      setIsModalOpen(false);
+      setModalMessage("코인이 부족합니다.");
+      setTimeout(() => setModalMessage(""), 3000); // 3초 후 메시지 숨기기
+      return;
+    }
+
+    // 구매 가능한 경우
     setMarketItems(
       marketItems.map((item) =>
         item.prd_id === selectedItem.prd_id
@@ -54,8 +66,10 @@ const AvatarDetailPage = () => {
           : item
       )
     );
+    setUser({ currentCoins: currentCoins - selectedItem.prd_price }); // 유저의 코인 차감
     setIsModalOpen(false);
-    alert(`${selectedItem.prd_name} 구매 완료!`);
+    setModalMessage("구매가 완료되었습니다.");
+    setTimeout(() => setModalMessage(""), 3000); // 3초 후 메시지 숨기기
   };
 
   // 버튼 클릭 핸들러
@@ -108,6 +122,14 @@ const AvatarDetailPage = () => {
               </ModalButton>
               <ModalButton onClick={() => setIsModalOpen(false)}>취소</ModalButton>
             </ModalActions>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+       {/* 결과 메시지 모달 */}
+       {modalMessage && (
+        <ModalOverlay>
+          <ModalContent>
+            <ModalTitle>{modalMessage}</ModalTitle>
           </ModalContent>
         </ModalOverlay>
       )}
