@@ -128,7 +128,9 @@ export const AccountRecoveryForm = ({
         disabled={
           isLoading ||
           !formData.email ||
-          (activeTab === 'id' ? !formData.birthday : !formData.loginId)
+          (activeTab === 'id'
+            ? formData.birthday.length !== 8 // 생년월일 8자리 체크
+            : !formData.loginId)
         }
       >
         {isLoading
