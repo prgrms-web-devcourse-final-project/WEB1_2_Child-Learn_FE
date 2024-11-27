@@ -7,14 +7,15 @@ import axios from 'axios';
 export const useFindId = () => {
   return useMutation({
     mutationFn: (data: FindIdRequest) => findId(data),
-    onSuccess: () => {
-      showToast.success('아이디를 이메일로 전송했습니다.');
-    },
-    onError: (error: any) => {
+    onError: (error) => {
       if (axios.isAxiosError(error)) {
-        showToast.error(
-          error.response?.data?.message || '아이디 찾기에 실패했습니다.'
-        );
+        if (error.response?.status === 404) {
+          showToast.error('일치하는 회원 정보가 없습니다.');
+        } else {
+          showToast.error(
+            error.response?.data?.message || '아이디 찾기에 실패했습니다.'
+          );
+        }
       } else {
         showToast.error('아이디 찾기에 실패했습니다.');
       }

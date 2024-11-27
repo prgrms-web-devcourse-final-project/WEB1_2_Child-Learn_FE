@@ -4,6 +4,7 @@ import { userHandlers } from './userHandlers';
 import { loginHandlers } from './loginHandlers';
 import { intermediateHandlers } from './IntermediateHandlers';
 import { loginUserHandlers } from './loginUserHandlers';
+import { findIdHandlers } from './findIdHandlers';
 
 export const handlers = [
   ...signUpHandlers,
@@ -12,4 +13,5 @@ export const handlers = [
   ...loginHandlers,
   ...intermediateHandlers,
   ...loginUserHandlers,
+  ...findIdHandlers,
 ];

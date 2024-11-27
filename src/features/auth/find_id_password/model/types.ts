@@ -11,7 +11,7 @@ export interface ResetPasswordRequest {
 }
 
 export interface RecoveryFormData {
-  birthday?: string;
+  birthday: string;
   email: string;
-  loginId?: string;
+  loginId: string;
 }
