@@ -5,7 +5,7 @@ import { useItemStore } from "../../features/avatar/model/itemStore";
 import { useNavigate } from "react-router-dom";
 
 function AvatarPage() {
-  const { avatar } = useAvatarStore();
+  const { avatar, setAvatar } = useAvatarStore();
   const { marketItems, setMarketItems } = useItemStore();
   const navigate = useNavigate();
 
@@ -13,6 +13,18 @@ function AvatarPage() {
 
   // 초기 데이터 설정
   useEffect(() => {
+    // 초기 아바타 상태 설정
+    setAvatar({
+        avatar_id: 1,
+        member_id: 1,
+        cur_background: "미래 도시", // 현재 장착된 배경 설정
+        cur_pet: undefined,
+        cur_hat: undefined,
+        pre_background: undefined,
+        pre_pet: undefined,
+        pre_hat: undefined,
+      });
+  
     setMarketItems([
       {
         prd_id: 1,
@@ -232,8 +244,8 @@ const CharacterPreview = styled.div`
 
 const BackgroundPlaceholder = styled.div<{ backgroundImage?: string }>`
   position: relative;
-  width: 150px;
-  height: 150px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
   background: ${({ backgroundImage }) =>
     backgroundImage ? `url(${backgroundImage})` : "#E8DFCC"};
@@ -254,8 +266,8 @@ const Placeholder = styled.div`
 
 const AvatarImage = styled.img`
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width: 135px;
+  height: 135px;
 `;
 
 const Tabs = styled.div`

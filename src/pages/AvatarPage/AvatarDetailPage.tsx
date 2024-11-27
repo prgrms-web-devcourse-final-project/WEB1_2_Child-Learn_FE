@@ -1,11 +1,10 @@
 import styled from "styled-components";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useItemStore } from "../../features/avatar/model/itemStore";
 
 const AvatarDetailPage = () => {
   const { marketItems } = useItemStore();
   const { category, product } = useParams();
-  const navigate = useNavigate();
 
   // 선택된 아이템
   const selectedItem = marketItems.find(
@@ -18,9 +17,6 @@ const AvatarDetailPage = () => {
 
   return (
     <Container>
-      <Header>
-        <Title>{selectedItem.prd_name}</Title>
-      </Header>
       <CharacterPreview>
         <BackgroundPreview backgroundImage={selectedItem.prd_image}>
           <AvatarImage src="/img/avatar.png" alt="캐릭터" />
@@ -46,25 +42,6 @@ const Container = styled.div`
   text-align: center;
 `;
 
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-`;
-
-const BackButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  margin-right: auto;
-`;
-
-const Title = styled.h1`
-  font-size: 18px;
-  font-weight: bold;
-`;
-
 const CharacterPreview = styled.div`
   margin: 20px 0;
   display: flex;
@@ -85,8 +62,8 @@ const BackgroundPreview = styled.div<{ backgroundImage: string }>`
 
 const AvatarImage = styled.img`
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width:135px;
+  height: 135px;
 `;
 
 const DetailSection = styled.div`
