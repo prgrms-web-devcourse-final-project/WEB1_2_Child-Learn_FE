@@ -15,10 +15,9 @@ function AvatarPage() {
     (item) => item.prd_name === avatar?.cur_background
   )?.prd_image;
 
-    // 콘솔에 현재 장착된 배경 출력
-    useEffect(() => {
-        console.log("현재 장착된 배경:", avatar?.cur_background || "없음");
-      }, [avatar?.cur_background]);    
+  const currentPet = marketItems.find(
+    (item) => item.prd_name === avatar?.cur_pet
+  )?.prd_image;
 
   // 초기 데이터 설정
   useEffect(() => {
@@ -200,6 +199,7 @@ function AvatarPage() {
         <BackgroundPlaceholder backgroundImage={currentBackground}>
           {!currentBackground && <Placeholder />}
           <AvatarImage src="/img/avatar.png" alt="캐릭터" />
+          {currentPet && <PetImage src={currentPet} alt="펫" />}
         </BackgroundPlaceholder>
       </CharacterPreview>
       <Tabs>
@@ -248,6 +248,8 @@ const CharacterPreview = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative; /* 펫 이미지를 배경 위에 겹치게 하기 위해 필요 */
+  overflow: visible; 
 `;
 
 const BackgroundPlaceholder = styled.div<{ backgroundImage?: string }>`
@@ -262,14 +264,24 @@ const BackgroundPlaceholder = styled.div<{ backgroundImage?: string }>`
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: visible;
 `;
 
 const Placeholder = styled.div`
-  width: 150px;
-  height: 150px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
   background-color: #e8dfcc;
+`;
+
+const PetImage = styled.img`
+  position: absolute;
+  width: 60px; /* 펫 이미지 크기 조정 */
+  height: 60px;
+  bottom: 5px; /* 배경 아래로 약간 내려감 */
+  left: 5px; /* 배경 왼쪽으로 약간 나감 */
+  object-fit: contain;
+  z-index: 2;
 `;
 
 const AvatarImage = styled.img`
