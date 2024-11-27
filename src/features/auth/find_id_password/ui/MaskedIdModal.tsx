@@ -43,11 +43,11 @@ const ModalContent = styled.div`
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  width: 100%; // 수정
-  max-width: 320px; // 수정: 최대 너비 지정
-  margin: 20px; // 추가: 모바일에서 여백 확보
+  width: 100%;
+  max-width: 320px;
+  margin: 20px;
   text-align: center;
-  box-sizing: border-box; // 추가: padding이 width에 포함되도록
+  box-sizing: border-box;
 `;
 
 const ModalHeader = styled.h2`
@@ -55,7 +55,7 @@ const ModalHeader = styled.h2`
   font-size: 18px;
   font-weight: 700;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e5e5e5; // 회색 구분선 추가
+  border-bottom: 1px solid #e5e5e5;
 `;
 
 const ModalBody = styled.div`

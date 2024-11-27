@@ -3,12 +3,12 @@ import styled from 'styled-components';
 import { AccountRecoveryTabs } from '@/features/auth/find_id_password/ui/AccountRecoveryTabs';
 import { AccountRecoveryForm } from '@/features/auth/find_id_password/ui/AccountRecoveryForm';
 import { RecoveryTab } from '@/features/auth/find_id_password/model/types';
-import { useNavigate } from 'react-router-dom'; // 추가
+import { useNavigate } from 'react-router-dom';
 
 export const AccountRecoveryPage = () => {
   const [activeTab, setActiveTab] = useState<RecoveryTab>('id');
 
-  const navigate = useNavigate(); // 추가
+  const navigate = useNavigate();
 
   const handleBack = () => {
     navigate(-1); // 브라우저의 히스토리에서 한 단계 뒤로 이동
@@ -33,7 +33,7 @@ export const AccountRecoveryPage = () => {
 };
 
 const PageContainer = styled.div`
-  height: 100%; // 100vh에서 100%로 변경
+  height: 100%;
   display: flex;
   flex-direction: column;
   background-color: #def9c4;

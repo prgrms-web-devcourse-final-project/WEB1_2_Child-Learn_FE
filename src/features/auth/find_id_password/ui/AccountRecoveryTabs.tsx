@@ -13,14 +13,14 @@ export const AccountRecoveryTabs = ({
   return (
     <TabContainer>
       <Tab
-        $active={activeTab === 'id'} // active를 $active로 변경
+        $active={activeTab === 'id'}
         onClick={() => onTabChange('id')}
         type="button"
       >
         아이디 찾기
       </Tab>
       <Tab
-        $active={activeTab === 'password'} // active를 $active로 변경
+        $active={activeTab === 'password'}
         onClick={() => onTabChange('password')}
         type="button"
       >

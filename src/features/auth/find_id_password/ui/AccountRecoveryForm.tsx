@@ -5,7 +5,7 @@ import { AuthButton } from '@/shared/ui/AuthButton/AuthButton';
 import { RecoveryTab, RecoveryFormData } from '../model/types';
 import { useFindId, useResetPassword } from '../lib/queries';
 import showToast from '@/shared/lib/toast';
-import { MaskedIdModal } from './MaskedIdModal'; // 모달 컴포넌트 추가
+import { MaskedIdModal } from './MaskedIdModal';
 
 interface AccountRecoveryFormProps {
   activeTab: RecoveryTab;
