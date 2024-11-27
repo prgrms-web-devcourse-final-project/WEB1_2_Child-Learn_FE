@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
 import { useItemStore } from "../../features/avatar/model/itemStore";
@@ -8,6 +9,8 @@ const AvatarDetailPage = () => {
   const { marketItems, setMarketItems } = useItemStore();
   const { avatar, updateAvatarItem } = useAvatarStore();
   const { category, product } = useParams();
+
+  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
 
   // 선택된 아이템
   const selectedItem = marketItems.find(
@@ -42,18 +45,24 @@ const AvatarDetailPage = () => {
    buttonText = "구매하기";
  }
 
+   // 구매 처리 핸들러
+   const handlePurchaseConfirm = () => {
+    setMarketItems(
+      marketItems.map((item) =>
+        item.prd_id === selectedItem.prd_id
+          ? { ...item, purchased: true }
+          : item
+      )
+    );
+    setIsModalOpen(false);
+    alert(`${selectedItem.prd_name} 구매 완료!`);
+  };
+
   // 버튼 클릭 핸들러
   const handleButtonClick = () => {
     if (!selectedItem.purchased) {
-      // 구매 로직
-      setMarketItems(
-        marketItems.map((item) =>
-          item.prd_id === selectedItem.prd_id
-            ? { ...item, purchased: true }
-            : item
-        )
-      );
-      alert(`${selectedItem.prd_name} 구매 완료!`);
+      // 구매 모달 열기
+      setIsModalOpen(true);
       return;
     }
 
@@ -86,6 +95,22 @@ const AvatarDetailPage = () => {
         <ItemDescription>{selectedItem.prd_description}</ItemDescription>
         <ActionButton onClick={handleButtonClick}>{buttonText}</ActionButton>
       </DetailSection>
+
+      {/* 구매 모달 */}
+      {isModalOpen && (
+        <ModalOverlay>
+          <ModalContent>
+            <ModalTitle>정말로 구매하시겠습니까?</ModalTitle>
+            <ModalPreview src={selectedItem.prd_image} alt={selectedItem.prd_name} />
+            <ModalActions>
+              <ModalButton onClick={handlePurchaseConfirm} confirm>
+                구매
+              </ModalButton>
+              <ModalButton onClick={() => setIsModalOpen(false)}>취소</ModalButton>
+            </ModalActions>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </Container>
   );
 };
@@ -189,5 +214,56 @@ const ActionButton = styled.button`
 
   &:hover {
     background-color: #3a816a;
+  }
+`;
+
+// Modal styles
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 300px;
+`;
+
+const ModalTitle = styled.h2`
+  margin-bottom: 15px;
+`;
+
+const ModalPreview = styled.img`
+  width: 100px;
+  height: 100px;
+  margin-bottom: 15px;
+  object-fit: cover;
+`;
+
+const ModalActions = styled.div`
+  display: flex;
+  justify-content: space-around;
+`;
+
+const ModalButton = styled.button<{ confirm?: boolean }>`
+  padding: 10px 20px;
+  background-color: ${({ confirm }) => (confirm ? "#50b498" : "#d9534f")};
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${({ confirm }) => (confirm ? "#3a816a" : "#c9302c")};
   }
 `;
