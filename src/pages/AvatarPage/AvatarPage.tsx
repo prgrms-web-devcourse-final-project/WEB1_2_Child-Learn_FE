@@ -167,9 +167,19 @@ function AvatarPage() {
   
   const filteredItems = marketItems.filter((item) => item.prd_type === activeTab);
 
+  const currentBackground = marketItems.find(
+    (item) => item.prd_name === avatar?.cur_background
+  )?.prd_image;
+
   return (
     <Container>
       <Title>내 캐릭터 꾸미기</Title>
+      <CharacterPreview>
+        <BackgroundPlaceholder backgroundImage={currentBackground}>
+          {!currentBackground && <Placeholder />}
+          <AvatarImage src="public/img/avatar.png" alt="캐릭터" />
+        </BackgroundPlaceholder>
+      </CharacterPreview>
       <Tabs>
         <Tab onClick={() => setActiveTab("background")} active={activeTab === "background"}>
           배경
@@ -205,6 +215,41 @@ const Container = styled.div`
 const Title = styled.h1`
   font-size: 24px;
   margin-bottom: 20px;
+`;
+
+const CharacterPreview = styled.div`
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const BackgroundPlaceholder = styled.div<{ backgroundImage?: string }>`
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: ${({ backgroundImage }) =>
+    backgroundImage ? `url(${backgroundImage})` : "#E8DFCC"};
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+`;
+
+const Placeholder = styled.div`
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background-color: #e8dfcc;
+`;
+
+const AvatarImage = styled.img`
+  position: absolute;
+  width: 80px;
+  height: 80px;
 `;
 
 const Tabs = styled.div`
