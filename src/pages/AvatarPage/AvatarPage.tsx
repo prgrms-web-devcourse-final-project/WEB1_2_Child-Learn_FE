@@ -11,20 +11,29 @@ function AvatarPage() {
 
   const [activeTab, setActiveTab] = useState<"background" | "pet" | "hat">("background");
 
+  const currentBackground = marketItems.find(
+    (item) => item.prd_name === avatar?.cur_background
+  )?.prd_image;
+
+    // 콘솔에 현재 장착된 배경 출력
+    useEffect(() => {
+        console.log("현재 장착된 배경:", avatar?.cur_background || "없음");
+      }, [avatar?.cur_background]);    
+
   // 초기 데이터 설정
   useEffect(() => {
-    // 초기 아바타 상태 설정
+    // 초기 아바타 상태를 현재 상태를 유지하거나 새로운 값을 설정
     setAvatar({
-        avatar_id: 1,
-        member_id: 1,
-        cur_background: "미래 도시", // 현재 장착된 배경 설정
-        cur_pet: undefined,
-        cur_hat: undefined,
-        pre_background: undefined,
-        pre_pet: undefined,
-        pre_hat: undefined,
-      });
-  
+      avatar_id: 1,
+      member_id: 1,
+      cur_background: avatar?.cur_background || undefined, // 기존 값 유지
+      cur_pet: avatar?.cur_pet || undefined,
+      cur_hat: avatar?.cur_hat || undefined,
+      pre_background: avatar?.pre_background || undefined,
+      pre_pet: avatar?.pre_pet || undefined,
+      pre_hat: avatar?.pre_hat || undefined,
+    });  
+    
     setMarketItems([
       {
         prd_id: 1,
@@ -177,13 +186,9 @@ function AvatarPage() {
         purchased: true,
       },
     ]);
-  }, [setMarketItems]);
+  }, [setAvatar, setMarketItems]);
   
   const filteredItems = marketItems.filter((item) => item.prd_type === activeTab);
-
-  const currentBackground = marketItems.find(
-    (item) => item.prd_name === avatar?.cur_background
-  )?.prd_image;
 
   return (
     <Container>

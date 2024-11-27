@@ -115,7 +115,7 @@ const MiniGamePage = () => {
         <TopSection>
           <div>
             <p>획득한 포인트로 나를 꾸며볼까요?</p>
-            <StyledLink to="/character">내 캐릭터 꾸미러 가기</StyledLink>
+            <StyledLink to="/avatar">내 캐릭터 꾸미러 가기</StyledLink>
           </div>
         </TopSection>
 

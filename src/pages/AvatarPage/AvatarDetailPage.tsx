@@ -1,9 +1,12 @@
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
 import { useItemStore } from "../../features/avatar/model/itemStore";
+import { useAvatarStore } from "../../features/avatar/model/avatarStore";
+
 
 const AvatarDetailPage = () => {
-  const { marketItems } = useItemStore();
+  const { marketItems, setMarketItems } = useItemStore();
+  const { avatar, updateAvatarItem } = useAvatarStore();
   const { category, product } = useParams();
 
   // 선택된 아이템
@@ -14,6 +17,46 @@ const AvatarDetailPage = () => {
   if (!selectedItem) {
     return <div>아이템을 찾을 수 없습니다.</div>;
   }
+
+   // 현재 장착 여부 확인
+   const isEquipped =
+   (category === "background" && avatar?.cur_background === product) ||
+   (category === "pet" && avatar?.cur_pet === product) ||
+   (category === "hat" && avatar?.cur_hat === product);
+
+ // 버튼 상태 결정
+ let buttonText: string;
+ if (selectedItem.purchased) {
+   buttonText = isEquipped ? "장착 해제하기" : "장착하기";
+ } else {
+   buttonText = "구매하기";
+ }
+
+  // 버튼 클릭 핸들러
+  const handleButtonClick = () => {
+    if (!selectedItem.purchased) {
+      // 구매 로직
+      setMarketItems(
+        marketItems.map((item) =>
+          item.prd_id === selectedItem.prd_id
+            ? { ...item, purchased: true }
+            : item
+        )
+      );
+      alert(`${selectedItem.prd_name} 구매 완료!`);
+      return;
+    }
+
+    if (isEquipped) {
+      // 장착 해제 로직
+      updateAvatarItem(category as "background" | "pet" | "hat", "");
+      alert(`${selectedItem.prd_name} 장착 해제 완료!`);
+    } else {
+      // 장착 로직
+      updateAvatarItem(category as "background" | "pet" | "hat", selectedItem.prd_name);
+      alert(`${selectedItem.prd_name} 장착 완료!`);
+    }
+  };
 
   return (
     <Container>
@@ -28,7 +71,7 @@ const AvatarDetailPage = () => {
           <ItemPrice>{selectedItem.prd_price} Coin</ItemPrice>
         </ItemTitle>
         <ItemDescription>{selectedItem.prd_description}</ItemDescription>
-        <ActionButton>장착하기</ActionButton>
+        <ActionButton onClick={handleButtonClick}>{buttonText}</ActionButton>
       </DetailSection>
     </Container>
   );
