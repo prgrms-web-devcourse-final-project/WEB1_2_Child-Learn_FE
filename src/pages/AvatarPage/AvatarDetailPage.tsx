@@ -6,9 +6,8 @@ import { useItemStore } from "../../features/avatar/model/itemStore";
 import { useAvatarStore } from "../../features/avatar/model/avatarStore";
 import { useUserStore } from "../../app/providers/state/zustand/userStore";
 
-
 const AvatarDetailPage = () => {
-  const { marketItems, loadMarketItems, setMarketItems } = useItemStore();
+  const { marketItems, updateMarketItems } = useItemStore();
   const { avatar, updateAvatarItem } = useAvatarStore();
   const { currentCoins, setUser } = useUserStore();
   const { category, product } = useParams();
@@ -17,17 +16,13 @@ const AvatarDetailPage = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [selectedItem, setSelectedItem] = useState<MarketItem | null>(null);
 
-   // marketItems 로드 및 selectedItem 설정
-   useEffect(() => {
-    if (marketItems.length === 0) {
-      loadMarketItems(); // localStorage나 기본 데이터를 불러옵니다.
-    }
-
+     // marketItems에서 선택된 아이템을 설정합니다.
+  useEffect(() => {
     const item = marketItems.find(
       (item) => item.prd_type === category && item.prd_name === product
     );
     setSelectedItem(item || null);
-  }, [marketItems, category, product, loadMarketItems]);
+  }, [marketItems, category, product]);
 
    // 현재 상태와 선택된 아이템을 조합하여 표시할 배경과 펫 계산
    const computedBackground =
@@ -58,7 +53,7 @@ const AvatarDetailPage = () => {
     if (!selectedItem) {
       return;
     }
-    
+
     if (currentCoins < selectedItem.prd_price) {
       // 코인이 부족한 경우
       setIsModalOpen(false);
@@ -67,14 +62,8 @@ const AvatarDetailPage = () => {
       return;
     }
 
-    // 구매 가능한 경우
-    setMarketItems(
-      marketItems.map((item) =>
-        item.prd_id === selectedItem?.prd_id
-          ? { ...item, purchased: true }
-          : item
-      )
-    );
+    updateMarketItems(selectedItem.prd_id, true);
+
     setUser({ currentCoins: currentCoins - selectedItem.prd_price }); // 유저의 코인 차감
     setIsModalOpen(false);
     setModalMessage("구매가 완료되었습니다.");
