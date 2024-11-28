@@ -58,7 +58,6 @@ const AvatarDetailPage = () => {
       // 코인이 부족한 경우
       setIsModalOpen(false);
       setModalMessage("코인이 부족합니다.");
-      setTimeout(() => setModalMessage(""), 3000); // 3초 후 메시지 숨기기
       return;
     }
 
@@ -105,7 +104,9 @@ const AvatarDetailPage = () => {
         <ModalOverlay>
           <ModalContent>
             <ModalTitle>정말로 구매하시겠습니까?</ModalTitle>
-            <ModalPreview src={selectedItem?.prd_image} alt={selectedItem?.prd_name} />
+            {category === "background" && (
+    <ModalPreview src={selectedItem?.prd_image} alt={selectedItem?.prd_name} />
+  )}
             <ModalActions>
               <ModalButton onClick={handlePurchaseConfirm} confirm>
                 구매
@@ -119,7 +120,11 @@ const AvatarDetailPage = () => {
        {modalMessage && (
         <ModalOverlay>
           <ModalContent>
-            <ModalTitle>{modalMessage}</ModalTitle>
+            {/* 코인이 부족한 경우만 CloseButton 표시 */}
+      {modalMessage === "코인이 부족합니다." && (
+        <CloseButton onClick={() => setModalMessage("")}>&times;</CloseButton>
+      )}
+      <ModalTitle>{modalMessage}</ModalTitle>
           </ModalContent>
         </ModalOverlay>
       )}
@@ -279,6 +284,7 @@ const ModalOverlay = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2;
 `;
 
 const ModalContent = styled.div`
@@ -287,17 +293,37 @@ const ModalContent = styled.div`
   border-radius: 10px;
   text-align: center;
   width: 300px;
+  position: relative;
 `;
 
 const ModalTitle = styled.h2`
-  margin-bottom: 15px;
+ font-size: 20px;
+  margin-bottom: 50px;
+  color: #1F2261;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+
+  &:hover {
+    color: #000;
+  }
 `;
 
 const ModalPreview = styled.img`
   width: 100px;
   height: 100px;
-  margin-bottom: 15px;
+  margin-bottom: 50px;
   object-fit: cover;
+  border-radius: 50%;
 `;
 
 const ModalActions = styled.div`
@@ -307,14 +333,15 @@ const ModalActions = styled.div`
 
 const ModalButton = styled.button<{ confirm?: boolean }>`
   padding: 10px 20px;
-  background-color: ${({ confirm }) => (confirm ? "#50b498" : "#d9534f")};
+  background-color: ${({ confirm }) => (confirm ? "#4A87DC" : "#E16266")};
   color: white;
-  border: none;
+  border: 1px solid white;
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
   &:hover {
-    background-color: ${({ confirm }) => (confirm ? "#3a816a" : "#c9302c")};
+    background-color: ${({ confirm }) => (confirm ? "#3657DC" : "#c9302c")};
   }
 `;

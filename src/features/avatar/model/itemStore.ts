@@ -139,7 +139,7 @@ import { ItemCategory } from "../types/itemCategoryTypes";
     prd_name: "야구 모자",
     prd_type: "hat",
     prd_image: "/img/baseball.png",
-    prd_price: 20,
+    prd_price: 2000,
     prd_description: "야구 모자",
     cate_id: 3,
     purchased: false,
