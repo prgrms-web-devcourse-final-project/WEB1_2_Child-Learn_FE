@@ -3,6 +3,14 @@ import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import styled from 'styled-components';
 
+interface StockPrice {
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+}
+
 interface StockChartProps {
   stockId: number;
   title: string;
@@ -114,9 +122,9 @@ const ChartContainer = styled.div<{ $isSelected?: boolean }>`
   border-radius: 12px;
   padding: 16px;
   box-shadow: ${props => props.$isSelected 
-    ? '0 0 0 2px #1B63AB, 0 4px 12px rgba(0, 0, 0, 0.1)'
+    ? '0 0 0 2px #fdfdfd, 0 4px 12px rgba(0, 0, 0, 0.1)'
     : '0 4px 12px rgba(0, 0, 0, 0.1)'};
-  transition: all 0.3s ease;
+  transition: all 0.1s ease;
   cursor: pointer;
 
   &:hover {

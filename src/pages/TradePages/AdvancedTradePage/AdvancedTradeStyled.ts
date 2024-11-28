@@ -1,10 +1,9 @@
-export { default as AdvancedTradePage } from './AdvancedTradePage';
 import styled from 'styled-components';
 
 export const PageContainer = styled.div`
   width: 100%;
   min-height: 100vh;
-  background-color: #E8F3F1;  // 연한 민트색 배경
+  background-color: #E8F3F1;
   padding: 20px;
 `;
 
