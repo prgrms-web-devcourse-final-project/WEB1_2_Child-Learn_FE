@@ -101,7 +101,7 @@ function AvatarPage() {
           <ModalContent>
             <ModalTitle>
               {" "}
-              [초급] 모의투자를 5회 이상 진행해야 이용하실 수 있습니다.
+              [초급] 난이도의<br />모의투자를 5회 이상<br />진행해야 이용하실 수 있습니다.
             </ModalTitle>
             <ModalButton onClick={handleRestrictedModalClose}>확인</ModalButton>
           </ModalContent>
@@ -290,13 +290,15 @@ const ModalContent = styled.div`
 `;
 
 const ModalTitle = styled.h2`
+  font-size: 16px;
   margin-bottom: 15px;
 `;
 
 const ModalButton = styled.button`
   padding: 10px 20px;
-  background-color: #d9534f;
+  background-color: #F27474;
   color: white;
+  width: 200px;
   border: none;
   border-radius: 5px;
   font-size: 16px;
