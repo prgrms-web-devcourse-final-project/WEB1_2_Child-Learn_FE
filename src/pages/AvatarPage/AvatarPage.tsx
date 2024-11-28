@@ -7,7 +7,7 @@ import { useUserStore } from "../../app/providers/state/zustand/userStore";
 
 function AvatarPage() {
   const { avatar, setAvatar } = useAvatarStore();
-  const { marketItems, setMarketItems } = useItemStore();
+  const { marketItems } = useItemStore();
   const { gameCount } = useUserStore();
   const navigate = useNavigate();
 

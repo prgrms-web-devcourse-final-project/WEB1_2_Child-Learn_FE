@@ -99,14 +99,6 @@ const AvatarDetailPage = () => {
           {computedHat && <HatImage src={computedHat} alt="모자" />}
         </BackgroundPlaceholder>
       </CharacterPreview>
-      <DetailSection>
-        <ItemTitle>
-          {selectedItem?.prd_name}
-          <ItemPrice>{selectedItem?.prd_price} Coin</ItemPrice>
-        </ItemTitle>
-        <ItemDescription>{selectedItem?.prd_description}</ItemDescription>
-        <ActionButton onClick={handleButtonClick}>{buttonText}</ActionButton>
-      </DetailSection>
 
       {/* 구매 모달 */}
       {isModalOpen && (
@@ -131,6 +123,19 @@ const AvatarDetailPage = () => {
           </ModalContent>
         </ModalOverlay>
       )}
+       <BackgroundContainer>
+       <DetailSection>
+        <ItemTitle>
+          {selectedItem?.prd_name}
+          <ItemPrice>
+            <CoinIcon src="/public/img/coins.png" alt="코인" />
+            {selectedItem?.prd_price} Coin
+          </ItemPrice>
+        </ItemTitle>
+        <ItemDescription>{selectedItem?.prd_description}</ItemDescription>
+        <ActionButton onClick={handleButtonClick}>{buttonText}</ActionButton>
+      </DetailSection>
+       </BackgroundContainer>
     </Container>
   );
 };
@@ -139,12 +144,27 @@ export default AvatarDetailPage;
 
 // Styled Components
 const Container = styled.div`
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
   text-align: center;
+  background-color: #def9c4; /* 연두색 배경 */
+  position: relative;
+`;
+
+const BackgroundContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 400px;
+   background-color: #fff; 
+  border-top-left-radius: 75px;
 `;
 
 const CharacterPreview = styled.div`
-  margin: 20px 0;
+  margin: 100px 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -201,35 +221,46 @@ const AvatarImage = styled.img`
 `;
 
 const DetailSection = styled.div`
-  margin-top: 20px;
-  text-align: left;
+  margin-top: 50px;
+  text-align: center;
 `;
 
 const ItemTitle = styled.div`
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
   display: flex;
+  margin: 0 20px;
   justify-content: space-between;
 `;
 
 const ItemPrice = styled.span`
-  font-size: 16px;
-  color: #50b498;
+  font-size: 18px;
+  color: #000;
+`;
+
+const CoinIcon = styled.img`
+  width: 30px; /* 아이콘 크기 */
+  height: 30px;
+  margin-right: 5px; /* 숫자와 아이콘 사이의 간격 */
 `;
 
 const ItemDescription = styled.p`
   font-size: 14px;
+  text-align: left;
+  margin-left: 20px;
+  margin-top: 20px;
   color: #666;
-  margin: 10px 0 20px;
 `;
 
 const ActionButton = styled.button`
   padding: 10px 20px;
+  margin-top: 160px;
   background-color: #50b498;
+  width: 247px;
   color: white;
   font-size: 16px;
   border: none;
-  border-radius: 5px;
+  border-radius: 12px;
   cursor: pointer;
 
   &:hover {
