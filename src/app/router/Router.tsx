@@ -14,12 +14,13 @@ import WordQuizResultPage from '../../pages/MiniGamePage/WordQuizGamePage/WordQu
 import AvatarPage from '../../pages/AvatarPage/AvatarPage';
 import AvatarDetailPage from "../../pages/AvatarPage/AvatarDetailPage";
 import ExchangePage from '../../pages/exchangePage/ExchangePage';
+import AccountRecoveryPage from '../../pages/auth/find-id-password/AccountRecoveryPage';
 import showToast from '@/shared/lib/toast';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
 // 인증이 필요하지 않은 페이지 경로들
-const PUBLIC_PATHS = ['/auth/login', '/auth/signup', '/'];
+const PUBLIC_PATHS = ['/auth/login', '/auth/signup', '/', '/auth/find-id'];
 
 export default function Router() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -56,6 +57,7 @@ export default function Router() {
       <Route path="*" element={<div>Page not found</div>} />
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignUpPage />} />
+      <Route path="/auth/find-id" element={<AccountRecoveryPage />} />
     </Routes>
   );
 }
