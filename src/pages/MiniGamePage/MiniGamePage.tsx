@@ -34,7 +34,7 @@ const MiniGamePage = () => {
       gameCount: 5,
       birth: '2002-05-06',
       currentPoints: 2000, // 초기 포인트 설정
-      currentCoins: 10, // 초기 코인 설정
+      currentCoins: 200, // 초기 코인 설정
     });
 
     // 로또 초기 데이터 설정
@@ -115,7 +115,7 @@ const MiniGamePage = () => {
         <TopSection>
           <div>
             <p>획득한 포인트로 나를 꾸며볼까요?</p>
-            <StyledLink to="/character">내 캐릭터 꾸미러 가기</StyledLink>
+            <StyledLink to="/avatar">내 캐릭터 꾸미러 가기</StyledLink>
           </div>
         </TopSection>
 

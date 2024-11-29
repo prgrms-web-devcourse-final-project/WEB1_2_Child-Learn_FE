@@ -11,7 +11,8 @@ import MiniGamePage from '../../pages/MiniGamePage/MiniGamePage';
 import FlipCardGamePage from '../../pages/MiniGamePage/FlipCardGamePage/FlipCardGamePage';
 import WordQuizGamePage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizGamePage';
 import WordQuizResultPage from '../../pages/MiniGamePage/WordQuizGamePage/WordQuizResultPage';
-import CharacterPage from '../../pages/characterPage/CharacterPage';
+import AvatarPage from '../../pages/AvatarPage/AvatarPage';
+import AvatarDetailPage from "../../pages/AvatarPage/AvatarDetailPage";
 import ExchangePage from '../../pages/exchangePage/ExchangePage';
 import AccountRecoveryPage from '../../pages/auth/find-id-password/AccountRecoveryPage';
 import showToast from '@/shared/lib/toast';
@@ -48,7 +49,8 @@ export default function Router() {
       <Route path="/flip-card/:level" element={<FlipCardGamePage />} />
       <Route path="/word-quiz/:level" element={<WordQuizGamePage />} />
       <Route path="/word-quiz/result/:level" element={<WordQuizResultPage />} />
-      <Route path="/character" element={<CharacterPage />} />
+      <Route path="/avatar" element={<AvatarPage />} />
+      <Route path="/avatar/details/:category/:product" element={<AvatarDetailPage />} />
       <Route path="/exchange" element={<ExchangePage />} />
       <Route path="/quiz" element={<QuizPage />} />
       <Route path="/intermediate" element={<IntermediatePage />} />
