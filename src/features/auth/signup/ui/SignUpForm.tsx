@@ -20,9 +20,9 @@ export const SignUpForm = () => {
     pwConfirm: '',
     terms: false,
   });
-  const [validationErrors, setValidationErrors] = useState<
-    Record<string, string>
-  >({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>(
+    {},
+  );
 
   const validateField = (name: string, value: string) => {
     if (name === 'pwConfirm') {
@@ -56,7 +56,6 @@ export const SignUpForm = () => {
         [name]: error,
       }));
 
-      // 비밀번호 변경 시 비밀번호 확인 필드도 재검증
       if (name === 'pw' && formData.pwConfirm) {
         setValidationErrors((prev) => ({
           ...prev,
@@ -75,7 +74,6 @@ export const SignUpForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 약관 동의 확인
     if (!formData.terms) {
       setValidationErrors((prev) => ({
         ...prev,
@@ -84,7 +82,6 @@ export const SignUpForm = () => {
       return;
     }
 
-    // 전체 폼 유효성 검사
     const errors: Record<string, string> = {};
     Object.entries(formData).forEach(([key, value]) => {
       if (key !== 'terms' && key !== 'pwConfirm') {
@@ -93,7 +90,14 @@ export const SignUpForm = () => {
       }
     });
 
-    // 비밀번호 확인 검사
+    const formatBirth = (birth: string) => {
+      if (birth.length !== 8) return birth;
+      const year = birth.substring(0, 4);
+      const month = birth.substring(4, 6);
+      const day = birth.substring(6, 8);
+      return `${year}-${month}-${day}`;
+    };
+
     if (formData.pw !== formData.pwConfirm) {
       errors.pwConfirm = '비밀번호가 일치하지 않습니다.';
     }
@@ -103,13 +107,12 @@ export const SignUpForm = () => {
       return;
     }
 
-    // API 호출용 데이터 준비
     const submitData = {
       loginId: formData.loginId,
       pw: formData.pw,
       username: formData.username,
       email: formData.email,
-      birth: Number(formData.birth),
+      birth: formatBirth(formData.birth),
     };
 
     try {
@@ -190,7 +193,7 @@ export const SignUpForm = () => {
           <Label>생년월일</Label>
           <AuthInput
             width="80%"
-            placeholder="ex) 20001123"
+            placeholder="ex) 19990417"
             name="birth"
             value={formData.birth}
             onChange={handleChange}
@@ -208,8 +211,7 @@ export const SignUpForm = () => {
               onChange={handleChange}
             />
             <label htmlFor="terms">
-              <TermsLink to="/terms">약관 및 정책</TermsLink>에 대해
-              이해했습니다.
+              <TermsLink to="/terms">약관 및 정책</TermsLink>에 대해 이해했습니다.
             </label>
           </CheckboxContainer>
           {validationErrors.terms && (
@@ -306,3 +308,5 @@ const ErrorText = styled.p`
   width: 80%;
   text-align: left;
 `;
+
+export default SignUpForm;
