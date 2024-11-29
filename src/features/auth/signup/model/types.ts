@@ -3,12 +3,12 @@ export interface JoinRequest {
   pw: string;
   username: string;
   email: string;
-  birth: number;
+  birth: string;
 }
 
 export interface JoinResponse {
   userId: string;
   username: string;
   email: string;
-  birth: number;
+  birth: string;
 }
