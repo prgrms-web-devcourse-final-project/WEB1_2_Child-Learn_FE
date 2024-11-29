@@ -7,42 +7,47 @@ import { BackButton } from '../../widgets/BackButton/index';
 
 // 헤더를 숨길 페이지 경로들
 const HIDDEN_HEADER_PATHS = [
+  /^\/avatar\/details\/[^/]+\/[^/]+$/,
   '/',
   '/auth/login',
   '/auth/signup',
   '/flip-card',
   '/word-quiz',
   '/exchange',
+  '/fast-navigation',
+   '/avatar',
   '/auth/find-id',
 ];
 
 // GNB를 숨길 페이지 경로들
-
 const HIDDEN_GNB_PATHS = [
+  /^\/avatar\/details\/[^/]+\/[^/]+$/, 
   '/',
   '/auth/login',
   '/auth/signup',
   '/flip-card',
   '/word-quiz',
+  '/exchange',
   '/fast-navigation',
+  '/avatar',
   '/auth/find-id',
   '/advanced',
 ];
 
 // BackButton만 표시할 페이지 경로들
-const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz', '/exchange'];
+const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz', '/exchange', '/avatar', /^\/avatar\/details\/[^/]+\/[^/]+$/,];
 
 // BackButton을 숨길 페이지 경로 추가
 const HIDDEN_BACK_BUTTON_PATHS = ['/word-quiz/result'];
 
 // 정확한 경로 매칭을 위한 함수
-const isExactPath = (currentPath: string, targetPath: string) => {
-  // 정확히 같거나, auth 경로인 경우 해당 경로로 시작하는지 확인
-  if (targetPath.startsWith('/auth/')) {
-    return currentPath.startsWith(targetPath);
+const isExactPath = (currentPath: string, targetPath: string | RegExp) => {
+  if (typeof targetPath === 'string') {
+    return currentPath === targetPath || (targetPath.startsWith('/auth/') && currentPath.startsWith(targetPath));
+  } else if (targetPath instanceof RegExp) {
+    return targetPath.test(currentPath);
   }
-  // 그 외의 경우 정확히 일치하는지 확인
-  return currentPath === targetPath;
+  return false;
 };
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -57,10 +62,12 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 
   const shouldShowBackButton =
-    SHOW_BACK_BUTTON_PATHS.some((path) => location.pathname.startsWith(path)) &&
-    !HIDDEN_BACK_BUTTON_PATHS.some((path) =>
-      isExactPath(location.pathname, path)
-    );
+  SHOW_BACK_BUTTON_PATHS.some((path) =>
+    typeof path === 'string' ? location.pathname.startsWith(path) : path.test(location.pathname)
+  ) &&
+  !HIDDEN_BACK_BUTTON_PATHS.some((path) =>
+    isExactPath(location.pathname, path)
+  );
 
   return (
     <>
