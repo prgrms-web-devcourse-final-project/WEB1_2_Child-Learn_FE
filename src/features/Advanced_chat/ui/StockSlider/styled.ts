@@ -33,7 +33,7 @@ export const TimeDisplay = styled.div`
 
 export const ChartGrid = styled.div`
   position: relative;
-  width: 413%;  // 차트너비
+  width: 450%;  // 차트너비
   display: flex;
   transition: transform 0.3s ease;
 `;
@@ -41,7 +41,7 @@ export const ChartGrid = styled.div`
 export const ChartItem = styled.div`
   width: 25%;  
   flex-shrink: 0;
-  padding: 0 23px;
+  padding: 0 25px;
 `;
 
 export const NavigationButton = styled.button<{ $show?: boolean; position?: 'left' | 'right' }>`
