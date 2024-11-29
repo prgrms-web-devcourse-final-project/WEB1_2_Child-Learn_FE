@@ -30,10 +30,12 @@ export default Profile;
 
 const UserSection = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;  // 👈 center에서 flex-start로 변경하여 위로 정렬
+  justify-content: space-between;
   gap: 12px;
   padding-top: 20px;
   margin-top: -40px;
+  padding-left: 20px;  // 👈 전체 섹션에 왼쪽 패딩 추가
 `;
 
 const ProfileContainer = styled.div`
@@ -41,23 +43,28 @@ const ProfileContainer = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  margin-left: auto;
 `;
 
 const ProfileImage = styled.img`
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
 `;
 
 const ProfileInfo = styled.div`
   flex: 1;
-  padding-left: 12px; // 왼쪽 여백 추가
+  padding-left: 0;
+  margin-right: auto;
+  margin-top: 0px;  // 👈 위로 올리기 위해 음수 마진 추가
+  position: relative;  // 👈 추가
+  left: -20px;  // 👈 더 왼쪽으로 이동
 `;
 
 const Username = styled.h2`
-  font-size: 30px;
-  font-weight: 700;
+  font-size: 35px;
+  font-weight: 500;
   margin: 0;
   color: #181818;
 `;
