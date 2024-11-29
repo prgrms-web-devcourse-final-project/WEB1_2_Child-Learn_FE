@@ -1,4 +1,4 @@
-const generateMockStockData = (basePrice: number) => {
+export const generateMockStockData = (basePrice: number) => {
   const timestamps = [];
   const openPrices = [];
   const highPrices = [];
@@ -36,6 +36,8 @@ const generateMockStockData = (basePrice: number) => {
   };
 };
 
+
+// 백에서 데이터 정확하게 나오면 실행
 // export const advancedGameHandlers = [
 //   http.get('/api/v1/advanced-game/stocks/:symbol', ({ params }) => {
 //     const { symbol } = params;

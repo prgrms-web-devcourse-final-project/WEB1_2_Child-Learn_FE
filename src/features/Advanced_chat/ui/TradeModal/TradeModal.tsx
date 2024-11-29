@@ -1,23 +1,23 @@
 // features/Advanced_game/ui/TradeModal/index.tsx
 import React, { useState } from 'react';
-import { Minus, Plus } from 'lucide-react';
+import ReactApexChart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
 import {
   ModalOverlay,
   ModalContainer,
   ModalTitle,
   ModalContent,
-  PriceList,
-  PriceItem,
-  TradeSection,
-  CurrentPrice,
-  PriceLabel,
-  PriceValue,
+  PriceListContainer,
+  StockInfoSection,
+  StockLabel,
+  StockPrice,
   PriceArrow,
-//   TradeInput,
+  QuantitySection,
+  PointsLabel,
   QuantityControl,
   QuantityButton,
   QuantityInput,
-  TradeButtons,
+  TradeButtonGroup,
   BuyButton,
   SellButton,
   CloseButton
@@ -28,71 +28,115 @@ interface TradeModalProps {
   onClose: () => void;
   stockName: string;
   currentPrice: number;
-  priceHistory: Array<{
-    price: number;
-    change: number;
-    volume: number;
-  }>;
 }
 
 export const TradeModal: React.FC<TradeModalProps> = ({
   isOpen,
   onClose,
   stockName,
-  currentPrice,
-  priceHistory
+  currentPrice
 }) => {
   const [quantity, setQuantity] = useState(1);
 
-  if (!isOpen) return null;
-
-  const handleQuantityChange = (delta: number) => {
-    const newQuantity = Math.max(1, quantity + delta);
-    setQuantity(newQuantity);
+  // 호가창 데이터 생성 (실제로는 API에서 받아와야 함)
+  const generateOrderBookData = () => {
+    const basePrice = currentPrice;
+    const orderBook = [];
+    
+    // 매도 호가 10개
+    for (let i = 7; i >= 0; i--) {
+      orderBook.push({
+        price: basePrice + (i + 1) * 10,
+        change: (Math.random() * 0.8).toFixed(2),
+        volume: Math.floor(Math.random() * 100000)
+      });
+    }
+    
+    return orderBook;
   };
+
+  const orderBookData = generateOrderBookData();
+
+  const chartOptions: ApexOptions = {
+    chart: {
+      type: 'bar',
+      height: 100,
+      toolbar: {
+        show: false
+      }
+    },
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        barHeight: '80%',
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    xaxis: {
+      categories: orderBookData.map(d => d.price.toLocaleString()),
+      labels: {
+        formatter: function (val) {
+          return val.toString();
+        }
+      }
+    },
+    yaxis: {
+      labels: {
+        show: false
+      }
+    },
+    colors: orderBookData.map(d => Number(d.change) >= 0 ? '#d75442' : '#1B63AB'),
+  };
+
+  const series = [{
+    name: '거래량',
+    data: orderBookData.map(d => d.volume)
+  }];
+
+  if (!isOpen) return null;
 
   return (
     <ModalOverlay>
       <ModalContainer>
-        <ModalTitle>거래하기</ModalTitle>
+        <ModalTitle>하기</ModalTitle>
         <ModalContent>
-          <PriceList>
-            {priceHistory.map((item, index) => (
-              <PriceItem key={index} $isPositive={item.change >= 0}>
-                <span>{item.price.toLocaleString()}</span>
-                <span>{Math.abs(item.change).toFixed(2)}%</span>
-                <span>{item.volume.toLocaleString()}</span>
-              </PriceItem>
-            ))}
-          </PriceList>
+          <PriceListContainer>
+            <ReactApexChart
+              options={chartOptions}
+              series={series}
+              type="bar"
+              height={350}
+            />
+          </PriceListContainer>
 
-          <TradeSection>
-            <CurrentPrice>
-              <PriceLabel>구매할 주식</PriceLabel>
-              <PriceValue>{stockName}</PriceValue>
-              <PriceArrow>↓</PriceArrow>
-            </CurrentPrice>
+          <StockInfoSection>
+            <StockLabel>구매할 주식</StockLabel>
+            <StockPrice>{stockName}</StockPrice>
+            <PriceArrow>↓</PriceArrow>
+            <StockPrice>{currentPrice.toLocaleString()}</StockPrice>
+          </StockInfoSection>
 
+          <QuantitySection>
+            <PointsLabel>포인트</PointsLabel>
             <QuantityControl>
-              <PriceLabel>포인트</PriceLabel>
-              <div>
-                <span>개수</span>
-                <QuantityButton onClick={() => handleQuantityChange(-1)}>
-                  <Minus size={16} />
-                </QuantityButton>
-                <QuantityInput value={quantity} readOnly />
-                <QuantityButton onClick={() => handleQuantityChange(1)}>
-                  <Plus size={16} />
-                </QuantityButton>
-              </div>
+              <label>개수</label>
+              <QuantityButton onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                <img src="/img/minus.png" alt="감소" />
+              </QuantityButton>
+              <QuantityInput value={quantity} readOnly />
+              <QuantityButton onClick={() => setQuantity(quantity + 1)}>
+                <img src="/img/plus.png" alt="증가" />
+              </QuantityButton>
             </QuantityControl>
+          </QuantitySection>
 
-            <TradeButtons>
-              <BuyButton>매수하기</BuyButton>
-              <SellButton>매도하기</SellButton>
-            </TradeButtons>
-          </TradeSection>
-          
+          <TradeButtonGroup>
+            <BuyButton>매수하기</BuyButton>
+            <SellButton>매도하기</SellButton>
+          </TradeButtonGroup>
+
           <CloseButton onClick={onClose}>나가기</CloseButton>
         </ModalContent>
       </ModalContainer>

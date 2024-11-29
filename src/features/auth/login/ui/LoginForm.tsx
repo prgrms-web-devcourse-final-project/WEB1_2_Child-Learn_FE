@@ -94,7 +94,7 @@ export const LoginForm = () => {
         <SignupLink href="/auth/signup">회원가입하기</SignupLink>
       </SignupContainer>
 
-      <FindAccountLink href="/auth/register">
+      <FindAccountLink href="/auth/find-id">
         계정이 기억나지 않아요
       </FindAccountLink>
     </Form>

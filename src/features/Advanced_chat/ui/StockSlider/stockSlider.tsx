@@ -1,25 +1,20 @@
 // features/Advanced_game/ui/StockSlider/stockSlider.tsx
 import React, { useState, useEffect } from 'react';
-import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart';
+import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart'; 
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
 import {
  SlideContainer,
  TimeDisplay,
- ChartGrid,
+ ChartGrid, 
  ChartItem,
+ NavigationButton,
  ControlPanel,
  PlayButton,
  TradeButton,
- NavigationButton
-} from '@/features/Advanced_chat/ui/StockSlider/styled';
-
-const ICONS = {
- timer: '/img/timer.png?url',
- play: '/img/play.png?url',
- pause: '/img/pause.png?url',
- arrow: '/img/arrow2.png?url'
-};
-
+ SlideIndicators,
+ Indicator
+} from './styled';
+  
 interface Stock {
  id: number;
  symbol: string;
@@ -33,6 +28,8 @@ interface StockPrice {
  high: number;
  low: number;
  close: number;
+ change: number;
+ volume: number;
 }
 
 const STOCKS: Stock[] = [
@@ -106,11 +103,12 @@ export const StockSlider: React.FC = () => {
  return (
    <SlideContainer>
      <TimeDisplay>
-       <img src={ICONS.timer} alt="시계" />
+       <img src="/img/timer.png" alt="시계" />
        {formatTime(gameTime)}
      </TimeDisplay>
-     
+
      <NavigationButton 
+       $show={!showActions}
        position="left" 
        onClick={handlePrevSlide}
        disabled={currentSlide === 0}
@@ -118,7 +116,7 @@ export const StockSlider: React.FC = () => {
        <img src="/img/arrow2.png" alt="이전" />
      </NavigationButton>
 
-     <ChartGrid style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+     <ChartGrid style={{ transform: `translateX(-${currentSlide * 25}%)` }}>
        {STOCKS.map((stock) => (
          <ChartItem key={stock.id}>
            <StockChart
@@ -133,25 +131,24 @@ export const StockSlider: React.FC = () => {
      </ChartGrid>
 
      <NavigationButton 
+       $show={!showActions}
        position="right" 
        onClick={handleNextSlide}
        disabled={currentSlide === STOCKS.length - 1}
      >
-       <img src={ICONS.arrow} alt="다음" />
+       <img src="/img/arrow2.png" alt="다음" />
      </NavigationButton>
 
      {selectedStock && (
        <ControlPanel>
          <PlayButton onClick={() => setIsPlaying(!isPlaying)}>
            {isPlaying ? (
-             <img src={ICONS.pause} alt="일시정지" />
+             <img src="/img/pause.png" alt="일시정지" />
            ) : (
-             <img src={ICONS.play} alt="시작" />
+             <img src="/img/play.png" alt="시작" />
            )}
          </PlayButton>
-         <TradeButton onClick={() => setShowTradeModal(true)}>
-           거래하기
-         </TradeButton>
+         <TradeButton onClick={() => setShowTradeModal(true)}>거래하기</TradeButton>
        </ControlPanel>
      )}
 
@@ -160,10 +157,22 @@ export const StockSlider: React.FC = () => {
          isOpen={showTradeModal}
          onClose={() => setShowTradeModal(false)}
          stockName={STOCKS.find(s => s.id === selectedStock)?.title || ''}
-         currentPrice={0} // 실제 현재 가격으로 변경 필요
-         priceHistory={[]} // 실제 가격 히스토리로 변경 필요
+         currentPrice={
+           stockData[STOCKS.find(s => s.id === selectedStock)?.symbol || '']?.[0]?.close || 0
+         }
+         priceHistory={stockData[STOCKS.find(s => s.id === selectedStock)?.symbol || ''] || []}
        />
      )}
+
+     <SlideIndicators $show={!showActions}>
+       {STOCKS.map((_, index) => (
+         <Indicator
+           key={index}
+           $active={index === currentSlide}
+           onClick={() => setCurrentSlide(index)}
+         />
+       ))}
+     </SlideIndicators>
    </SlideContainer>
  );
 };
