@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { UserInfo } from '@/entities/User/model/types';
 import defaultProfileImg from '../../../../public/img/basic-profile.png';
+import UserPoints from './UserPoints';  // 경로는 실제 위치에 맞게 조정해주세요
 
 interface ProfileProps {
   userInfo: UserInfo;
@@ -17,6 +18,9 @@ const Profile = ({ userInfo, onEditClick }: ProfileProps) => {
           <ClockIcon src="/img/clock.png" alt="clock" />
           <JoinDate>가입일: {new Date(userInfo.createdAt).toLocaleDateString('ko-KR')}</JoinDate>
         </JoinDateWrapper>
+        <PointsWrapper>
+          <UserPoints coins={userInfo.coins} points={userInfo.points} />
+        </PointsWrapper>
       </ProfileInfo>
       <ProfileContainer>
         <ProfileImage src={defaultProfileImg} alt="프로필 이미지" />
@@ -30,12 +34,12 @@ export default Profile;
 
 const UserSection = styled.div`
   display: flex;
-  align-items: flex-start;  // 👈 center에서 flex-start로 변경하여 위로 정렬
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  padding-top: 20px;
+  padding: 20px;
   margin-top: -40px;
-  padding-left: 20px;  // 👈 전체 섹션에 왼쪽 패딩 추가
+  position: relative;
+  width: 100%;
 `;
 
 const ProfileContainer = styled.div`
@@ -43,7 +47,8 @@ const ProfileContainer = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  margin-left: auto;
+  width: 80px;
+  margin-right: -16px; // 오른쪽으로 더 이동
 `;
 
 const ProfileImage = styled.img`
@@ -55,11 +60,11 @@ const ProfileImage = styled.img`
 
 const ProfileInfo = styled.div`
   flex: 1;
+  width: calc(100% - 120px);
+  margin-top: 0px;
   padding-left: 0;
-  margin-right: auto;
-  margin-top: 0px;  // 👈 위로 올리기 위해 음수 마진 추가
-  position: relative;  // 👈 추가
-  left: -20px;  // 👈 더 왼쪽으로 이동
+  padding-right: 40px;
+  margin-left: -20px;
 `;
 
 const Username = styled.h2`
@@ -104,4 +109,10 @@ const EditProfileButton = styled.button`
   &:hover {
     text-decoration: underline;
   }
+`;
+
+const PointsWrapper = styled.div`
+  margin-top: 50px;
+  width: 100%;  // 전체 너비
+  margin-left: 0;  // 마진 제거
 `;
