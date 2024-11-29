@@ -1,7 +1,8 @@
 // features/Advanced_game/ui/StockSlider/stockSlider.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart'; 
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
+import { createStockWebSocket } from '../../model/stockWebSocket';
 import {
  SlideContainer,
  TimeDisplay,
@@ -47,27 +48,46 @@ export const StockSlider: React.FC = () => {
  const [gameTime, setGameTime] = useState(0);
  const [stockData, setStockData] = useState<Record<string, StockPrice[]>>({});
  const [showTradeModal, setShowTradeModal] = useState(false);
+ const [wsConnected, setWsConnected] = useState(false);
+ const wsRef = useRef(createStockWebSocket());
 
  useEffect(() => {
-   const fetchStockData = async () => {
-     try {
-       const responses = await Promise.all(
-         STOCKS.map(stock => 
-           fetch(`/api/v1/advanced-game/stocks/${stock.symbol}`).then(res => res.json())
-         )
-       );
-       
-       const newStockData: Record<string, StockPrice[]> = {};
-       responses.forEach((data, index) => {
-         newStockData[STOCKS[index].symbol] = data;
-       });
-       setStockData(newStockData);
-     } catch (error) {
-       console.error('Failed to load stock data:', error);
+   const ws = wsRef.current;
+   
+   ws.connect((message) => {
+     switch (message.type) {
+       case 'LIVE_DATA':
+         setStockData(prevData => ({
+           ...prevData,
+           ...message.data.reduce((acc: Record<string, StockPrice[]>, item: any) => {
+             acc[item.symbol] = [
+               {
+                 timestamp: new Date(item.timestamp * 1000).toISOString(),
+                 price: item.closePrice,
+                 open: item.openPrice,
+                 high: item.highPrice,
+                 low: item.lowPrice,
+                 close: item.closePrice,
+                 change: 0,
+                 volume: 0
+               },
+               ...(prevData[item.symbol] || [])
+             ];
+             return acc;
+           }, {})
+         }));
+         break;
+       case 'END_GAME':
+         setIsPlaying(false);
+         break;
      }
-   };
+   });
 
-   fetchStockData();
+   setWsConnected(true);
+
+   return () => {
+     ws.disconnect();
+   };
  }, []);
 
  useEffect(() => {
@@ -98,6 +118,15 @@ export const StockSlider: React.FC = () => {
 
  const handleNextSlide = () => {
    setCurrentSlide(prev => Math.min(STOCKS.length - 1, prev + 1));
+ };
+
+ const handlePlayClick = () => {
+   if (!isPlaying) {
+     wsRef.current.sendMessage('START_GAME');
+   } else {
+     wsRef.current.sendMessage('PAUSE_GAME');
+   }
+   setIsPlaying(!isPlaying);
  };
 
  return (
@@ -141,7 +170,7 @@ export const StockSlider: React.FC = () => {
 
      {selectedStock && (
        <ControlPanel>
-         <PlayButton onClick={() => setIsPlaying(!isPlaying)}>
+         <PlayButton onClick={handlePlayClick}>
            {isPlaying ? (
              <img src="/img/pause.png" alt="일시정지" />
            ) : (

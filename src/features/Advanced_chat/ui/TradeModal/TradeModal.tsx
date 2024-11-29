@@ -23,18 +23,25 @@ import {
   CloseButton
 } from './styled';
 
+interface StockPrice {
+  price: number;
+  timestamp: string;
+}
+
 interface TradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   stockName: string;
   currentPrice: number;
+  priceHistory: StockPrice[];
 }
 
 export const TradeModal: React.FC<TradeModalProps> = ({
   isOpen,
   onClose,
   stockName,
-  currentPrice
+  currentPrice,
+  priceHistory
 }) => {
   const [quantity, setQuantity] = useState(1);
 
@@ -43,7 +50,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     const basePrice = currentPrice;
     const orderBook = [];
     
-    // 매도 호가 10개
+    // 매도 호가 7개
     for (let i = 7; i >= 0; i--) {
       orderBook.push({
         price: basePrice + (i + 1) * 10,
