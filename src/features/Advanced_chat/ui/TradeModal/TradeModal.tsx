@@ -60,7 +60,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   const chartOptions: ApexOptions = {
     chart: {
       type: 'bar',
-      height: 100,
+      height: 250,
       toolbar: {
         show: false
       }
@@ -100,7 +100,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   return (
     <ModalOverlay>
       <ModalContainer>
-        <ModalTitle>하기</ModalTitle>
+        <ModalTitle>거래하기</ModalTitle>
         <ModalContent>
           <PriceListContainer>
             <ReactApexChart

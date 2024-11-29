@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 export const SlideContainer = styled.div`
   width: 100%;
+  height: 100%;
   max-width: 1200px;
   margin: 0 auto;
   position: relative;
@@ -15,7 +16,7 @@ export const SlideContainer = styled.div`
 export const TimeDisplay = styled.div`
   position: absolute;
   top: -4px;
-  right: 25px;
+  right: 30px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -32,13 +33,13 @@ export const TimeDisplay = styled.div`
 
 export const ChartGrid = styled.div`
   position: relative;
-  width: 413%;  // 4개의 차트를 위해 400%로 설정
+  width: 413%;  // 차트너비
   display: flex;
   transition: transform 0.3s ease;
 `;
 
 export const ChartItem = styled.div`
-  width: 25%;  // 각 차트는 전체 너비의 25%
+  width: 25%;  
   flex-shrink: 0;
   padding: 0 23px;
 `;
@@ -61,8 +62,8 @@ export const NavigationButton = styled.button<{ $show?: boolean; position?: 'lef
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   img {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     transform: ${props => props.position === 'left' ? 'rotate(180deg)' : 'none'};
   }
 
@@ -123,7 +124,7 @@ export const SlideIndicators = styled.div<{ $show?: boolean }>`
   display: flex;
   justify-content: center;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 20px;
   visibility: ${props => props.$show ? 'visible' : 'hidden'};
 `;
 
