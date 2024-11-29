@@ -21,4 +21,5 @@ export interface UserInfo {
   coins: number;
   createdAt: string;
   updatedAt: string;
+  profileImage?: string;
 }

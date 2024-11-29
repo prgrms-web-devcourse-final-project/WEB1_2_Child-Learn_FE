@@ -1,10 +1,41 @@
 import styled from 'styled-components';
+import { useState, useEffect } from 'react';
+import Profile from '@/features/mypage/ui/Profile';
+import { userApi } from '@/entities/User/api/userApi';
+import { UserInfo } from '@/entities/User/model/types';
 
 const MyPage = () => {
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        setIsLoading(true);
+        const data = await userApi.getUserInfo();
+        setUserInfo(data);
+      } catch (err) {
+        setError('사용자 정보를 불러오는데 실패했습니다.');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
+  const handleEditClick = () => {
+    console.log('회원정보 수정 클릭');
+  };
+
   return (
     <PageContainer>
       <ContentContainer>
-        {/* 여기에 실제 컨텐츠가 들어갈 예정입니다 */}
+        {isLoading && <div>로딩 중...</div>}
+        {error && <div>{error}</div>}
+        {userInfo && <Profile userInfo={userInfo} onEditClick={handleEditClick} />}
       </ContentContainer>
     </PageContainer>
   );
@@ -12,7 +43,6 @@ const MyPage = () => {
 
 export default MyPage;
 
-// 스타일 컴포넌트
 const PageContainer = styled.div`
   background: linear-gradient(
     to bottom,
