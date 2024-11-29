@@ -48,7 +48,7 @@ export const StockChart: React.FC<StockChartProps> = ({ title, data, isSelected,
       <ReactApexChart
         options={options}
         series={series}
-        type="candlestick"
+        type="line"
         height={350}
       />
     </div>
