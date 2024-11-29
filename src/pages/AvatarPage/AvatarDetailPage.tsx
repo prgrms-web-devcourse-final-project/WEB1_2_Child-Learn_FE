@@ -104,9 +104,13 @@ const AvatarDetailPage = () => {
         <ModalOverlay>
           <ModalContent>
             <ModalTitle>정말로 구매하시겠습니까?</ModalTitle>
-            {(category === "background" || category === "pet" || category === "hat") && (
-    <ModalPreview src={selectedItem?.prd_image} alt={selectedItem?.prd_name} />
-  )}
+            {category && selectedItem?.prd_image && (
+        <ModalPreview
+          src={selectedItem.prd_image}
+          alt={selectedItem.prd_name}
+          category={category}
+        />
+      )}
             <ModalActions>
               <ModalButton onClick={handlePurchaseConfirm} confirm>
                 구매
