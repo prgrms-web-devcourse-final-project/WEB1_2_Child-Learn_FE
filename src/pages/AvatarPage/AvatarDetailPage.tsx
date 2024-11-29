@@ -95,7 +95,7 @@ const AvatarDetailPage = () => {
       {!computedBackground && <Placeholder />}
           <AvatarImage src="/img/avatar.png" alt="캐릭터" />
           {computedPet && <PetImage src={computedPet} alt="펫" />}
-          {computedHat && <HatImage src={computedHat} alt="모자" />}
+          {computedHat && <HatImage src={computedHat} alt="모자" isBaseball={selectedItem?.prd_name === "baseball"} />}
         </BackgroundPlaceholder>
       </CharacterPreview>
 
@@ -104,7 +104,7 @@ const AvatarDetailPage = () => {
         <ModalOverlay>
           <ModalContent>
             <ModalTitle>정말로 구매하시겠습니까?</ModalTitle>
-            {category === "background" && (
+            {(category === "background" || category === "pet" || category === "hat") && (
     <ModalPreview src={selectedItem?.prd_image} alt={selectedItem?.prd_name} />
   )}
             <ModalActions>
@@ -209,12 +209,12 @@ const PetImage = styled.img`
   z-index: 2;
 `;
 
-const HatImage = styled.img`
+const HatImage = styled.img<{ isBaseball?: boolean }>`
   position: absolute;
   width: 60px; /* 모자 크기 */
   height: 40px; /* 모자 높이 */
   top: 20px; /* 캐릭터 머리 위에 위치 */
-  left: 50%;
+  left: ${({ isBaseball }) => (isBaseball ? "7                                 0%" : "50%")};
   transform: translateX(-40%); /* 중앙 정렬 */
   z-index: 3; /* 캐릭터보다 위에 표시 */
 `;
@@ -318,12 +318,12 @@ const CloseButton = styled.button`
   }
 `;
 
-const ModalPreview = styled.img`
+const ModalPreview = styled.img<{ category?: string }>`
   width: 100px;
   height: 100px;
   margin-bottom: 50px;
-  object-fit: cover;
-  border-radius: 50%;
+  object-fit: ${({ category }) => (category === "background" ? "cover" : "contain")};
+  border-radius: ${({ category }) => (category === "background" ? "50%" : "0")};
 `;
 
 const ModalActions = styled.div`

@@ -50,7 +50,9 @@ function AvatarPage() {
   return (
     <Container>
       <Title>내 캐릭터 꾸미기</Title>
+      <AvatarPreviewWrapper>
       <AvatarPreview />
+      </AvatarPreviewWrapper>
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
       <Divider />
       <ItemGrid filteredItems={filteredItems} />
@@ -82,6 +84,12 @@ const Container = styled.div`
 const Title = styled.h1`
   font-size: 17px;
   margin-bottom: 20px;
+`;
+
+const AvatarPreviewWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Divider = styled.div`
