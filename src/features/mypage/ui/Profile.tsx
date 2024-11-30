@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { UserInfo } from '@/entities/User/model/types';
 import defaultProfileImg from '../../../../public/img/basic-profile.png';
-import UserPoints from './UserPoints';  // 경로는 실제 위치에 맞게 조정해주세요
+import UserPoints from './UserPoints'; // 경로는 실제 위치에 맞게 조정해주세요
 
 interface ProfileProps {
   userInfo: UserInfo;
@@ -16,16 +16,20 @@ const Profile = ({ userInfo, onEditClick }: ProfileProps) => {
         <UserID>{userInfo.loginId}</UserID>
         <JoinDateWrapper>
           <ClockIcon src="/img/clock.png" alt="clock" />
-          <JoinDate>가입일: {new Date(userInfo.createdAt).toLocaleDateString('ko-KR')}</JoinDate>
+          <JoinDate>
+            가입일: {new Date(userInfo.createdAt).toLocaleDateString('ko-KR')}
+          </JoinDate>
         </JoinDateWrapper>
-        <PointsWrapper>
-          <UserPoints coins={userInfo.coins} points={userInfo.points} />
-        </PointsWrapper>
       </ProfileInfo>
       <ProfileContainer>
         <ProfileImage src={defaultProfileImg} alt="프로필 이미지" />
-        <EditProfileButton onClick={onEditClick}>회원 정보 수정</EditProfileButton>
+        <EditProfileButton onClick={onEditClick}>
+          회원 정보 수정
+        </EditProfileButton>
       </ProfileContainer>
+      <PointsWrapper>
+        <UserPoints coins={userInfo.coins ?? 0} points={userInfo.points ?? 0} />
+      </PointsWrapper>
     </UserSection>
   );
 };
@@ -105,14 +109,16 @@ const EditProfileButton = styled.button`
   cursor: pointer;
   margin-top: 4px;
   padding: 0;
-  
+
   &:hover {
     text-decoration: underline;
   }
 `;
 
 const PointsWrapper = styled.div`
-  margin-top: 50px;
-  width: 100%;  // 전체 너비
-  margin-left: 0;  // 마진 제거
+  width: 100%;
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-top: 120px; // 30px에서 80px로 늘림
 `;

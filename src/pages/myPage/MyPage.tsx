@@ -57,8 +57,8 @@ const PageContainer = styled.div`
   background: linear-gradient(
     to bottom,
     #def9c4 0%,
-    #def9c4 40%,
-    white 40%,
+    #def9c4 39%,
+    white 39%,
     white 100%
   );
   min-height: 100%;

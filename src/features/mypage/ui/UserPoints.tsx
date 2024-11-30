@@ -5,7 +5,7 @@ interface UserPointsProps {
   points: number;
 }
 
-const UserPoints = ({ coins, points }: UserPointsProps) => {
+const UserPoints = ({ coins = 0, points = 0 }: UserPointsProps) => {
   return (
     <PointsContainer>
       <PointCard>
@@ -14,7 +14,7 @@ const UserPoints = ({ coins, points }: UserPointsProps) => {
             <PointIcon src="/icons/coins 1.png" alt="포인트" />
           </IconWrapper>
           <TextContainer>
-            <PointValue>{points.toLocaleString()}</PointValue>
+            <PointValue>{(points || 0).toLocaleString()}</PointValue>
             <PointLabel>Point</PointLabel>
           </TextContainer>
         </CardContent>
@@ -25,7 +25,7 @@ const UserPoints = ({ coins, points }: UserPointsProps) => {
             <PointIcon src="/img/coins.png" alt="코인" />
           </IconWrapper>
           <TextContainer>
-            <PointValue>{coins.toLocaleString()}</PointValue>
+            <PointValue>{(coins || 0).toLocaleString()}</PointValue>
             <PointLabel>Coin</PointLabel>
           </TextContainer>
         </CardContent>
@@ -36,23 +36,36 @@ const UserPoints = ({ coins, points }: UserPointsProps) => {
 
 const PointsContainer = styled.div`
   display: flex;
-  justify-content: flex-start;  // 시작점 기준 정렬
+  justify-content: center; // 가운데 정렬
   gap: 16px;
   margin-top: 32px;
-  width: fit-content;  // 컨텐츠 크기만큼
-  margin: 0 auto;  // 가운데 정렬을 위한 마진
+  width: 100%; // 전체 너비 사용
 `;
 
 const PointCard = styled.div`
-  width: 150px;  // 동일한 너비
-  height: 70px;  // 동일한 높이
+  width: 150px; // 고정된 너비
+  height: 70px; // 고정된 높이
   background: white;
   border-radius: 16px;
   padding: 12px 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
-  flex: none;
+`;
+
+const CardContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+`;
+
+const IconWrapper = styled.div`
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const PointIcon = styled.img`
@@ -61,43 +74,28 @@ const PointIcon = styled.img`
   object-fit: contain;
 `;
 
+const TextContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center; // 텍스트 가운데 정렬
+  gap: 1px;
+  flex: 1; // 남은 공간 모두 차지
+  text-align: center; // 텍스트 가운데 정렬
+`;
+
 const PointValue = styled.span`
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
-  color: #333;
-  text-align: center;  // 텍스트 가운데 정렬
+  color: #181818;
+  text-align: center; // 텍스트 가운데 정렬
+  width: 100%; // 전체 너비 사용
 `;
 
 const PointLabel = styled.span`
   font-size: 14px;
   color: #666;
-  text-align: center;  // 텍스트 가운데 정렬
+  text-align: center; // 텍스트 가운데 정렬
+  width: 100%; // 전체 너비 사용
 `;
-
-const CardContent = styled.div`
-  display: flex;
-  align-items: center;  // 세로 중앙 정렬
-  gap: 12px;
-  width: 100%;
-  height: 100%;  // 높이 100%로 설정
-`;
-
-const IconWrapper = styled.div`
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;  // 이미지 세로 중앙 정렬
-  justify-content: center;  // 이미지 가로 중앙 정렬
-  flex-shrink: 0;
-`;
-
-const TextContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;  // 텍스트 가운데 정렬
-  gap: 4px;
-  flex: 1;  // 남은 공간 차지
-`;
-
 
 export default UserPoints;

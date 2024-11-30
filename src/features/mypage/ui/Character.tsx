@@ -20,7 +20,7 @@ const CharacterBox = styled.div`
   background: white;
   border-radius: 16px;
   padding: 15px;
-  margin-top: 15px;
+  margin-top: 120px; // 15px에서 140px로 늘림
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   cursor: pointer;
   display: flex;
