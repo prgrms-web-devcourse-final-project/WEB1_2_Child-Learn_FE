@@ -56,7 +56,7 @@ const MiniGamePage = () => {
 
   // 카드 뒤집기 플레이 핸들러
   const handleFlipCardPlay = async (
-    difficulty: 'begin' | 'med' | 'adv'
+    difficulty: 'begin' | 'mid' | 'adv'
   ) => {
     if (isCardPlayable(difficulty)) {
       setCardLastPlayed(difficulty, new Date());
@@ -180,9 +180,9 @@ const MiniGamePage = () => {
                       쉬움
                     </ModalButton>
                     <ModalButton
-                      difficulty="med"
-                      onClick={() => handleFlipCardPlay('med')}
-                      disabled={!isCardPlayable('med')}
+                      difficulty="mid"
+                      onClick={() => handleFlipCardPlay('mid')}
+                      disabled={!isCardPlayable('mid')}
                     >
                       보통
                     </ModalButton>
@@ -207,7 +207,7 @@ const MiniGamePage = () => {
                   쉬움
                 </ModalButton>
                 <ModalButton
-                  difficulty="med"
+                  difficulty="mid"
                   onClick={() => handleWordQuizPlay('medium')}
                   disabled={!isWordQuizPlayable('medium')}
                 >
@@ -433,7 +433,7 @@ const ModalContent = styled.div`
 `;
 
 const ModalButton = styled.button<{
-  difficulty: 'begin' | 'med' | 'adv';
+  difficulty: 'begin' | 'mid' | 'adv';
 }>`
   width: 100%;
   margin-top: 10px;
@@ -445,7 +445,7 @@ const ModalButton = styled.button<{
   background-color: ${({ difficulty }) =>
     difficulty === 'begin'
       ? '#9CDBA6'
-      : difficulty === 'med'
+      : difficulty === 'mid'
         ? '#50B498'
         : '#468585'};
   color: white;
@@ -454,7 +454,7 @@ const ModalButton = styled.button<{
     background-color: ${({ difficulty }) =>
       difficulty === 'begin'
         ? '#8BCF96'
-        : difficulty === 'med'
+        : difficulty === 'mid'
           ? '#44997E'
           : '#3A7572'};
   }

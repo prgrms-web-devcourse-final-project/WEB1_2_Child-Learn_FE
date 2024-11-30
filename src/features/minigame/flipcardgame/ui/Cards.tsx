@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import type { Card } from '../../../../features/minigame/flipcardgame/types/cardTypes';
 
 interface CardsProps {
-  difficulty: 'begin' | 'med' | 'adv';
+  difficulty: 'begin' | 'mid' | 'adv';
   shuffledCards: Card[];
   flippedCards: number[];
   matchedCards: number[];
@@ -48,12 +48,12 @@ export function Cards({
 const GameGrid = styled.div<{ difficulty?: string }>`
   display: grid;
   grid-template-columns: repeat(
-    ${({ difficulty }) => (difficulty === 'begin' ? 2 : difficulty === 'med' ? 3 : 4)},
+    ${({ difficulty }) => (difficulty === 'begin' ? 2 : difficulty === 'mid' ? 3 : 4)},
     ${({ difficulty }) =>
-      difficulty === 'begin' ? '100px' : difficulty === 'med' ? '90px' : '80px'}
+      difficulty === 'begin' ? '100px' : difficulty === 'mid' ? '90px' : '80px'}
   );
   column-gap: ${({ difficulty }) =>
-    difficulty === 'begin' ? '20px' : difficulty === 'med' ? '15px' : '10px'};
+    difficulty === 'begin' ? '20px' : difficulty === 'mid' ? '15px' : '10px'};
   row-gap: 10px; /* 상하 간격 */
   margin-top: 100px; /* 상단 간격 고정 */
   margin-bottom: 40px; /* 하단 간격 고정 */
@@ -62,7 +62,7 @@ const GameGrid = styled.div<{ difficulty?: string }>`
   max-width: ${({ difficulty }) =>
     difficulty === 'begin'
       ? 'calc(2 * 100px + 20px)' // 카드 크기와 간격 계산
-      : difficulty === 'med'
+      : difficulty === 'mid'
       ? 'calc(3 * 90px + 30px)' // 카드 크기와 간격 계산
       : 'calc(4 * 80px + 30px)'}; // 카드 크기와 간격 계산
   justify-items: center;
@@ -71,9 +71,9 @@ const GameGrid = styled.div<{ difficulty?: string }>`
 
 const Card = styled.div<{ flipped: boolean; difficulty?: string }>`
   width: ${({ difficulty }) =>
-    difficulty === 'med' ? '80px' : difficulty === 'adv' ? '70px' : '100px'};
+    difficulty === 'mid' ? '80px' : difficulty === 'adv' ? '70px' : '100px'};
   height: ${({ difficulty }) =>
-    difficulty === 'med' ? '130px' : difficulty === 'adv' ? '120px' : '150px'};
+    difficulty === 'mid' ? '130px' : difficulty === 'adv' ? '120px' : '150px'};
   position: relative; /* 카드의 앞면과 뒷면을 포개기 위해 */
   perspective: 1000px; /* 3D 효과를 위해 필수 */
 

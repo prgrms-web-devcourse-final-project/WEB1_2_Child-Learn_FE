@@ -7,7 +7,7 @@ import { useFlipCardLogic } from '../../../features/minigame/flipcardgame/lib/us
 import { useParams, useNavigate } from 'react-router-dom';
 
 const FlipCardGamePage = () => {
-  const { difficulty } = useParams<{ difficulty: 'begin' | 'med' | 'adv' }>();
+  const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
   const {
     flippedCards,
     setFlippedCards,

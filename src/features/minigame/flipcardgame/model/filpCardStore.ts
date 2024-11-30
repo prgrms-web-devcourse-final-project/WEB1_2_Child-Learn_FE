@@ -4,10 +4,10 @@ import type { Card } from '../types/cardTypes';
 export interface FlipCardState {
   allCards: Card[]; // 전체 카드 데이터
   setCards: (cards: Card[]) => void; // 전체 카드 설정
-  getCardsByDifficulty: (difficulty: 'begin' | 'med' | 'adv') => Card[]; // 난이도별 카드 가져오기
-  lastPlayed: { begin: Date | null; med: Date | null; adv: Date | null };
-  setLastPlayed: (difficulty: 'begin' | 'med' | 'adv', date: Date) => void;
-  isPlayable: (difficulty: 'begin' | 'med' | 'adv') => boolean; // 플레이 가능 여부
+  getCardsByDifficulty: (difficulty: 'begin' | 'mid' | 'adv') => Card[]; // 난이도별 카드 가져오기
+  lastPlayed: { begin: Date | null; mid: Date | null; adv: Date | null };
+  setLastPlayed: (difficulty: 'begin' | 'mid' | 'adv', date: Date) => void;
+  isPlayable: (difficulty: 'begin' | 'mid' | 'adv') => boolean; // 플레이 가능 여부
 }
 
 export const useFlipCardStore = create<FlipCardState>((set, get) => ({
@@ -17,7 +17,7 @@ export const useFlipCardStore = create<FlipCardState>((set, get) => ({
     const allCards = get().allCards;
 
     // 난이도별 카드 개수 설정
-    const difficultyCardCounts = { begin: 4, med: 6, adv: 8 }; // 고유 카드 개수 (쌍은 두 배)
+    const difficultyCardCounts = { begin: 4, mid: 6, adv: 8 }; // 고유 카드 개수 (쌍은 두 배)
     const count = difficultyCardCounts[difficulty];
 
     // 고유 카드를 랜덤하게 선택
@@ -31,7 +31,7 @@ export const useFlipCardStore = create<FlipCardState>((set, get) => ({
 
     return pairedCards;
   },
-  lastPlayed: { begin: null, med: null, adv: null },
+  lastPlayed: { begin: null, mid: null, adv: null },
   setLastPlayed: (difficulty, date) => set((state) => ({ lastPlayed: { ...state.lastPlayed, [difficulty]: date } })),
   isPlayable: (difficulty) => {
     const lastPlayedDate = get().lastPlayed[difficulty];

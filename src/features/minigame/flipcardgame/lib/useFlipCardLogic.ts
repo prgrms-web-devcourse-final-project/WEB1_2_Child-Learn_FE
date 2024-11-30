@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useFlipCardStore } from '../model/filpCardStore';
 import type { Card } from '../types/cardTypes';
 
-export const useFlipCardLogic = (difficulty: 'begin' | 'med' | 'adv') => {
+export const useFlipCardLogic = (difficulty: 'begin' | 'mid' | 'adv') => {
   const { getCardsByDifficulty, setCards } = useFlipCardStore();
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [matchedCards, setMatchedCards] = useState<number[]>([]);
