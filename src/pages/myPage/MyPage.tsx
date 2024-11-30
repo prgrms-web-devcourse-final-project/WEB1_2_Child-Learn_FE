@@ -2,6 +2,8 @@ import styled from 'styled-components';
 import { useState, useEffect } from 'react';
 import Profile from '@/features/mypage/ui/Profile';
 import Character from '@/features/mypage/ui/Character';
+import MenuList from '@/features/mypage/ui/MenuList'; // MenuList 추가
+import { MENU_ITEMS } from '@/features/mypage/model/types'; // MENU_ITEMS 추가
 import { userApi } from '@/entities/User/api/userApi';
 import { UserInfo } from '@/entities/User/model/types';
 import { useNavigate } from 'react-router-dom';
@@ -46,6 +48,7 @@ const MyPage = () => {
           <Profile userInfo={userInfo} onEditClick={handleEditClick} />
         )}
         <Character onCustomizeClick={handleCustomizeClick} />
+        <MenuList items={MENU_ITEMS} />
       </ContentContainer>
     </PageContainer>
   );
