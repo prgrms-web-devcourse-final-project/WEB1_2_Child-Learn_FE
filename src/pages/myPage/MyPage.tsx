@@ -7,7 +7,7 @@ import { MENU_ITEMS } from '@/features/mypage/model/types';
 import { userApi } from '@/entities/User/api/userApi';
 import { UserInfo } from '@/entities/User/model/types';
 import { useNavigate } from 'react-router-dom';
-import { useLogout } from '@/features/mypage/lib/queries'; // useLogout 추가
+import { useLogout } from '@/features/mypage/lib/queries';
 
 const MyPage = () => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);

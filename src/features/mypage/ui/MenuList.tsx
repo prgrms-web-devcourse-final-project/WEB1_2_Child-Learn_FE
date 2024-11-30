@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import type { MenuItem } from '../model/types'; // type-only import로 수정
+import type { MenuItem } from '@/features/mypage/model/types';
 
 interface MenuListProps {
   items: MenuItem[];

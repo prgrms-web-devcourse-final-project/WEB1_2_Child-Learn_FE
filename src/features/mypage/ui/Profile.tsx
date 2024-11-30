@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { UserInfo } from '@/entities/User/model/types';
-import defaultProfileImg from '../../../../public/img/basic-profile.png';
-import UserPoints from './UserPoints'; // 경로는 실제 위치에 맞게 조정해주세요
+import defaultProfileImg from '/public/img/basic-profile.png';
+import UserPoints from '@/features/mypage/ui/UserPoints';
 
 interface ProfileProps {
   userInfo: UserInfo;
