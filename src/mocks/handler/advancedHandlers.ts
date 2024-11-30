@@ -2,7 +2,7 @@ import { WebSocket } from 'ws';
 
 export const advancedGameHandlers = [
   {
-    url: 'ws://localhost:3000/api/v1/advanced-game/stocks',
+    url: 'ws://localhost:5173/api/v1/advanced-game/stocks',
     handler: (socket: WebSocket) => {
       const stockData = {
         'SAMSUNG': { basePrice: 70000, name: '삼성전자' },
