@@ -1,56 +1,82 @@
+// src/features/Advanced_chat/ui/StockChart/stockchart.tsx
+
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
+import { ApexOptions } from 'apexcharts';
+import { ChartContainer } from './styled';
 
 interface StockChartProps {
   stockId: number;
   title: string;
-  data: {
-    timestamp: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-  }[];
+  data: any[];
   isSelected: boolean;
   onClick: () => void;
 }
 
-export const StockChart: React.FC<StockChartProps> = ({ title, data, isSelected, onClick }) => {
-  const options = {
+export const StockChart: React.FC<StockChartProps> = ({
+  title,
+  data,
+  isSelected,
+  onClick
+}) => {
+  console.log(`Chart data for ${title}:`, data);
+  const chartOptions: ApexOptions = {
     chart: {
-      type: 'candlestick' as const,
+      type: 'candlestick',
       height: 350,
-      toolbar: { show: false }
+      toolbar: {
+        show: false
+      }
     },
     title: {
       text: title,
-      align: 'center' as const
+      align: 'center'
     },
     xaxis: {
-      type: 'datetime'
+      type: 'datetime',
+      labels: {
+        datetimeUTC: false,
+        format: 'HH:mm'
+      }
     },
     yaxis: {
+      labels: {
+        formatter: (value) => value.toLocaleString('ko-KR')
+      },
       tooltip: {
-        enabled: true
+        enabled: false
+      }
+    },
+    plotOptions: {
+      candlestick: {
+        colors: {
+          upward: '#FF0000',
+          downward: '#0000FF'
+        }
       }
     }
   };
 
   const series = [{
     data: data.map(item => ({
-      x: new Date(item.timestamp),
-      y: [item.open, item.high, item.low, item.close]
+      x: new Date(item.timestamp).getTime(),
+      y: [
+        Number(item.openPrice),
+        Number(item.highPrice),
+        Number(item.lowPrice),
+        Number(item.closePrice)
+      ]
     }))
   }];
 
   return (
-    <div onClick={onClick} style={{ border: isSelected ? '2px solid #007bff' : 'none' }}>
+    <ChartContainer $isSelected={isSelected} onClick={onClick}>
       <ReactApexChart
-        options={options}
+        options={chartOptions}
         series={series}
-        type="line"
+        type="candlestick"
         height={350}
       />
-    </div>
+    </ChartContainer>
   );
 };
