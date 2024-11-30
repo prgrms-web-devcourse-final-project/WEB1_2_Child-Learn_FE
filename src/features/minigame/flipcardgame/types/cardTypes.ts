@@ -1,6 +1,6 @@
 export interface Card {
-    card_id: string;
-    card_title: string;
-    card_content: string;
-    category: string;
+    id: string;
+    cardTitle: string;
+    cardContent: string;
+    cardCategory: string;
   }

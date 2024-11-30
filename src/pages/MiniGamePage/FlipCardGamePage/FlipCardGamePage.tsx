@@ -7,14 +7,14 @@ import { useFlipCardLogic } from '../../../features/minigame/flipcardgame/lib/us
 import { useParams, useNavigate } from 'react-router-dom';
 
 const FlipCardGamePage = () => {
-  const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
+  const { difficulty } = useParams<{ difficulty: 'begin' | 'med' | 'adv' }>();
   const {
     flippedCards,
     setFlippedCards,
     matchedCards,
     setMatchedCards,
     shuffledCards,
-  } = useFlipCardLogic(level!);
+  } = useFlipCardLogic(difficulty!);
   const [timeLeft, setTimeLeft] = useState(3); // 첫 번째 타이머 (3초)
   const [gameTimeLeft, setGameTimeLeft] = useState(30); // 두 번째 타이머 (30초)
   const [gamePhase, setGamePhase] = useState<'memorize' | 'play' | 'end'>('memorize');
@@ -74,7 +74,7 @@ const FlipCardGamePage = () => {
       const firstCard = shuffledCards[firstIndex];
       const secondCard = shuffledCards[index];
   
-      if (firstCard.card_title === secondCard.card_title) {
+      if (firstCard.cardTitle === secondCard.cardTitle) {
         // 매칭 성공
         setMatchedCards((prev) => [...prev, firstIndex, index]);
         setFlippedCards([]);
@@ -92,7 +92,7 @@ const FlipCardGamePage = () => {
       </Header>
 
       <Cards
-        level={level!}
+        difficulty={difficulty!}
         shuffledCards={shuffledCards}
         flippedCards={flippedCards}
         matchedCards={matchedCards}

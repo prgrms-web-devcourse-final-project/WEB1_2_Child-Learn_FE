@@ -2,28 +2,28 @@ import { useEffect, useState } from 'react';
 import { useFlipCardStore } from '../model/filpCardStore';
 import type { Card } from '../types/cardTypes';
 
-export const useFlipCardLogic = (level: 'beginner' | 'medium' | 'advanced') => {
-  const { getCardsByLevel, setCards } = useFlipCardStore();
+export const useFlipCardLogic = (difficulty: 'begin' | 'med' | 'adv') => {
+  const { getCardsByDifficulty, setCards } = useFlipCardStore();
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [matchedCards, setMatchedCards] = useState<number[]>([]);
   const [shuffledCards, setShuffledCards] = useState<Card[]>([]);
 
   useEffect(() => {
     const mockCards: Card[] = [
-      { card_id: '1', card_title: 'A', card_content: '내용 A', category: '경제' },
-      { card_id: '2', card_title: 'B', card_content: '내용 B', category: '수학' },
-      { card_id: '3', card_title: 'C', card_content: '내용 C', category: '과학' },
-      { card_id: '4', card_title: 'D', card_content: '내용 D', category: '역사' },
-      { card_id: '5', card_title: 'E', card_content: '내용 E', category: '예술' },
-      { card_id: '6', card_title: 'F', card_content: '내용 F', category: '지리' },
-      { card_id: '7', card_title: 'G', card_content: '내용 G', category: '문학' },
-      { card_id: '8', card_title: 'H', card_content: '내용 H', category: '철학' },
+      { id: '1', cardTitle: 'A', cardContent: '내용 A', cardCategory: '경제' },
+      { id: '2', cardTitle: 'B', cardContent: '내용 B', cardCategory: '수학' },
+      { id: '3', cardTitle: 'C', cardContent: '내용 C', cardCategory: '과학' },
+      { id: '4', cardTitle: 'D', cardContent: '내용 D', cardCategory: '역사' },
+      { id: '5', cardTitle: 'E', cardContent: '내용 E', cardCategory: '예술' },
+      { id: '6', cardTitle: 'F', cardContent: '내용 F', cardCategory: '지리' },
+      { id: '7', cardTitle: 'G', cardContent: '내용 G', cardCategory: '문학' },
+      { id: '8', cardTitle: 'H', cardContent: '내용 H', cardCategory: '철학' },
     ];
 
     setCards(mockCards);
-    const cards = getCardsByLevel(level);
+    const cards = getCardsByDifficulty(difficulty);
     setShuffledCards(cards);
-  }, [level, getCardsByLevel, setCards]);
+  }, [difficulty, getCardsByDifficulty, setCards]);
 
   return {
     flippedCards,

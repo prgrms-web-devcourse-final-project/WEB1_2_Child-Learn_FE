@@ -56,11 +56,11 @@ const MiniGamePage = () => {
 
   // 카드 뒤집기 플레이 핸들러
   const handleFlipCardPlay = async (
-    level: 'beginner' | 'medium' | 'advanced'
+    difficulty: 'begin' | 'med' | 'adv'
   ) => {
-    if (isCardPlayable(level)) {
-      setCardLastPlayed(level, new Date());
-      navigate(`/flip-card/${level}`);
+    if (isCardPlayable(difficulty)) {
+      setCardLastPlayed(difficulty, new Date());
+      navigate(`/flip-card/${difficulty}`);
     }
   };
 
@@ -173,23 +173,23 @@ const MiniGamePage = () => {
                 {selectedGame === '카드 뒤집기' && (
                   <>
                     <ModalButton
-                      level="beginner"
-                      onClick={() => handleFlipCardPlay('beginner')}
-                      disabled={!isCardPlayable('beginner')}
+                      difficulty="begin"
+                      onClick={() => handleFlipCardPlay('begin')}
+                      disabled={!isCardPlayable('begin')}
                     >
                       쉬움
                     </ModalButton>
                     <ModalButton
-                      level="medium"
-                      onClick={() => handleFlipCardPlay('medium')}
-                      disabled={!isCardPlayable('medium')}
+                      difficulty="med"
+                      onClick={() => handleFlipCardPlay('med')}
+                      disabled={!isCardPlayable('med')}
                     >
                       보통
                     </ModalButton>
                     <ModalButton
-                      level="advanced"
-                      onClick={() => handleFlipCardPlay('advanced')}
-                      disabled={!isCardPlayable('advanced')}
+                      difficulty="adv"
+                      onClick={() => handleFlipCardPlay('adv')}
+                      disabled={!isCardPlayable('adv')}
                     >
                       어려움
                     </ModalButton>
@@ -200,21 +200,21 @@ const MiniGamePage = () => {
             {selectedGame === '낱말 퀴즈' && (
               <>
                 <ModalButton
-                  level="beginner"
+                  difficulty="begin"
                   onClick={() => handleWordQuizPlay('beginner')}
                   disabled={!isWordQuizPlayable('beginner')}
                 >
                   쉬움
                 </ModalButton>
                 <ModalButton
-                  level="medium"
+                  difficulty="med"
                   onClick={() => handleWordQuizPlay('medium')}
                   disabled={!isWordQuizPlayable('medium')}
                 >
                   보통
                 </ModalButton>
                 <ModalButton
-                  level="advanced"
+                  difficulty="adv"
                   onClick={() => handleWordQuizPlay('advanced')}
                   disabled={!isWordQuizPlayable('advanced')}
                 >
@@ -433,7 +433,7 @@ const ModalContent = styled.div`
 `;
 
 const ModalButton = styled.button<{
-  level: 'beginner' | 'medium' | 'advanced';
+  difficulty: 'begin' | 'med' | 'adv';
 }>`
   width: 100%;
   margin-top: 10px;
@@ -442,19 +442,19 @@ const ModalButton = styled.button<{
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  background-color: ${({ level }) =>
-    level === 'beginner'
+  background-color: ${({ difficulty }) =>
+    difficulty === 'begin'
       ? '#9CDBA6'
-      : level === 'medium'
+      : difficulty === 'med'
         ? '#50B498'
         : '#468585'};
   color: white;
 
   &:hover {
-    background-color: ${({ level }) =>
-      level === 'beginner'
+    background-color: ${({ difficulty }) =>
+      difficulty === 'begin'
         ? '#8BCF96'
-        : level === 'medium'
+        : difficulty === 'med'
           ? '#44997E'
           : '#3A7572'};
   }
