@@ -5,25 +5,53 @@ import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { ChartContainer } from './styled';
 
+interface StockPrice {
+  timestamp: string;
+  price: string;
+  open: string;
+  high: string;
+  low: string;
+  close: string;
+  change: number;
+  volume: number;
+}
+
 interface StockChartProps {
   stockId: number;
   title: string;
-  data: any[];
+  data: StockPrice[];
   isSelected: boolean;
   onClick: () => void;
+  isPlaying: boolean;
 }
 
 export const StockChart: React.FC<StockChartProps> = ({
   title,
   data,
   isSelected,
-  onClick
+  onClick,
+  isPlaying
 }) => {
-  console.log(`Chart data for ${title}:`, data);
-  const chartOptions: ApexOptions = {
+  console.log(`Chart data for ${title}:`, {
+    rawData: data,
+    processedData: data.map(item => ({
+      x: new Date(item.timestamp).getTime(),
+      y: [
+        parseFloat(item.open),
+        parseFloat(item.high),
+        parseFloat(item.low),
+        parseFloat(item.close)
+      ]
+    }))
+  });
+
+  const options: ApexOptions = {
     chart: {
       type: 'candlestick',
       height: 350,
+      animations: {
+        enabled: false
+      },
       toolbar: {
         show: false
       }
@@ -36,16 +64,17 @@ export const StockChart: React.FC<StockChartProps> = ({
       type: 'datetime',
       labels: {
         datetimeUTC: false,
-        format: 'HH:mm'
+        format: 'HH:mm:ss'
       }
     },
     yaxis: {
-      labels: {
-        formatter: (value) => value.toLocaleString('ko-KR')
-      },
       tooltip: {
-        enabled: false
-      }
+        enabled: true
+      },
+      labels: {
+        formatter: (value) => `${Math.round(value).toLocaleString()}원`
+      },
+      forceNiceScale: true
     },
     plotOptions: {
       candlestick: {
@@ -54,29 +83,47 @@ export const StockChart: React.FC<StockChartProps> = ({
           downward: '#0000FF'
         }
       }
+    },
+    tooltip: {
+      enabled: true,
+      x: {
+        format: 'HH:mm:ss'
+      }
     }
   };
 
   const series = [{
+    name: title,
     data: data.map(item => ({
       x: new Date(item.timestamp).getTime(),
       y: [
-        Number(item.openPrice),
-        Number(item.highPrice),
-        Number(item.lowPrice),
-        Number(item.closePrice)
+        parseFloat(item.open),
+        parseFloat(item.high),
+        parseFloat(item.low),
+        parseFloat(item.close)
       ]
     }))
   }];
 
   return (
     <ChartContainer $isSelected={isSelected} onClick={onClick}>
-      <ReactApexChart
-        options={chartOptions}
-        series={series}
-        type="candlestick"
-        height={350}
-      />
+      {data.length > 0 ? (
+        <ReactApexChart
+          options={options}
+          series={series}
+          type="candlestick"
+          height={350}
+        />
+      ) : (
+        <div style={{ 
+          height: 350, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center' 
+        }}>
+          데이터 로딩 중...
+        </div>
+      )}
     </ChartContainer>
   );
 };

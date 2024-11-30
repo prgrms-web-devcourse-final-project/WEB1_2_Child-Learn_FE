@@ -10,103 +10,68 @@ const INITIAL_STOCKS = [
   { symbol: 'NAVER', basePrice: 180000, name: '네이버' }
 ];
 
-const generateStockData = () => {
-  return INITIAL_STOCKS.map(stock => {
-    const basePrice = stock.basePrice;
-    const variance = basePrice * 0.02;
-    const currentPrice = basePrice + (Math.random() - 0.5) * variance;
+let gameStartTime: number | null = null;
+const GAME_DURATION = 420; // 420초
 
-    return {
-      symbol: stock.symbol,
-      name: stock.name,
-      timestamp: Math.floor(Date.now() / 1000),
-      openPrice: currentPrice,
-      highPrice: currentPrice * 1.01,
-      lowPrice: currentPrice * 0.99,
-      closePrice: currentPrice + (Math.random() - 0.5) * variance * 0.5,
-      volume: Math.floor(Math.random() * 10000)
-    };
-  });
+const generateStockData = (elapsedSeconds: number) => {
+  // 시간에 따라 변화하는 주식 데이터 생성
+  const basePrice = 50000;
+  const amplitude = 5000;
+  const frequency = 0.01;
+  
+  return {
+    price: basePrice + amplitude * Math.sin(frequency * elapsedSeconds),
+    timestamp: new Date().getTime(),
+    volume: Math.floor(Math.random() * 1000),
+    change: Math.random() > 0.5 ? 1 : -1
+  };
 };
 
-// Mock WebSocket 서버 설정
 const mockServer = new Server('ws://localhost/api/v1/advanced-invest');
 
-let gameInterval: NodeJS.Timeout | null = null;
-let isPaused = false;
-
 mockServer.on('connection', socket => {
-  console.log('클라이언트 연결됨');
-  
-  // 연결 즉시 초기 데이터 전송
-  socket.send(JSON.stringify({
-    type: 'REFERENCE_DATA',
-    data: generateStockData()
-  }));
+  let intervalId: NodeJS.Timeout;
 
-  socket.on('message', (data: string) => {
+  socket.on('message', (data: string | Blob | ArrayBufferView | ArrayBuffer) => {
     try {
-      const message = JSON.parse(data);
-      console.log('Received message from client:', message); // 디버깅 로그 추가
+      const message = JSON.parse(data.toString());
+      
+      if (message.action === 'START_GAME') {
+        gameStartTime = Date.now();
+        let elapsedSeconds = 0;
 
-      switch (message.action) {
-        case 'START_GAME':
-          console.log('Starting game...'); // 디버깅 로그 추가
-          if (gameInterval) clearInterval(gameInterval);
+        intervalId = setInterval(() => {
+          if (!gameStartTime) return;
           
-          gameInterval = setInterval(() => {
-            if (!isPaused) {
-              const liveData = generateStockData();
-              console.log('Sending live data:', liveData); // 디버깅 로그 추가
-              socket.send(JSON.stringify({
-                type: 'LIVE_DATA',
-                data: liveData
-              }));
-            }
-          }, 1000);
-          break;
-
-        case 'PAUSE_GAME':
-          console.log('Pausing game...'); // 디버깅 로그 추가
-          isPaused = true;
-          socket.send(JSON.stringify({
-            type: 'PAUSE_GAME',
-            message: '게임이 일시정지되었습니다.'
-          }));
-          break;
-
-        case 'RESUME_GAME':
-          console.log('Resuming game...'); // 디버깅 로그 추가
-          isPaused = false;
-          socket.send(JSON.stringify({
-            type: 'RESUME_GAME',
-            message: '게임이 재개되었습니다.'
-          }));
-          break;
-
-        case 'END_GAME':
-          console.log('Ending game...'); // 디버깅 로그 추가
-          if (gameInterval) {
-            clearInterval(gameInterval);
-            gameInterval = null;
+          elapsedSeconds = Math.floor((Date.now() - gameStartTime) / 1000);
+          
+          if (elapsedSeconds >= GAME_DURATION) {
+            // 게임 종료
+            clearInterval(intervalId);
+            socket.send(JSON.stringify({
+              type: 'END_GAME',
+              data: { message: '게임 종료' }
+            }));
+            return;
           }
+
+          const liveData = generateStockData(elapsedSeconds);
           socket.send(JSON.stringify({
-            type: 'END_GAME',
-            message: '게임이 종료되었습니다.'
+            type: 'LIVE_DATA',
+            data: liveData,
+            elapsedTime: elapsedSeconds
           }));
-          socket.close();
-          break;
+        }, 1000); // 1초마다 데이터 업데이트
       }
     } catch (error) {
-      console.error('Error processing message:', error);
+      console.error('Error parsing message:', error);
     }
   });
 
+  // 연결 종료 시 인터벌 정리
   socket.on('close', () => {
-    console.log('Client disconnected'); // 디버깅 로그 추가
-    if (gameInterval) {
-      clearInterval(gameInterval);
-      gameInterval = null;
+    if (intervalId) {
+      clearInterval(intervalId);
     }
   });
 });
@@ -114,5 +79,5 @@ mockServer.on('connection', socket => {
 export const advancedGameHandlers = [
   http.get('/advanced', () => {
     return new Response(null, { status: 200 });
-  }),
+  })
 ];
