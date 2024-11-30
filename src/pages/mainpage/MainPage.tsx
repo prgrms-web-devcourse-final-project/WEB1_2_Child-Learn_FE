@@ -49,14 +49,14 @@ const MainPage = () => {
       bgColor: '#FF497F',
       iconSrc: '/img/magic-hat.png',
       iconAlt: '마술모자',
-      path: '/customize',
+      path: '/avatar',
     },
     {
       title: '재미는 게임도\n준비되어 있어요!',
       bgColor: '#29BAE2',
       iconSrc: '/img/chess.png',
       iconAlt: '체스',
-      path: '/games',
+      path: '/minigame',
       extended: true,
     },
   ];
