@@ -6,6 +6,7 @@ export const API_CONFIG = {
     refresh: '/member/refresh', // refresh 엔드포인트 추가
     findId: '/member/find-id', // 추가
     resetPw: '/member/reset-pw', // 추가
+    logout: '/member/logout',
   },
 } as const;
 
