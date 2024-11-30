@@ -246,13 +246,13 @@ const GraphExplanationPage = () => {
           <NewsDate>2024.11.21</NewsDate>
         </NewsHeader>
         <NewsContent>
-          If you want to save money, what's the best thing to do with your allowance?
+          예시 질문이 들어갑니다.
         </NewsContent>
         <AnswerButton variant="O">
-          Spend it all right away
+          정답
         </AnswerButton>
         <AnswerButton variant="X">
-          Save your of it and spend the rest
+          오답
         </AnswerButton>
       </NewsCard>
 

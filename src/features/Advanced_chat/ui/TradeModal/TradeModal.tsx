@@ -1,5 +1,5 @@
 // features/Advanced_game/ui/TradeModal/index.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import {
@@ -16,12 +16,13 @@ import {
   PointsLabel,
   QuantityControl,
   QuantityButton,
-  QuantityInput,
   TradeButtonGroup,
   BuyButton,
   SellButton,
   CloseButton
 } from './styled';
+import styled from 'styled-components';
+import { NoticeModal } from '../Notice Modal/NoticeModal';
 
 interface StockPrice {
   price: number;
@@ -44,6 +45,20 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   priceHistory
 }) => {
   const [quantity, setQuantity] = useState(1);
+  const [showNotice, setShowNotice] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(10);
+  const [isRunning, setIsRunning] = useState(false);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (remainingTime <= 0 || !isRunning) {
+      if (intervalId) {
+        clearInterval(intervalId);
+        setIntervalId(null);
+      }
+      setShowNotice(true);
+    }
+  }, [remainingTime, isRunning]);
 
   // 호가창 데이터 생성 (실제로는 API에서 받아와야 함)
   const generateOrderBookData = (currentPrice: number) => {
@@ -102,7 +117,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     dataLabels: {
       enabled: true,
       formatter: function(val, opt) {
-        const price = orderBookData[opt.dataPointIndex].price;
+        const price = Math.floor(orderBookData[opt.dataPointIndex].price);
         return `${price.toLocaleString()}원`;
       },
       style: {
@@ -110,9 +125,9 @@ export const TradeModal: React.FC<TradeModalProps> = ({
       }
     },
     xaxis: {
-      categories: orderBookData.map(d => d.price.toLocaleString()),
+      categories: orderBookData.map(d => Math.floor(d.price).toLocaleString()),
       labels: {
-        show: false
+        show: true
       }
     },
     yaxis: {
@@ -126,16 +141,10 @@ export const TradeModal: React.FC<TradeModalProps> = ({
       return '#0000ff';  // 매수 호가
     }),
     tooltip: {
-      enabled: true,
+      enabled: false,
       custom: function({ seriesIndex, dataPointIndex, w }) {
         const data = orderBookData[dataPointIndex];
-        return `
-          <div class="custom-tooltip">
-            <div>가격: ${data.price.toLocaleString()}원</div>
-            <div>변동: ${data.change}%</div>
-            <div>거래량: ${data.volume.toLocaleString()}</div>
-          </div>
-        `;
+        return ``;
       }
     }
   };
@@ -148,48 +157,67 @@ export const TradeModal: React.FC<TradeModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay>
-      <ModalContainer>
-        <ModalTitle>거래하기</ModalTitle>
-        <ModalContent>
-          <PriceListContainer>
-            <ReactApexChart
-              options={chartOptions}
-              series={series}
-              type="bar"
-              height={350}
-            />
-          </PriceListContainer>
+    <>
+      <ModalOverlay>
+        <ModalContainer>
+          <ModalTitle>거래하기</ModalTitle>
+          <ModalContent>
+            <PriceListContainer>
+              <ReactApexChart
+                options={chartOptions}
+                series={series}
+                type="bar"
+                height={350}
+              />
+            </PriceListContainer>
 
-          <StockInfoSection>
-            <StockLabel>구매할 주식</StockLabel>
-            <StockPrice>{stockName}</StockPrice>
-            <PriceArrow>↓</PriceArrow>
-            <StockPrice>{currentPrice.toLocaleString()}</StockPrice>
-          </StockInfoSection>
+            <StockInfoSection>
+              <StockLabel>구매할 주식</StockLabel>
+              <StockPrice>{stockName}</StockPrice>
+              <PriceArrow>↓</PriceArrow>
+              <StockPrice>{Math.floor(currentPrice).toLocaleString()}</StockPrice>
+            </StockInfoSection>
 
-          <QuantitySection>
-            <PointsLabel>포인트</PointsLabel>
-            <QuantityControl>
-              <label>개수</label>
-              <QuantityButton onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-                <img src="/img/minus.png" alt="감소" />
-              </QuantityButton>
-              <QuantityInput value={quantity} readOnly />
-              <QuantityButton onClick={() => setQuantity(quantity + 1)}>
-                <img src="/img/plus.png" alt="증가" />
-              </QuantityButton>
-            </QuantityControl>
-          </QuantitySection>
+            <QuantitySection>
+              <PointsLabel>포인트</PointsLabel>
+              <QuantityControl>
+                <label>개수</label>
+                <QuantityButton onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                  <img src="/img/minus.png" alt="감소" />
+                </QuantityButton>
+                <StyledQuantityInput value={quantity} readOnly />
+                <QuantityButton onClick={() => setQuantity(quantity + 1)}>
+                  <img src="/img/plus.png" alt="증가" />
+                </QuantityButton>
+              </QuantityControl>
+            </QuantitySection>
 
-          <TradeButtonGroup>
-            <BuyButton>매수하기</BuyButton>
-            <SellButton>매도하기</SellButton>
-          </TradeButtonGroup>
+            <TradeButtonGroup>
+              <BuyButton>매수하기</BuyButton>
+              <SellButton>매도하기</SellButton>
+            </TradeButtonGroup>
 
-          <CloseButton onClick={onClose}>나가기</CloseButton>
-        </ModalContent>
-      </ModalContainer>
-    </ModalOverlay>
+            <CloseButton onClick={onClose}>나가기</CloseButton>
+          </ModalContent>
+        </ModalContainer>
+      </ModalOverlay>
+      <NoticeModal 
+        isOpen={showNotice}
+        message="거래 시간이 종료되었습니다."
+        onClose={() => setShowNotice(false)}
+      />
+    </>
   );
 };
+
+const StyledQuantityInput = styled.input`
+  width: 40px;
+  height: 30px;
+  text-align: center;
+  border: 1px solid #ddd;
+  background-color: white;
+  color: black;
+  font-size: 14px;
+  margin: 0 5px;
+  border-radius: 4px;
+`;
