@@ -4,7 +4,7 @@ export const flipCardApi = {
   // 카드 목록 조회
   getCardList: async (difficulty: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/${difficulty}`);
+      const response = await fetch(`${BASE_URL}?difficulty=${difficulty}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

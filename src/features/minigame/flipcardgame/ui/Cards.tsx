@@ -22,7 +22,7 @@ export function Cards({
     <GameGrid difficulty={difficulty}>
       {shuffledCards.map((card, index) => (
         <Card
-          key={card.id}
+          key={card.card_id}
           flipped={
             gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index)
           }
@@ -31,9 +31,9 @@ export function Cards({
         >
           <div className="card-inner">
             <div className="card-front">
-              <div className="category">{card.cardCategory}</div>
-              <div className="title">{card.cardTitle}</div>
-              <div className="description">{card.cardContent}</div>
+              <div className="category">{card.card_category}</div>
+              <div className="title">{card.card_title}</div>
+              <div className="description">{card.card_content}</div>
             </div>
             <div className="card-back">
               <img src="/public/img/logo.png" alt="Card Logo" />

@@ -1,29 +1,44 @@
 import { useEffect, useState } from 'react';
-import { useFlipCardStore } from '../model/filpCardStore';
+import { flipCardApi } from '@/shared/api/minigames';
 import type { Card } from '../types/cardTypes';
 
 export const useFlipCardLogic = (difficulty: 'begin' | 'mid' | 'adv') => {
-  const { getCardsByDifficulty, setCards } = useFlipCardStore();
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [matchedCards, setMatchedCards] = useState<number[]>([]);
   const [shuffledCards, setShuffledCards] = useState<Card[]>([]);
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
+  const [error, setError] = useState<string | null>(null); // 에러 상태 추가
 
   useEffect(() => {
-    const mockCards: Card[] = [
-      { id: '1', cardTitle: 'A', cardContent: '내용 A', cardCategory: '경제' },
-      { id: '2', cardTitle: 'B', cardContent: '내용 B', cardCategory: '수학' },
-      { id: '3', cardTitle: 'C', cardContent: '내용 C', cardCategory: '과학' },
-      { id: '4', cardTitle: 'D', cardContent: '내용 D', cardCategory: '역사' },
-      { id: '5', cardTitle: 'E', cardContent: '내용 E', cardCategory: '예술' },
-      { id: '6', cardTitle: 'F', cardContent: '내용 F', cardCategory: '지리' },
-      { id: '7', cardTitle: 'G', cardContent: '내용 G', cardCategory: '문학' },
-      { id: '8', cardTitle: 'H', cardContent: '내용 H', cardCategory: '철학' },
-    ];
+    console.log('useEffect triggered with difficulty:', difficulty);
+  if (!difficulty) {
+    console.warn('Difficulty is undefined or null.');
+    return;
+  }
 
-    setCards(mockCards);
-    const cards = getCardsByDifficulty(difficulty);
-    setShuffledCards(cards);
-  }, [difficulty, getCardsByDifficulty, setCards]);
+    const fetchCards = async () => {
+      console.log('Fetching cards for difficulty:', difficulty);
+      try {
+        setLoading(true);
+        setError(null);
+        const cards = await flipCardApi.getCardList(difficulty);
+        console.log('API Response:', cards);
+        // 카드 쌍 생성 및 섞기
+        const pairedCards = shuffleArray([...cards, ...cards].map((card, index) => ({
+          ...card,
+          card_id: card.card_id * 100 + index, // 고유 ID 보장
+        })));
+        setShuffledCards(pairedCards);
+      } catch (err) {
+        setError('Failed to fetch cards. Please try again later.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCards();
+  }, [difficulty]);
 
   return {
     flippedCards,
@@ -31,5 +46,17 @@ export const useFlipCardLogic = (difficulty: 'begin' | 'mid' | 'adv') => {
     matchedCards,
     setMatchedCards,
     shuffledCards,
+    loading,
+    error,
   };
 };
+
+// 배열을 섞는 유틸리티 함수
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[i]];
+  }
+  return shuffled;
+}
