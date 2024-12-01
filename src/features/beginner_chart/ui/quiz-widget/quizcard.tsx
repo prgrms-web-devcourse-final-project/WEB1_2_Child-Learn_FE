@@ -112,7 +112,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onAnswer, selectedAnswer }) =
     <Container>
       <Header>
         <Title>Child-Learn News</Title>
-        <Subtitle>Lorem ipsum dolor</Subtitle>
+        <Subtitle>주식 퀴즈</Subtitle>
       </Header>
 
       <QuestionContainer>
@@ -125,7 +125,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onAnswer, selectedAnswer }) =
             disabled={!!selectedAnswer}
           >
             <Circle>O</Circle>
-            {quiz.o_content}
+            {quiz.oContent}
           </OptionButton>
           
           <OptionButton 
@@ -134,7 +134,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onAnswer, selectedAnswer }) =
             disabled={!!selectedAnswer}
           >
             <X>X</X>
-            {quiz.x_content}
+            {quiz.xContent}
           </OptionButton>
         </OptionsContainer>
       </QuestionContainer>

@@ -1,9 +1,16 @@
 export interface BeginQuiz {
-    quiz_id: number;
     content: string;
-    answer: string;
-    o_content: string;
-    x_content: string;
-    created_date: string;
-    begin_id: number;
-  }
+    oContent: string;
+    xContent: string;
+    answer: 'O' | 'X';
+}
+
+export interface StockData {
+    tradeDay: string;
+    price: number;
+}
+
+export interface BeginStockResponse {
+    stockData: StockData[];
+    quiz: BeginQuiz[];
+}

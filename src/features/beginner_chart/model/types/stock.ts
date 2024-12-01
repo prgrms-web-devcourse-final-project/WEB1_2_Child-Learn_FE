@@ -7,7 +7,8 @@ export interface BeginStock {
   // API 응답 타입
   export interface BeginStockResponse {
     status: number;       // HTTP 상태 코드
-    data?: BeginStock[]; 
+    stockData: BeginStock[];  // stockData 속성 추가
+    quiz: Quiz[];
     error?: string;      
   }
   
@@ -15,4 +16,11 @@ export interface BeginStock {
   export interface BeginStockRequest {
     begin_id?: number;
     trade_day?: string;
+  }
+  
+  // Quiz 인터페이스 추가
+  export interface Quiz {
+    quiz_id: number;
+    question: string;
+    answer: string;
   }
