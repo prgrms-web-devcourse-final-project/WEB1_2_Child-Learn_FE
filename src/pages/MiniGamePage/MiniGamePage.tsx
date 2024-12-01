@@ -160,16 +160,18 @@ const MiniGamePage = () => {
       <MainContent>
         <TopSection>
           <div>
-            <p>획득한 포인트로 나를 꾸며볼까요?</p>
+            <p>획득한 포인트로</p>
+            <p>나를 꾸며볼까요?</p>
             <StyledLink to="/avatar">내 캐릭터 꾸미러 가기</StyledLink>
           </div>
         </TopSection>
 
         <TopSection>
-          <div>
-            <p>오늘 미니게임으로 획득한 포인트</p>
-            <h2>300 Points</h2>
-          </div>
+        <div>
+    <p>오늘 미니게임으로</p>
+    <p>획득한 포인트</p>
+    <h2>300 Points</h2>
+  </div>
           <StyledLink to="/exchange">환전하러 가기</StyledLink>
         </TopSection>
 
@@ -364,27 +366,38 @@ const MainContent = styled.main`
 
 const TopSection = styled.div`
   display: flex;
-  justify-content: space-between; /* 좌우로 배치 */
-  align-items: center;
+  flex-direction: column; /* 세로 정렬 */
+  justify-content: center; /* 중앙 정렬 */
+  align-items: center; /* 중앙 정렬 */
   background-color: rgba(80, 180, 152, 0.8); /* #50B498의 opacity 80% */
   color: white; /* 텍스트 색상 흰색 */
   border-radius: 15px; /* 모서리를 둥글게 */
-  width: 310px;
-  height: 107px;
+  width: 310px; /* 고정된 너비 */
+  height: 107px; /* 고정된 높이 */
   padding: 15px; /* 내부 여백 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
   position: relative; /* 텍스트 정렬 및 추가 요소를 위한 기준 */
 
   h2 {
-    font-size: 30px; /* 피그마 폰트 크기 */
+    font-size: 20px; /* 포인트 숫자 크기 */
     font-weight: bold;
     margin: 0;
+    margin-top: 10px; /* 숫자 위 여백 추가 */
   }
 
   p {
-    font-size: 14px; /* 피그마 폰트 크기 */
-    font-weight: normal;
+    font-size: 14px; /* 텍스트 크기 */
+    font-weight: bold;
     margin: 0;
+    text-align: center; /* 텍스트 중앙 정렬 */
+  }
+
+  img {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px; /* 아이콘 크기 */
+    height: 30px; /* 아이콘 크기 */
   }
 `;
 
@@ -392,13 +405,13 @@ const StyledLink = styled(Link)`
   display: flex; /* 텍스트와 가운데 정렬을 위한 플렉스 박스 */
   justify-content: center;
   align-items: center;
-  width: 288px; /* 피그마 기준 너비 */
-  height: 25px; /* 피그마 기준 높이 */
+  width: 110px; /* 버튼 너비 */
+  height: 30px; /* 버튼 높이 */
   background-color: #ffffff; /* 흰색 배경 */
-  border-radius: 15px; /* 둥근 모서리 */
-  font-size: 14px; /* 폰트 크기 */
+  border-radius: 10px; /* 둥근 모서리 */
+  font-size: 12px; /* 텍스트 크기 */
   font-weight: bold; /* 텍스트 굵기 */
-  color: #468585; /* 텍스트 색상 */
+  color: #50b498; /* 텍스트 색상 */
   text-decoration: none; /* 링크 밑줄 제거 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
 

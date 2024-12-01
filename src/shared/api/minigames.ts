@@ -2,6 +2,18 @@ import { Card } from "@/features/minigame/flipcardgame/types/cardTypes";
 
 const BASE_URL = '/api/v1/flip-card';
 
+// 반환 타입 정의
+interface DifficultyAvailability {
+  isBegin: boolean;
+  isMid: boolean;
+  isAdv: boolean;
+}
+
+// 반환 타입 정의
+interface LastPlayTimeResponse {
+  lastPlayTime: string;
+}
+
 export const flipCardApi = {
   // 카드 목록 조회
   getCardList: async (difficulty: string): Promise<Card[]> => {
@@ -17,8 +29,9 @@ export const flipCardApi = {
     }
   },
 
+
   // 난이도별 가능 여부 확인
-  checkDifficultyAvailability: async () => {
+  checkDifficultyAvailability: async (): Promise<DifficultyAvailability> => {
     try {
       const response = await fetch(`${BASE_URL}/available`, {
         headers: {
@@ -35,7 +48,7 @@ export const flipCardApi = {
     }
   },
 
-  updateLastPlayTime: async (memberId: number, difficulty: string) => {
+  updateLastPlayTime: async (memberId: number, difficulty: string):Promise<LastPlayTimeResponse> => {
     try {
       const response = await fetch(`${BASE_URL}/${memberId}?difficulty=${difficulty}`, {
         method: 'PUT',

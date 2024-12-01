@@ -120,9 +120,9 @@ const resetAvailabilityIfNeeded = () => {
 };
 
 // 난이도별 가능 여부 계산 함수
-const calculateAvailability = (memberId: string): Record<string, boolean> => {
+const calculateAvailability = (uniqueKey: string): Record<string, boolean> => {
   const today = new Date().toISOString().split('T')[0];
-  const memberLastPlayTimes = lastPlayTimes[memberId] || { begin: null, mid: null, adv: null };
+  const memberLastPlayTimes = lastPlayTimes[uniqueKey] || { begin: null, mid: null, adv: null };
 
   return {
     isBegin: !(memberLastPlayTimes.begin && memberLastPlayTimes.begin.startsWith(today)),
@@ -194,17 +194,39 @@ http.get('/api/v1/flip-card', async ({ request }) => {
     );
   }
 
-    // 사용자 ID를 기반으로 동적으로 계산
-    const memberId = '3'; // 예: 현재 로그인한 사용자의 ID
-    const dynamicAvailability = calculateAvailability(memberId);
-  
+  try {
+    // 토큰 자체를 키로 사용
+    const token = authorization.split(' ')[1]; // 'Bearer <token>'에서 토큰 추출
+
+    if (!token) {
+      throw new Error('Invalid token.');
+    }
+
+    // 토큰 자체를 키로 난이도 가능 여부 계산
+    const dynamicAvailability = calculateAvailability(token);
+
     return new Response(JSON.stringify(dynamicAvailability), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
       },
     });
-  }),
+  } catch (error) {
+    console.error('Token-based availability calculation failed:', error);
+    return new Response(
+      JSON.stringify({
+        message: 'Invalid token or availability calculation failed.',
+        error: 'INVALID_TOKEN',
+      }),
+      {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+}),
 
 // 난이도별 마지막 플레이 타임 갱신
 http.put('/api/v1/flip-card/:memberId', async ({ params, request }) => {
