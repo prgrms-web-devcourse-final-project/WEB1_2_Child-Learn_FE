@@ -7,16 +7,19 @@ import { useFlipCardLogic } from '../../../features/minigame/flipcardgame/lib/us
 import { useParams, useNavigate } from 'react-router-dom';
 
 const FlipCardGamePage = () => {
-  const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
+  const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
+  console.log('Difficulty from URL:', difficulty);
   const {
     flippedCards,
     setFlippedCards,
     matchedCards,
     setMatchedCards,
     shuffledCards,
-  } = useFlipCardLogic(level!);
+    loading,
+    error,
+  } = useFlipCardLogic(difficulty!);
   const [timeLeft, setTimeLeft] = useState(3); // 첫 번째 타이머 (3초)
-  const [gameTimeLeft, setGameTimeLeft] = useState(30); // 두 번째 타이머 (30초)
+  const [gameTimeLeft, setGameTimeLeft] = useState(60); // 두 번째 타이머 (30초)
   const [gamePhase, setGamePhase] = useState<'memorize' | 'play' | 'end'>('memorize');
   const [showSuccessModal, setShowSuccessModal] = useState(false); // 성공 모달 상태
   const [showFailureModal, setShowFailureModal] = useState(false); // 실패 모달 상태
@@ -49,7 +52,7 @@ const FlipCardGamePage = () => {
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [gamePhase]);
+  }, [gamePhase, loading]);
 
   useEffect(() => {
     if (matchedCards.length === shuffledCards.length && gamePhase === 'play') {
@@ -84,6 +87,14 @@ const FlipCardGamePage = () => {
       }
     }
   };
+
+  if (loading) {
+    return <Loading>Loading...</Loading>;
+  }
+
+  if (error) {
+    return <Error>{error}</Error>;
+  }
   
   return (
     <PageContainer>
@@ -92,7 +103,7 @@ const FlipCardGamePage = () => {
       </Header>
 
       <Cards
-        level={level!}
+        difficulty={difficulty!}
         shuffledCards={shuffledCards}
         flippedCards={flippedCards}
         matchedCards={matchedCards}
@@ -137,4 +148,15 @@ const PageContainer = styled.div`
 
 const Header = styled.div`
   margin-bottom: 20px;
+`;
+
+const Loading = styled.div`
+  text-align: center;
+  margin-top: 20px;
+`;
+
+const Error = styled.div`
+  text-align: center;
+  margin-top: 20px;
+  color: red;
 `;
