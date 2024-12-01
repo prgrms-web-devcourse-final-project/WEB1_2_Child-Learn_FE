@@ -276,6 +276,7 @@ export const StockSlider: React.FC = () => {
             low: Number(price.low),
             close: Number(price.close)
           })) || []}
+          isPlaying={isPlaying}
         />
       )}
 

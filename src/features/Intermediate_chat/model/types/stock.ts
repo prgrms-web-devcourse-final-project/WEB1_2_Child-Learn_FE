@@ -1,4 +1,4 @@
-// features/Intermediate_chat/types/stock.ts
+// features/Intermediate_chat/model/types/stock.ts
 export interface MidStock {
   midStockId: number;
   midName: string;
@@ -9,6 +9,13 @@ export interface TradeDetail {
   pricePerStock: number;
   tradeDate: string;
   tradeType: 'BUY' | 'SELL';
+}
+
+// StockWithDetails 인터페이스 수정
+export interface StockWithDetails {
+  midStockId: number;
+  midName: string;
+  details: TradeDetail[];
 }
 
 export interface StockPrice {
@@ -28,20 +35,8 @@ export interface TradeAvailability {
   isPossibleSell: boolean;
 }
 
-// ChartData를 별도로 정의
+// ChartData 인터페이스도 필요하다면 추가
 export interface ChartData {
   x: number;
-  y: [number, number, number, number];
-}
-
-export interface StockWithDetails {
-  id: number;
-  name: string;
-  currentPrice: number;
-  holdings?: number;
-  // 필요한 다른 속성들 추가
-}
-export interface MidStock {
-  midStockId: number;
-  midName: string;
+  y: [number, number, number, number];  // [open, high, low, close]
 }

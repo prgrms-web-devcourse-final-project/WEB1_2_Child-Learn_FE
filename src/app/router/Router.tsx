@@ -19,6 +19,7 @@ import AdvancedTradePage from '@/pages/TradePages/AdvancedTradePage/AdvancedTrad
 import showToast from '@/shared/lib/toast';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import MyPage from '@/pages/myPage/MyPage';
 
 // 인증이 필요하지 않은 페이지 경로들
 const PUBLIC_PATHS = ['/auth/login', '/auth/signup', '/', '/auth/find-id'];
@@ -63,6 +64,7 @@ export default function Router() {
       <Route path="/article" element={<ArticlePage />} />
       <Route path="/intermediate" element={<IntermediatePage />} />
       <Route path="/fast-navigation" element={<GraphExplanationPage />} />
+      <Route path="/mypage" element={<MyPage />} />
     </Routes>
   );
 }

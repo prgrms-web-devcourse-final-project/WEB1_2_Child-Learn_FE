@@ -22,11 +22,16 @@ import {
   CloseButton
 } from './styled';
 import styled from 'styled-components';
-import { NoticeModal } from '../Notice Modal/NoticeModal';
 
 interface StockPrice {
   price: number;
   timestamp: string;
+}
+
+interface OrderBookItem {
+  price: number;
+  change: string;
+  volume: number;
 }
 
 interface TradeModalProps {
@@ -35,30 +40,58 @@ interface TradeModalProps {
   stockName: string;
   currentPrice: number;
   priceHistory: StockPrice[];
+  isPlaying: boolean;
 }
+
+const TRADE_TIME_LIMIT = 7 * 60; // 7분을 초로 변환
 
 export const TradeModal: React.FC<TradeModalProps> = ({
   isOpen,
   onClose,
   stockName,
   currentPrice,
-  priceHistory
+  priceHistory,
+  isPlaying
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [showNotice, setShowNotice] = useState(false);
   const [remainingTime, setRemainingTime] = useState(10);
   const [isRunning, setIsRunning] = useState(false);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [showTradeButtons, setShowTradeButtons] = useState(true);
+  const [noticeMessage, setNoticeMessage] = useState("");
+  const [orderBookData, setOrderBookData] = useState<OrderBookItem[]>([]);
 
   useEffect(() => {
-    if (remainingTime <= 0 || !isRunning) {
+    if (remainingTime > TRADE_TIME_LIMIT) {
       if (intervalId) {
         clearInterval(intervalId);
         setIntervalId(null);
       }
-      setShowNotice(true);
+      setShowNotice(true); // 거래시간 종료 모달 표시
+      setNoticeMessage("거래 시간이 종료되었습니다");
     }
-  }, [remainingTime, isRunning]);
+  }, [remainingTime]);
+
+  useEffect(() => {
+    // 초기 데이터는 항상 설정
+    setOrderBookData(generateOrderBookData(currentPrice));
+    
+    // 실시간 업데이트는 isPlaying이 true일 때만
+    let updateInterval: NodeJS.Timeout | null = null;
+    
+    if (isPlaying) {
+      updateInterval = setInterval(() => {
+        setOrderBookData(generateOrderBookData(currentPrice));
+      }, 3000);
+    }
+
+    return () => {
+      if (updateInterval) {
+        clearInterval(updateInterval);
+      }
+    };
+  }, [currentPrice, isPlaying]);
 
   // 호가창 데이터 생성 (실제로는 API에서 받아와야 함)
   const generateOrderBookData = (currentPrice: number) => {
@@ -66,7 +99,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     
     // 매도 호가 7개 (현재가 기준 위로)
     for (let i = 7; i >= 1; i--) {
-      const price = Math.round(currentPrice * (1 + (i * 0.001))); // 0.1% 간격
+      const price = Math.floor(currentPrice * (1 + (i * 0.001)));
       orderBook.push({
         price: price,
         change: ((price - currentPrice) / currentPrice * 100).toFixed(2),
@@ -76,14 +109,14 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     
     // 현재가
     orderBook.push({
-      price: currentPrice,
+      price: Math.floor(currentPrice),
       change: "0.00",
       volume: Math.floor(Math.random() * 2000)
     });
     
     // 매수 호가 7개 (현재가 기준 아래로)
     for (let i = 1; i <= 7; i++) {
-      const price = Math.round(currentPrice * (1 - (i * 0.001))); // 0.1% 간격
+      const price = Math.floor(currentPrice * (1 - (i * 0.001)));
       orderBook.push({
         price: price,
         change: ((price - currentPrice) / currentPrice * 100).toFixed(2),
@@ -93,8 +126,6 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     
     return orderBook;
   };
-
-  const orderBookData = generateOrderBookData(currentPrice);
 
   const chartOptions: ApexOptions = {
     chart: {
@@ -117,17 +148,31 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     dataLabels: {
       enabled: true,
       formatter: function(val, opt) {
-        const price = Math.floor(orderBookData[opt.dataPointIndex].price);
-        return `${price.toLocaleString()}원`;
+        const data = orderBookData[opt.dataPointIndex];
+        return `${data.price.toLocaleString()}원 (${data.volume})`;
       },
       style: {
-        fontSize: '12px'
-      }
+        fontSize: '12px',
+        colors: ['#000']
+      },
+      offsetX: 10
     },
     xaxis: {
-      categories: orderBookData.map(d => Math.floor(d.price).toLocaleString()),
+      categories: orderBookData.map(d => d.price.toLocaleString()),
       labels: {
-        show: true
+        show: true,
+        style: {
+          colors: orderBookData.map((d, i) => 
+            i < 7 ? '#600a0a' : 
+            i === 7 ? '#000000' : '#0000ff'
+          )
+        }
+      },
+      axisBorder: {
+        show: false
+      },
+      axisTicks: {
+        show: false
       }
     },
     yaxis: {
@@ -135,16 +180,25 @@ export const TradeModal: React.FC<TradeModalProps> = ({
         show: false
       }
     },
-    colors: orderBookData.map((d, i) => {
-      if (i < 7) return '#ff0000';  // 매도 호가
-      if (i === 7) return '#000000';  // 현재가
-      return '#0000ff';  // 매수 호가
-    }),
+    grid: {
+      show: false
+    },
+    colors: orderBookData.map((d, i) => 
+      i < 7 ? '#ff0000' :  // 매도 호가
+      i === 7 ? '#000000' :  // 현재가
+      '#0000ff'  // 매수 호가
+    ),
     tooltip: {
-      enabled: false,
+      enabled: true,
       custom: function({ seriesIndex, dataPointIndex, w }) {
         const data = orderBookData[dataPointIndex];
-        return ``;
+        return `
+          <div class="custom-tooltip">
+            <div>가격: ${data.price.toLocaleString()}원</div>
+            <div>거래량: ${data.volume.toLocaleString()}</div>
+            <div>${data.price > currentPrice ? '매도' : data.price < currentPrice ? '매수' : '현재가'}</div>
+          </div>
+        `;
       }
     }
   };
@@ -153,6 +207,47 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     name: '거래량',
     data: orderBookData.map(d => d.volume)
   }];
+
+  const handleBuy = () => {
+    // 매수 로직 구현
+  };
+
+  const handleSell = () => {
+    // 매도 로직 구현
+  };
+
+  const ChartContainer = styled.div`
+    position: relative;
+    width: 100%;
+    height: 100%;
+  `;
+
+  const TimeUpMessage = styled.div`
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 15px 25px;
+    border-radius: 8px;
+    text-align: center;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  `;
+
+  const ConfirmButton = styled.button`
+    background-color: #7FBA7A;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 16px;
+    margin-top: 10px;
+    cursor: pointer;
+    
+    &:hover {
+      background-color: #6ca968;
+    }
+  `;
 
   if (!isOpen) return null;
 
@@ -163,12 +258,24 @@ export const TradeModal: React.FC<TradeModalProps> = ({
           <ModalTitle>거래하기</ModalTitle>
           <ModalContent>
             <PriceListContainer>
-              <ReactApexChart
-                options={chartOptions}
-                series={series}
-                type="bar"
-                height={350}
-              />
+              <ChartContainer>
+                {orderBookData?.length > 0 && (
+                  <ReactApexChart 
+                    options={chartOptions} 
+                    series={series} 
+                    type="bar" 
+                    height={350} 
+                  />
+                )}
+                {(remainingTime > TRADE_TIME_LIMIT) && (
+                  <TimeUpMessage>
+                    <p>{noticeMessage}</p>
+                    <ConfirmButton onClick={() => setShowTradeButtons(true)}>
+                      확인
+                    </ConfirmButton>
+                  </TimeUpMessage>
+                )}
+              </ChartContainer>
             </PriceListContainer>
 
             <StockInfoSection>
@@ -192,20 +299,17 @@ export const TradeModal: React.FC<TradeModalProps> = ({
               </QuantityControl>
             </QuantitySection>
 
-            <TradeButtonGroup>
-              <BuyButton>매수하기</BuyButton>
-              <SellButton>매도하기</SellButton>
-            </TradeButtonGroup>
+            {showTradeButtons && (
+              <TradeButtonGroup>
+                <BuyButton onClick={handleBuy}>매수</BuyButton>
+                <SellButton onClick={handleSell}>매도</SellButton>
+              </TradeButtonGroup>
+            )}
 
             <CloseButton onClick={onClose}>나가기</CloseButton>
           </ModalContent>
         </ModalContainer>
       </ModalOverlay>
-      <NoticeModal 
-        isOpen={showNotice}
-        message="거래 시간이 종료되었습니다."
-        onClose={() => setShowNotice(false)}
-      />
     </>
   );
 };

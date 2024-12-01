@@ -1,8 +1,8 @@
 // pages/TradePages/IntermediateTradePage/IntermediatePage.tsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import StockSlider from '../../../features/Intermediate_chat/ui/StockSlider';
-import { MidStock } from '../../../features/Intermediate_chat/types/stock';
+import StockSlider from '@/features/Intermediate_chat/ui/StockSlider';
+import { MidStock } from '@/features/Intermediate_chat/model/types/stock';
 import { stockApi } from '@/shared/api/stock';
 
 

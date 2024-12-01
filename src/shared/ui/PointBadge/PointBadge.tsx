@@ -1,7 +1,12 @@
 import styled from 'styled-components';
 import { useUserInfo } from '@/entities/User/lib/queries';
 
-export const PointBadge = () => {
+interface PointBadgeProps {
+  points: number;
+  className?: string;
+}
+
+export const PointBadge: React.FC<PointBadgeProps> = ({ points, className }) => {
   const { data: userInfo } = useUserInfo();
 
   const formatPoints = (points: number = 0) => {
@@ -14,7 +19,7 @@ export const PointBadge = () => {
   };
 
   return (
-    <Container>
+    <Container className={className}>
       <PointIconWrapper>
         <PointIcon src="/img/coins.png" alt="포인트" />
       </PointIconWrapper>

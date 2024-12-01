@@ -1,8 +1,16 @@
-// ui/fast-navgation/fast-navigation.tsx
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-const Container = styled.div`
+
+
+const GraphExplanationPage = () => {
+  const navigate = useNavigate();
+  
+  const handleStartClick = () => {
+    navigate('/quiz');
+  };
+
+  const Container = styled.div`
   padding: 20px;
   background-color: #ffffff;
   min-height: 100vh;
@@ -176,13 +184,6 @@ const StartButton = styled.button`
     background-color: #6db3a6;
   }
 `;
-
-const GraphExplanationPage = () => {
-  const navigate = useNavigate();
-  
-  const handleStartClick = () => {
-    navigate('/quiz');
-  };
 
   return (
     <Container>

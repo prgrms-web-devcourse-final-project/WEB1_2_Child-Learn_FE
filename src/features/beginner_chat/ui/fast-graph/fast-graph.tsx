@@ -1,4 +1,3 @@
-// ui/fast-graph/fast-graph.tsx
 import React from 'react';
 import styled from 'styled-components';
 import ReactApexChart from 'react-apexcharts';
