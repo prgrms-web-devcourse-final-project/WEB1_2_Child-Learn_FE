@@ -1,8 +1,16 @@
-// ui/fast-navgation/fast-navigation.tsx
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
-const Container = styled.div`
+
+
+const GraphExplanationPage = () => {
+  const navigate = useNavigate();
+  
+  const handleStartClick = () => {
+    navigate('/quiz');
+  };
+
+  const Container = styled.div`
   padding: 20px;
   background-color: #ffffff;
   min-height: 100vh;
@@ -177,13 +185,6 @@ const StartButton = styled.button`
   }
 `;
 
-const GraphExplanationPage = () => {
-  const navigate = useNavigate();
-  
-  const handleStartClick = () => {
-    navigate('/quiz');
-  };
-
   return (
     <Container>
       <Overlay />
@@ -246,13 +247,13 @@ const GraphExplanationPage = () => {
           <NewsDate>2024.11.21</NewsDate>
         </NewsHeader>
         <NewsContent>
-          If you want to save money, what's the best thing to do with your allowance?
+          예시 질문이 들어갑니다.
         </NewsContent>
         <AnswerButton variant="O">
-          Spend it all right away
+          정답
         </AnswerButton>
         <AnswerButton variant="X">
-          Save your of it and spend the rest
+          오답
         </AnswerButton>
       </NewsCard>
 

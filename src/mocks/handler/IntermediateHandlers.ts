@@ -1,6 +1,6 @@
 // mocks/handlers/intermediateHandlers.ts
 import { http, HttpResponse } from 'msw';
-import { MidStock } from '@/features/Intermediate_chat/types/stock';
+import { MidStock } from '@/features/Intermediate_chat/model/types/stock';
 
 const mockStocks: MidStock[] = [
 { midStockId: 1, midName: "Samsung" },

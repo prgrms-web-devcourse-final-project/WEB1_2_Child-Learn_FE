@@ -1,4 +1,3 @@
-// ui/fast-graph/fast-graph.tsx
 import React from 'react';
 import styled from 'styled-components';
 import ReactApexChart from 'react-apexcharts';
@@ -179,44 +178,6 @@ const Select = styled.select`
 
   &:hover {
     border-color: #ccc;
-  }
-`;
-
-const TopBar = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  width: 100%;
-`;
-
-const ExitButton = styled.div`
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  img {
-    width: 24px;
-    height: 24px;
-  }
-`;
-
-const Points = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: #ffffff;
-  padding: 10px 12px;
-  border-radius: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  img {
-    width: 20px;
-    height: 20px;
-  }
-
-  span {
-    color: #666;
-    font-size: 14px;
   }
 `;
 

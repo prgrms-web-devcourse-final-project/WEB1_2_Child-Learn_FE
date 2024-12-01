@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useUserStore } from '../../app/providers/state/zustand/userStore';
+import { useEffect, useState } from 'react';;
+import { useUserInfo } from '@/entities/User/lib/queries';
 import { flipCardApi } from '@/shared/api/minigames';
 import { useWordQuizStore } from '../../features/minigame/wordquizgame/model/wordQuizStore';
 import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const MiniGamePage = () => {
-  const { username, currentPoints, setUser } = useUserStore();
+  const { data: userInfo, isLoading, isError } = useUserInfo();
   const {
     isPlayable: isWordQuizPlayable,
     setLastPlayedDate: setWordQuizLastPlayedDate,
@@ -26,22 +26,14 @@ const MiniGamePage = () => {
     mid: false,
     adv: false,
   });
+  
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
-    // 초기 사용자 데이터 설정
-    setUser({
-      memberId: 3,
-      loginId: 'minnie123',
-      username: 'Minnie',
-      email: 'minnie@example.com',
-      createdAt: '2024-01-01',
-      updatedAt: '2024-11-20',
-      gameCount: 5,
-      birth: '2002-05-06',
-      currentPoints: 2000, // 초기 포인트 설정
-      currentCoins: 200, // 초기 코인 설정
-    });
+    if (isError) {
+      console.error('Failed to fetch user info.');
+      return;
+    }
 
     // 로또 초기 데이터 설정
     setLotteries([
@@ -77,25 +69,25 @@ const MiniGamePage = () => {
     };
 
     fetchAvailability();
-  }, [setUser, setLotteries]);
+  }, [isError, setLotteries]);
 
   const handleFlipCardPlay = async (difficulty: 'begin' | 'mid' | 'adv') => {
     if (isPlayable[difficulty]) {
       try {
-        // localStorage에서 memberId 가져오기
-        const memberIdString = localStorage.getItem('memberId') || '3'; // 기본값으로 '0' 설정
-        const memberId = Number(memberIdString); // 숫자로 변환
-  
-        // memberId가 유효한 숫자인지 확인
-        if (isNaN(memberId) || memberId <= 0) {
-          throw new Error('Invalid member ID');
+        // 유저 정보 확인
+        if (!userInfo || !userInfo.id) {
+          throw new Error('User information not available');
         }
   
         // API 호출로 마지막 플레이 타임 갱신
-        // API 호출로 마지막 플레이 타임 갱신
-      const response = await flipCardApi.updateLastPlayTime(memberId, difficulty);
-      console.log(`Successfully updated last play time for difficulty "${difficulty}":`, response.lastPlayTime); // 갱신된 마지막 플레이 타임 로그
-        navigate(`/flip-card/${difficulty}`); // 성공적으로 갱신된 경우 해당 경로로 이동
+        const response = await flipCardApi.updateLastPlayTime(userInfo.id, difficulty);
+        console.log(
+          `Successfully updated last play time for difficulty "${difficulty}":`,
+          response.lastPlayTime
+        ); // 갱신된 마지막 플레이 타임 로그
+  
+        // 성공적으로 갱신된 경우 해당 경로로 이동
+        navigate(`/flip-card/${difficulty}`);
       } catch (error) {
         console.error('Failed to update last play time:', error);
         alert('플레이 타임 갱신에 실패했습니다. 다시 시도해주세요.');
@@ -146,12 +138,12 @@ const MiniGamePage = () => {
       {/* 헤더 섹션 */}
       <Header>
         <GreetingContainer>
-          <p>안녕하세요, {username}님!</p>
+          <p>안녕하세요, {userInfo?.username || '사용자'} 님!</p>
           <h1>오늘은 어떤 게임을 즐겨보시겠어요?</h1>
         </GreetingContainer>
         <PointsContainer>
           <img src="/icons/coins 1.png" alt="Coin Icon" />
-          {currentPoints} P
+          {userInfo?.points} P
         </PointsContainer>
       </Header>
 

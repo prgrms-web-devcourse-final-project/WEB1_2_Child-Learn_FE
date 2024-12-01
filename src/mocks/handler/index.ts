@@ -5,6 +5,9 @@ import { loginHandlers } from './loginHandlers';
 import { intermediateHandlers } from './IntermediateHandlers';
 import { loginUserHandlers } from './loginUserHandlers';
 import { findIdHandlers } from './findIdHandlers';
+import { advancedGameHandlers } from './advancedHandlers';
+
+
 import { flipCardGameHandlers } from './flipCardGameHandlers';
 
 export const handlers = [
@@ -15,5 +18,6 @@ export const handlers = [
   ...intermediateHandlers,
   ...loginUserHandlers,
   ...findIdHandlers,
-  ...flipCardGameHandlers
+  ...flipCardGameHandlers,
+  ...advancedGameHandlers,
 ];

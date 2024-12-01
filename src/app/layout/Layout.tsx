@@ -33,6 +33,7 @@ const HIDDEN_GNB_PATHS = [
   '/fast-navigation',
   '/avatar',
   '/auth/find-id',
+  '/advanced',
 ];
 
 // BackButton만 표시할 페이지 경로들

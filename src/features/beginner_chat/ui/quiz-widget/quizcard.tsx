@@ -1,6 +1,19 @@
 import React from 'react';
 import styled from 'styled-components';
-import { BeginQuiz } from '../../model/types/quiz';
+import { BeginQuiz } from '@/features/beginner_chat/model/types/quiz';
+
+
+
+interface OptionButtonProps {
+  $isSelected?: boolean;  // $ prefix 추가
+}
+
+interface QuizCardProps {
+  quiz: BeginQuiz;
+  onAnswer: (answer: string) => void;
+  selectedAnswer?: string;
+}
+
 
 const Container = styled.div`
   width: 100%;
@@ -46,10 +59,6 @@ const OptionsContainer = styled.div`
   flex-direction: column;
   gap: 12px;
 `;
-
-interface OptionButtonProps {
-  $isSelected?: boolean;  // $ prefix 추가
-}
 
 const OptionButton = styled.button<OptionButtonProps>`
   width: 100%;
@@ -97,11 +106,6 @@ const X = styled.div`
   font-size: 14px;
 `;
 
-interface QuizCardProps {
-  quiz: BeginQuiz;
-  onAnswer: (answer: string) => void;
-  selectedAnswer?: string;
-}
 
 const QuizCard: React.FC<QuizCardProps> = ({ quiz, onAnswer, selectedAnswer }) => {
   return (
