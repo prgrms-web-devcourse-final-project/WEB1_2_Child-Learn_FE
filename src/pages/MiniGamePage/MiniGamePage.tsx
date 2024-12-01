@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useUserStore } from '../../app/providers/state/zustand/userStore';
-import { useFlipCardStore } from '../../features/minigame/flipcardgame/model/filpCardStore';
 import { flipCardApi } from '@/shared/api/minigames';
 import { useWordQuizStore } from '../../features/minigame/wordquizgame/model/wordQuizStore';
 import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
@@ -93,7 +92,9 @@ const MiniGamePage = () => {
         }
   
         // API 호출로 마지막 플레이 타임 갱신
-        await flipCardApi.updateLastPlayTime(memberId, difficulty); // 숫자를 문자열로 변환하여 API 호출
+        // API 호출로 마지막 플레이 타임 갱신
+      const response = await flipCardApi.updateLastPlayTime(memberId, difficulty);
+      console.log(`Successfully updated last play time for difficulty "${difficulty}":`, response.lastPlayTime); // 갱신된 마지막 플레이 타임 로그
         navigate(`/flip-card/${difficulty}`); // 성공적으로 갱신된 경우 해당 경로로 이동
       } catch (error) {
         console.error('Failed to update last play time:', error);

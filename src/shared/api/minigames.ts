@@ -35,7 +35,6 @@ export const flipCardApi = {
     }
   },
 
-  // 난이도별 마지막 플레이 타임 갱신
   updateLastPlayTime: async (memberId: number, difficulty: string) => {
     try {
       const response = await fetch(`${BASE_URL}/${memberId}?difficulty=${difficulty}`, {
@@ -48,10 +47,13 @@ export const flipCardApi = {
       if (!response.ok) {
         throw new Error('Failed to update last play time');
       }
-      return await response.json();
+  
+      const data = await response.json();
+      console.log('Last play time updated:', data.lastPlayTime); // 마지막 플레이 타임 확인
+      return data;
     } catch (error) {
       console.error('Failed to update last play time:', error);
       throw error;
     }
-  },
+  },  
 };

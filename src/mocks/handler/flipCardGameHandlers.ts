@@ -85,6 +85,28 @@ const mockDifficultyAvailability = {
   isAdv: true,
 };
 
+// 난이도별 마지막 플레이 타임 Mock 데이터
+const lastPlayTimes: Record<string, Record<string, string | null>> = {
+  "1": { begin: null, mid: null, adv: null },
+  "2": { begin: null, mid: null, adv: null },
+  "3": { begin: null, mid: null, adv: null },
+};
+
+// 마지막 초기화 날짜
+let lastResetDate = new Date().toISOString().split('T')[0]; // 초기화 기준 날짜
+
+// 날짜 기반 초기화 함수
+const resetAvailabilityIfNeeded = () => {
+  const today = new Date().toISOString().split('T')[0];
+  if (lastResetDate !== today) {
+    // 새 날이 되면 초기화
+    mockDifficultyAvailability.isBegin = true;
+    mockDifficultyAvailability.isMid = true;
+    mockDifficultyAvailability.isAdv = true;
+    lastResetDate = today; // 기준 날짜 업데이트
+  }
+};
+
 // Handlers
 export const flipCardGameHandlers = [
 http.get('/api/v1/flip-card', async ({ request }) => {
@@ -128,6 +150,8 @@ http.get('/api/v1/flip-card', async ({ request }) => {
 
  // 난이도별 가능 여부 확인
  http.get('/api/v1/flip-card/available', async ({ request }) => {
+  resetAvailabilityIfNeeded(); // 매 요청 시 초기화 필요 여부 확인
+
   const authorization = request.headers.get('Authorization');
   await delay(200);
 
@@ -154,19 +178,23 @@ http.get('/api/v1/flip-card', async ({ request }) => {
   });
 }),
 
-   // 난이도별 마지막 플레이 타임 갱신
-   http.put('/api/v1/flip-card/:memberId', async ({ params, request }) => {
-    const url = new URL(request.url);
-    const difficulty = url.searchParams.get('difficulty'); // 쿼리 파라미터에서 난이도 확인
-    const memberIdString = params.memberId; // params에서 문자열로 가져오기
-  
+// 난이도별 마지막 플레이 타임 갱신
+http.put('/api/v1/flip-card/:memberId', async ({ params, request }) => {
+  resetAvailabilityIfNeeded(); // 매 요청 시 초기화 필요 여부 확인
+
+  const url = new URL(request.url);
+  const difficulty = url.searchParams.get('difficulty'); // 쿼리 파라미터에서 난이도 확인
+  const memberIdString = Array.isArray(params.memberId)
+    ? params.memberId[0]
+    : params.memberId; // params에서 문자열로 가져오기
+
   // memberId를 숫자로 변환
   const memberId = Number(memberIdString);
 
   await delay(200);
 
   // 파라미터 유효성 검사
-  if (isNaN(memberId) || !difficulty) {
+  if (isNaN(memberId) || !difficulty || !['begin', 'mid', 'adv'].includes(difficulty)) {
     return new Response(
       JSON.stringify({
         message: 'Valid Member ID (number) and difficulty are required.',
@@ -180,8 +208,8 @@ http.get('/api/v1/flip-card', async ({ request }) => {
       }
     );
   }
-  
-     // 난이도별 가능 여부 확인
+
+  // 난이도별 가능 여부 확인
   if (
     (difficulty === 'begin' && !mockDifficultyAvailability.isBegin) ||
     (difficulty === 'mid' && !mockDifficultyAvailability.isMid) ||
@@ -200,21 +228,49 @@ http.get('/api/v1/flip-card', async ({ request }) => {
       }
     );
   }
-  
-   // 마지막 플레이 타임 갱신
-   const lastPlayTime = new Date().toISOString();
 
-   return new Response(
-     JSON.stringify({
-       message: `Last play time updated for member ${memberId} on difficulty ${difficulty}.`,
-       lastPlayTime, // 마지막 플레이 타임 반환
-     }),
-     {
-       status: 200,
-       headers: {
-         'Content-Type': 'application/json',
-       },
-     }
-   );
- }),
+  // 같은 날에 이미 플레이했는지 확인
+  const today = new Date().toISOString().split('T')[0]; // 현재 날짜 (YYYY-MM-DD)
+  const lastPlayTime = lastPlayTimes[memberIdString]?.[difficulty] || null;
+
+  if (lastPlayTime && lastPlayTime.startsWith(today)) {
+    return new Response(
+      JSON.stringify({
+        message: `You have already played difficulty "${difficulty}" today.`,
+        error: 'ALREADY_PLAYED_TODAY',
+      }),
+      {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+
+  // 마지막 플레이 타임 갱신
+  const newLastPlayTime = new Date().toISOString();
+  lastPlayTimes[memberIdString] = {
+    ...lastPlayTimes[memberIdString],
+    [difficulty]: newLastPlayTime,
+  };
+
+  // 난이도 가능 여부를 false로 설정
+  if (difficulty === 'begin') mockDifficultyAvailability.isBegin = false;
+  if (difficulty === 'mid') mockDifficultyAvailability.isMid = false;
+  if (difficulty === 'adv') mockDifficultyAvailability.isAdv = false;
+
+  return new Response(
+    JSON.stringify({
+      message: `Last play time updated for member ${memberId} on difficulty ${difficulty}.`,
+      lastPlayTime: newLastPlayTime, // 갱신된 마지막 플레이 타임 반환
+    }),
+    {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+}),
 ];
