@@ -10,6 +10,7 @@ export const loginUserHandlers = [
       username: 'hana',
       birth: '1998-03-24',
       points: 187400,
+      coins: 35,
       createdAt: '2024-11-25T03:21:27.685497',
       updatedAt: '2024-11-25T04:01:31.934454',
     });

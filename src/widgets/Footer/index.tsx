@@ -49,7 +49,7 @@ const FloatingGNB = () => {
           <MenuIcon src="/img/brush.png" alt="꾸미기" />
         </MenuItem>
         <MenuItem
-          onClick={() => handleNavigation('/user')}
+          onClick={() => handleNavigation('/mypage')}
           $position={5}
           $isOpen={isOpen}
         >
@@ -57,13 +57,10 @@ const FloatingGNB = () => {
         </MenuItem>
       </MenuContainer>
 
-      <ToggleButton 
-        onClick={() => setIsOpen(!isOpen)} 
-        $isOpen={isOpen}
-      >
-        <ButtonIcon 
-          src={isOpen ? "/img/close.png" : "/img/menu.png"} 
-          alt={isOpen ? "닫기" : "메뉴"}
+      <ToggleButton onClick={() => setIsOpen(!isOpen)} $isOpen={isOpen}>
+        <ButtonIcon
+          src={isOpen ? '/img/close.png' : '/img/menu.png'}
+          alt={isOpen ? '닫기' : '메뉴'}
         />
       </ToggleButton>
     </Container>
@@ -83,9 +80,11 @@ const MenuContainer = styled.div<{ $isOpen: boolean }>`
   position: absolute;
   bottom: -75px;
   right: -240px;
-  opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};  // visibility 대신 opacity 사용
-  pointer-events: ${({ $isOpen }) => ($isOpen ? 'auto' : 'none')}; // 닫혀있을 때 클릭 방지
-  transition: opacity 0.2s ease-out;  // opacity에 transition 추가
+  opacity: ${({ $isOpen }) =>
+    $isOpen ? 1 : 0}; // visibility 대신 opacity 사용
+  pointer-events: ${({ $isOpen }) =>
+    $isOpen ? 'auto' : 'none'}; // 닫혀있을 때 클릭 방지
+  transition: opacity 0.2s ease-out; // opacity에 transition 추가
   width: 300px;
   height: 150px;
 `;
@@ -103,31 +102,29 @@ const MenuItem = styled.button<{ $position: number; $isOpen: boolean }>`
   justify-content: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   opacity: ${({ $isOpen }) => ($isOpen ? 1 : 0)};
-  transition: all 0.3s ease-out;  // transform과 opacity 모두에 transition 적용
-  
+  transition: all 0.3s ease-out; // transform과 opacity 모두에 transition 적용
+
   ${({ $position, $isOpen }) => {
     const angles: Record<number, number> = {
       1: -80,
       2: -110,
       3: -140,
       4: -170,
-      5: -200
+      5: -200,
     };
-    
-    const angle = angles[$position] || -90; 
+
+    const angle = angles[$position] || -90;
     const radius = 110;
-    
+
     const radian = (angle * Math.PI) / 180;
     const x = Math.cos(radian) * radius;
     const y = Math.sin(radian) * radius;
-    
+
     return css`
-      transform: ${$isOpen 
-        ? `translate(${x}px, ${y}px)` 
-        : 'translate(0, 0)'};
+      transform: ${$isOpen ? `translate(${x}px, ${y}px)` : 'translate(0, 0)'};
     `;
   }}
-  
+
   &:hover {
     background: #3aa46f;
   }
@@ -152,7 +149,7 @@ const ToggleButton = styled.button<{ $isOpen: boolean }>`
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   z-index: 2;
-  
+
   &:hover {
     background: #3aa46f;
   }
