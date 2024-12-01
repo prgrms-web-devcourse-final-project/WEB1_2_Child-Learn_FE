@@ -127,26 +127,31 @@ const Card = styled.div<{ flipped: boolean; difficulty?: string }>`
     align-items: center;
     padding: 5px;
 
-    .category {
-      font-size: 8px;
+     .category {
+      font-size: ${({ difficulty }) =>
+        difficulty === 'adv' ? '6px' : difficulty === 'mid' ? '7px' : '8px'};
       font-weight: bold;
       position: absolute;
       top: 5px;
-      margin-bottom: 0px;
+      margin-bottom: 2px; /* 카테고리와 제목 간격 */
     }
 
     .title {
-      font-size: 12px;
+      font-size: ${({ difficulty }) =>
+        difficulty === 'adv' ? '10px' : difficulty === 'mid' ? '11px' : '12px'};
       font-weight: bold;
       position: relative;
-      top: -10px;
-      margin-bottom: 10px; /* 제목과 설명 간 기본 간격 유지 */
+      top: -5px; /* 카테고리와 간격 조정 */
+      margin-bottom: ${({ difficulty }) =>
+        difficulty === 'adv' ? '5px' : difficulty === 'mid' ? '8px' : '10px'}; /* 제목과 내용 간격 */
     }
 
     .description {
-      font-size: 12px;
+      font-size: ${({ difficulty }) =>
+        difficulty === 'adv' ? '9px' : difficulty === 'mid' ? '10px' : '12px'};
       text-align: center;
-      line-height: 1.2;
+      line-height: ${({ difficulty }) =>
+        difficulty === 'adv' ? '1.1' : difficulty === 'mid' ? '1.2' : '1.4'}; /* 줄 간격 조정 */
     }
   }
 `;
