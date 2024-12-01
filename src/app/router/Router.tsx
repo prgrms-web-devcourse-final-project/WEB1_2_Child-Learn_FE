@@ -48,8 +48,8 @@ export default function Router() {
       <Route path="/main" element={<MainPage />} />
       <Route path="/minigame" element={<MiniGamePage />} />
       <Route path="/flip-card/:difficulty" element={<FlipCardGamePage />} />
-      <Route path="/word-quiz/:level" element={<WordQuizGamePage />} />
-      <Route path="/word-quiz/result/:level" element={<WordQuizResultPage />} />
+      <Route path="/word-quiz/:difficulty" element={<WordQuizGamePage />} />
+      <Route path="/word-quiz/result/:difficulty" element={<WordQuizResultPage />} />
       <Route path="/avatar" element={<AvatarPage />} />
       <Route path="/avatar/details/:category/:product" element={<AvatarDetailPage />} />
       <Route path="/exchange" element={<ExchangePage />} />
