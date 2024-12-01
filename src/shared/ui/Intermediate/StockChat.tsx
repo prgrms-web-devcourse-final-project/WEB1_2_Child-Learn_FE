@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StockPrice } from '@/features/Intermediate_chat/types/stock';
+import { StockPrice } from '@/features/Intermediate_chat/model/types/stock';
 import styled from 'styled-components';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';

@@ -15,6 +15,7 @@ import AvatarPage from '../../pages/AvatarPage/AvatarPage';
 import AvatarDetailPage from "../../pages/AvatarPage/AvatarDetailPage";
 import ExchangePage from '../../pages/exchangePage/ExchangePage';
 import AccountRecoveryPage from '../../pages/auth/find-id-password/AccountRecoveryPage';
+import AdvancedTradePage from '@/pages/TradePages/AdvancedTradePage/AdvancedTradePage';
 import showToast from '@/shared/lib/toast';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
@@ -22,6 +23,7 @@ import MyPage from '@/pages/myPage/MyPage';
 
 // 인증이 필요하지 않은 페이지 경로들
 const PUBLIC_PATHS = ['/auth/login', '/auth/signup', '/', '/auth/find-id'];
+
 
 export default function Router() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -54,11 +56,21 @@ export default function Router() {
       <Route path="/avatar/details/:category/:product" element={<AvatarDetailPage />} />
       <Route path="/exchange" element={<ExchangePage />} />
       <Route path="/quiz" element={<QuizPage />} />
-      <Route path="/intermediate" element={<IntermediatePage />} />
-      <Route path="*" element={<div>Page not found</div>} />
+      <Route path="*"element={<div>Page not found</div>} />
+      <Route path="*"element={<div>Page not found</div>} />
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignUpPage />} />
+      {/* 차트 페이지 */}
+      <Route path="/advanced" element={<AdvancedTradePage />} />
+      <Route path="/article" element={<ArticlePage />} />
+      <Route path="/intermediate" element={<IntermediatePage />} />
+      <Route path="/fast-navigation" element={<GraphExplanationPage />} />
       <Route path="/auth/find-id" element={<AccountRecoveryPage />} />
+      {/* 차트 페이지 */}
+      <Route path="/advanced" element={<AdvancedTradePage />} />
+      <Route path="/article" element={<ArticlePage />} />
+      <Route path="/intermediate" element={<IntermediatePage />} />
+      <Route path="/fast-navigation" element={<GraphExplanationPage />} />
       <Route path="/mypage" element={<MyPage />} />
     </Routes>
   );

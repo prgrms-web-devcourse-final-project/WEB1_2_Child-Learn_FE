@@ -1,28 +1,38 @@
 import { create } from 'zustand';
-import { BeginQuiz } from '../types/quiz';
+import axios from 'axios';
+import { BeginStock, BeginStockResponse } from '../types/stock';
+import { FastGraphData } from '../types/graph';
 
-interface QuizStore {
-  quizzes: BeginQuiz[];
-  currentQuiz: BeginQuiz | null;
-  selectedAnswer: string | null;
+interface GraphStore {
+  stockData: FastGraphData[];
   isLoading: boolean;
   error: string | null;
-  setQuizzes: (quizzes: BeginQuiz[]) => void;
-  setCurrentQuiz: (quiz: BeginQuiz) => void;
-  setAnswer: (answer: string) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
+  fetchStockData: () => Promise<void>;
 }
 
-export const useQuizStore = create<QuizStore>((set) => ({
-  quizzes: [],
-  currentQuiz: null,
-  selectedAnswer: null,
+export const useGraphStore = create<GraphStore>((set) => ({
+  stockData: [],
   isLoading: false,
   error: null,
-  setQuizzes: (quizzes) => set({ quizzes }),
-  setCurrentQuiz: (quiz) => set({ currentQuiz: quiz }),
-  setAnswer: (answer) => set({ selectedAnswer: answer }),
-  setLoading: (loading) => set({ isLoading: loading }),
-  setError: (error) => set({ error })
+  fetchStockData: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await axios.get<BeginStockResponse>('/api/v1/begin-stocks', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.data.data) {
+        const formattedData: FastGraphData[] = response.data.data.map(stock => ({
+          value: stock.price,
+          date: stock.trade_day
+        }));
+        set({ stockData: formattedData, isLoading: false });
+      }
+    } catch (error) {
+      set({ error: '데이터 로딩 실패', isLoading: false });
+      console.error('Stock data fetch error:', error);
+    }
+  }
 }));
