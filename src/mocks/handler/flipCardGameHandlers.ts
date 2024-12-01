@@ -82,7 +82,7 @@ const shuffledCards = shuffleArray(convertedData);
 const mockDifficultyAvailability = {
   isBegin: true,
   isMid: true,
-  isAdv: false,
+  isAdv: true,
 };
 
 // Handlers
@@ -155,50 +155,66 @@ http.get('/api/v1/flip-card', async ({ request }) => {
 }),
 
    // 난이도별 마지막 플레이 타임 갱신
-   http.put('/api/v1/flip-card/:memberId', async ({ params }) => {
-    const { memberId, difficulty } = params as { memberId: string; difficulty: string };
-    await delay(200);
+   http.put('/api/v1/flip-card/:memberId', async ({ params, request }) => {
+    const url = new URL(request.url);
+    const difficulty = url.searchParams.get('difficulty'); // 쿼리 파라미터에서 난이도 확인
+    const memberIdString = params.memberId; // params에서 문자열로 가져오기
   
-    if (!memberId || !difficulty) {
-      return new Response(
-        JSON.stringify({
-          message: 'Member ID and difficulty are required.',
-          error: 'MISSING_PARAMETERS',
-        }),
-        {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-  
-    if (!['begin', 'mid', 'adv'].includes(difficulty)) {
-      return new Response(
-        JSON.stringify({
-          message: 'Invalid difficulty. Use "begin", "mid", or "adv".',
-          error: 'INVALID_DIFFICULTY',
-        }),
-        {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-  
+  // memberId를 숫자로 변환
+  const memberId = Number(memberIdString);
+
+  await delay(200);
+
+  // 파라미터 유효성 검사
+  if (isNaN(memberId) || !difficulty) {
     return new Response(
       JSON.stringify({
-        message: `Last play time updated for member ${memberId} on difficulty ${difficulty}.`,
+        message: 'Valid Member ID (number) and difficulty are required.',
+        error: 'MISSING_PARAMETERS',
       }),
       {
-        status: 200,
+        status: 400,
         headers: {
           'Content-Type': 'application/json',
         },
       }
     );
-  }),
+  }
+  
+     // 난이도별 가능 여부 확인
+  if (
+    (difficulty === 'begin' && !mockDifficultyAvailability.isBegin) ||
+    (difficulty === 'mid' && !mockDifficultyAvailability.isMid) ||
+    (difficulty === 'adv' && !mockDifficultyAvailability.isAdv)
+  ) {
+    return new Response(
+      JSON.stringify({
+        message: `Difficulty ${difficulty} is not playable today.`,
+        error: 'DIFFICULTY_NOT_PLAYABLE',
+      }),
+      {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+  
+   // 마지막 플레이 타임 갱신
+   const lastPlayTime = new Date().toISOString();
+
+   return new Response(
+     JSON.stringify({
+       message: `Last play time updated for member ${memberId} on difficulty ${difficulty}.`,
+       lastPlayTime, // 마지막 플레이 타임 반환
+     }),
+     {
+       status: 200,
+       headers: {
+         'Content-Type': 'application/json',
+       },
+     }
+   );
+ }),
 ];

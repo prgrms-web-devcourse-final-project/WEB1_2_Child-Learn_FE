@@ -36,9 +36,9 @@ export const flipCardApi = {
   },
 
   // 난이도별 마지막 플레이 타임 갱신
-  updateLastPlayTime: async (memberId: string, difficulty: string) => {
+  updateLastPlayTime: async (memberId: number, difficulty: string) => {
     try {
-      const response = await fetch(`${BASE_URL}/${memberId}/${difficulty}`, {
+      const response = await fetch(`${BASE_URL}/${memberId}?difficulty=${difficulty}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
