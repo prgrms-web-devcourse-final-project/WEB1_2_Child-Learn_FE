@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
 interface DifficultyModalProps {
   isOpen: boolean;
@@ -11,6 +12,25 @@ export const DifficultyModal = ({
   onClose,
   onSelect,
 }: DifficultyModalProps) => {
+  const navigate = useNavigate();
+
+  const handleDifficultySelect = (level: string) => {
+    onSelect(level);
+    // 난이도에 따라 다른 페이지로 이동
+    switch (level) {
+      case 'low':
+        navigate('/fast-navigation');
+        break;
+      case 'medium':
+        navigate('/intermediate');
+        break;
+      case 'high':
+        navigate('/advanced');
+        break;
+    }
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -21,13 +41,22 @@ export const DifficultyModal = ({
         </CloseButton>
         <ModalTitle>난이도를 선택하세요!</ModalTitle>
         <ButtonGroup>
-          <DifficultyButton onClick={() => onSelect('low')} $level="low">
+          <DifficultyButton
+            onClick={() => handleDifficultySelect('low')}
+            $level="low"
+          >
             초급
           </DifficultyButton>
-          <DifficultyButton onClick={() => onSelect('medium')} $level="medium">
+          <DifficultyButton
+            onClick={() => handleDifficultySelect('medium')}
+            $level="medium"
+          >
             중급
           </DifficultyButton>
-          <DifficultyButton onClick={() => onSelect('high')} $level="high">
+          <DifficultyButton
+            onClick={() => handleDifficultySelect('high')}
+            $level="high"
+          >
             고급
           </DifficultyButton>
         </ButtonGroup>
