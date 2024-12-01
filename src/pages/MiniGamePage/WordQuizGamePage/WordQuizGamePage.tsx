@@ -10,12 +10,12 @@ import { Popup } from '../../../features/minigame/wordquizgame/ui/Popup';
 import { Word } from '../../../features/minigame/wordquizgame/types/wordTypes';
 
 const WordQuizGamePage = () => {
-  const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>();
+  const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
   const {
     incrementCorrectAnswers,
     decrementLives,
     resetQuiz,
-    setLevel,
+    setDifficulty,
     setWords,
     lives,
     words,
@@ -67,32 +67,32 @@ const WordQuizGamePage = () => {
   // 초기화: 난이도 설정 및 문제 리스트
   useEffect(() => {
     resetQuiz(); // 퀴즈 초기화
-    setLevel(level || 'beginner'); // 난이도 설정
+    setDifficulty(difficulty || 'begin'); // 난이도 설정
     const randomWords = selectRandomWords(wordList, 3); // 랜덤 단어 3개 선택
     setWords(randomWords); // 문제 리스트 설정
-  }, [level, resetQuiz, setLevel, setWords]);
+  }, [difficulty, resetQuiz, setDifficulty, setWords]);
 
   // 타이머 초기화
   useEffect(() => {
     let initialTime = 60;
-    if (level === 'medium') initialTime = 40;
-    if (level === 'advanced') initialTime = 20;
+    if (difficulty === 'mid') initialTime = 40;
+    if (difficulty === 'adv') initialTime = 20;
     setTimeLeft(initialTime);
-  }, [level]);
+  }, [difficulty]);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev === 1) {
           clearInterval(timer);
-          navigate(`/word-quiz/result/${level}`); // 타이머 종료 시 결과 페이지로 이동
+          navigate(`/word-quiz/result/${difficulty}`); // 타이머 종료 시 결과 페이지로 이동
         }
         return prev - 1;
       });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [navigate, level]);
+  }, [navigate, difficulty]);
 
   // 키보드 클릭 핸들러
   const handleSelectLetter = (letter: string) => {
@@ -119,16 +119,16 @@ const WordQuizGamePage = () => {
     if (currentQuestionIndex + 1 < words.length) {
       nextQuestion(); // 다음 문제로 이동
     } else {
-      navigate(`/word-quiz/result/${level}`); // 모든 문제를 다 풀었을 때 결과 페이지로 이동
+      navigate(`/word-quiz/result/${difficulty}`); // 모든 문제를 다 풀었을 때 결과 페이지로 이동
     }
   };
 
   // 목숨이 0이 되면 결과 페이지로 이동
   useEffect(() => {
     if (lives === 0) {
-      navigate(`/word-quiz/result/${level}`);
+      navigate(`/word-quiz/result/${difficulty}`);
     }
-  }, [lives, level, navigate]);
+  }, [lives, difficulty, navigate]);
 
   const handleCloseIncorrectPopup = () => {
     setShowIncorrectPopup(false);

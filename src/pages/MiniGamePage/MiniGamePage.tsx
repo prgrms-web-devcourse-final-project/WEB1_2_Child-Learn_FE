@@ -30,8 +30,17 @@ const MiniGamePage = () => {
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
+    if (isLoading) {
+      return; // 로딩 중에는 아무 작업도 하지 않음
+    }
+  
     if (isError) {
       console.error('Failed to fetch user info.');
+      return;
+    }
+  
+    if (!userInfo) {
+      console.warn('User info is not available.');
       return;
     }
 
@@ -69,7 +78,7 @@ const MiniGamePage = () => {
     };
 
     fetchAvailability();
-  }, [isError, setLotteries]);
+  }, [isLoading, isError, userInfo, setLotteries]);
 
   const handleFlipCardPlay = async (difficulty: 'begin' | 'mid' | 'adv') => {
     if (isPlayable[difficulty]) {
@@ -99,12 +108,12 @@ const MiniGamePage = () => {
 
   // 낱말 퀴즈 플레이 핸들러
   const handleWordQuizPlay = async (
-    level: 'beginner' | 'medium' | 'advanced'
+    difficulty: 'begin' | 'mid' | 'adv'
   ) => {
-    if (isWordQuizPlayable(level)) {
+    if (isWordQuizPlayable(difficulty)) {
       const today = new Date().toISOString().split('T')[0];
-      setWordQuizLastPlayedDate(level, today); // 마지막 플레이 날짜 업데이트
-      navigate(`/word-quiz/${level}`);
+      setWordQuizLastPlayedDate(difficulty, today); // 마지막 플레이 날짜 업데이트
+      navigate(`/word-quiz/${difficulty}`);
     }
   };
 
@@ -238,22 +247,22 @@ const MiniGamePage = () => {
               <>
                 <ModalButton
                   difficulty="begin"
-                  onClick={() => handleWordQuizPlay('beginner')}
-                  disabled={!isWordQuizPlayable('beginner')}
+                  onClick={() => handleWordQuizPlay('begin')}
+                  disabled={!isWordQuizPlayable('begin')}
                 >
                   쉬움
                 </ModalButton>
                 <ModalButton
                   difficulty="mid"
-                  onClick={() => handleWordQuizPlay('medium')}
-                  disabled={!isWordQuizPlayable('medium')}
+                  onClick={() => handleWordQuizPlay('mid')}
+                  disabled={!isWordQuizPlayable('mid')}
                 >
                   보통
                 </ModalButton>
                 <ModalButton
                   difficulty="adv"
-                  onClick={() => handleWordQuizPlay('advanced')}
-                  disabled={!isWordQuizPlayable('advanced')}
+                  onClick={() => handleWordQuizPlay('adv')}
+                  disabled={!isWordQuizPlayable('adv')}
                 >
                   어려움
                 </ModalButton>
