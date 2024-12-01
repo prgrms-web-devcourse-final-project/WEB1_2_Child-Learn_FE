@@ -86,14 +86,19 @@ const mockDifficultyAvailability = {
 };
 
 // 난이도별 마지막 플레이 타임 Mock 데이터
-const lastPlayTimes: Record<string, Record<string, string | null>> = {
-  "1": { begin: null, mid: null, adv: null },
-  "2": { begin: null, mid: null, adv: null },
-  "3": { begin: null, mid: null, adv: null },
+const loadLastPlayTimesFromStorage = (): Record<string, Record<string, string | null>> => {
+  const data = localStorage.getItem('lastPlayTimes');
+  return data ? JSON.parse(data) : {};
 };
 
+const saveLastPlayTimesToStorage = (lastPlayTimes: Record<string, Record<string, string | null>>) => {
+  localStorage.setItem('lastPlayTimes', JSON.stringify(lastPlayTimes));
+};
+
+let lastPlayTimes = loadLastPlayTimesFromStorage();
+
 // 마지막 초기화 날짜
-let lastResetDate = new Date().toISOString().split('T')[0]; // 초기화 기준 날짜
+let lastResetDate = localStorage.getItem('lastResetDate') || new Date().toISOString().split('T')[0];
 
 // 날짜 기반 초기화 함수
 const resetAvailabilityIfNeeded = () => {
@@ -103,8 +108,27 @@ const resetAvailabilityIfNeeded = () => {
     mockDifficultyAvailability.isBegin = true;
     mockDifficultyAvailability.isMid = true;
     mockDifficultyAvailability.isAdv = true;
-    lastResetDate = today; // 기준 날짜 업데이트
+
+    // 초기화 후 마지막 초기화 날짜 갱신
+    lastResetDate = today;
+    localStorage.setItem('lastResetDate', today);
+
+    // 마지막 플레이 타임 초기화
+    lastPlayTimes = {};
+    saveLastPlayTimesToStorage(lastPlayTimes);
   }
+};
+
+// 난이도별 가능 여부 계산 함수
+const calculateAvailability = (memberId: string): Record<string, boolean> => {
+  const today = new Date().toISOString().split('T')[0];
+  const memberLastPlayTimes = lastPlayTimes[memberId] || { begin: null, mid: null, adv: null };
+
+  return {
+    isBegin: !(memberLastPlayTimes.begin && memberLastPlayTimes.begin.startsWith(today)),
+    isMid: !(memberLastPlayTimes.mid && memberLastPlayTimes.mid.startsWith(today)),
+    isAdv: !(memberLastPlayTimes.adv && memberLastPlayTimes.adv.startsWith(today)),
+  };
 };
 
 // Handlers
@@ -170,13 +194,17 @@ http.get('/api/v1/flip-card', async ({ request }) => {
     );
   }
 
-  return new Response(JSON.stringify(mockDifficultyAvailability), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-}),
+    // 사용자 ID를 기반으로 동적으로 계산
+    const memberId = '3'; // 예: 현재 로그인한 사용자의 ID
+    const dynamicAvailability = calculateAvailability(memberId);
+  
+    return new Response(JSON.stringify(dynamicAvailability), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }),
 
 // 난이도별 마지막 플레이 타임 갱신
 http.put('/api/v1/flip-card/:memberId', async ({ params, request }) => {
@@ -254,6 +282,7 @@ http.put('/api/v1/flip-card/:memberId', async ({ params, request }) => {
     ...lastPlayTimes[memberIdString],
     [difficulty]: newLastPlayTime,
   };
+  saveLastPlayTimesToStorage(lastPlayTimes); // 로컬 스토리지에 저장
 
   // 난이도 가능 여부를 false로 설정
   if (difficulty === 'begin') mockDifficultyAvailability.isBegin = false;
