@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { BeginQuiz } from '@/features/beginner_chat/model/types/quiz';
+import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
 
 
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import QuizCard from '@/features/beginner_chat/ui/quiz-widget/quizcard';
-import { FastGraph } from '@/features/beginner_chat/ui/fast-graph/fast-graph';
-import { useGraphStore } from '@/features/beginner_chat/model/store/graph.store';
-import { useQuizStore } from '@/features/beginner_chat/model/store/quiz.store';
+import QuizCard from '@/features/beginner_chart/ui/quiz-widget/quizcard';
+import { FastGraph } from '@/features/beginner_chart/ui/fast-graph/fast-graph';
+import { useGraphStore } from '@/features/beginner_chart/model/store/graph.store';
+import { useQuizStore } from '@/features/beginner_chart/model/store/quiz.store';
 import axios from 'axios';
 
 const PageContainer = styled.div`

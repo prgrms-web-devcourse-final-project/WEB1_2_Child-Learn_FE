@@ -1,10 +1,10 @@
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/entities/User/model/store/authStore';
 import ArticlePage from '../../features/article/pages/articlepage';
-import QuizPage from '../../features/beginner_chat/ui/quiz-widget/quizpage';
+import QuizPage from '../../features/beginner_chart/ui/quiz-widget/quizpage';
 import { LoginPage } from '@/pages/auth/login/LoginPage';
 import { SignUpPage } from '@/pages/auth/signup/SignUpPage';
-import GraphExplanationPage from '../../features/beginner_chat/ui/fast-navgation/fast-navigation';
+import GraphExplanationPage from '../../features/beginner_chart/ui/fast-navgation/fast-navigation';
 import IntermediatePage from '../../pages/TradePages/IntermediateTradePage/IntermediatePage';
 import MainPage from '@/pages/mainpage/MainPage';
 import MiniGamePage from '../../pages/MiniGamePage/MiniGamePage';
