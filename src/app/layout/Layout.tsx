@@ -11,7 +11,7 @@ const HIDDEN_HEADER_PATHS = [
   '/',
   '/auth/login',
   '/auth/signup',
-  '/flip-card',
+  /^\/flip-card\/[^/]+$/,
   '/word-quiz',
   '/exchange',
   '/fast-navigation',
@@ -25,7 +25,7 @@ const HIDDEN_GNB_PATHS = [
   '/',
   '/auth/login',
   '/auth/signup',
-  '/flip-card',
+  /^\/flip-card\/[^/]+$/,
   '/word-quiz',
   '/exchange',
   '/fast-navigation',
@@ -35,7 +35,7 @@ const HIDDEN_GNB_PATHS = [
 ];
 
 // BackButton만 표시할 페이지 경로들
-const SHOW_BACK_BUTTON_PATHS = ['/flip-card', '/word-quiz', '/exchange', '/avatar', /^\/avatar\/details\/[^/]+\/[^/]+$/,];
+const SHOW_BACK_BUTTON_PATHS = [/^\/flip-card\/[^/]+$/, '/word-quiz', '/exchange', '/avatar', /^\/avatar\/details\/[^/]+\/[^/]+$/,];
 
 // BackButton을 숨길 페이지 경로 추가
 const HIDDEN_BACK_BUTTON_PATHS = ['/word-quiz/result'];

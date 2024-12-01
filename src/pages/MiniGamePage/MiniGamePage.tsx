@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useUserStore } from '../../app/providers/state/zustand/userStore';
-import { useFlipCardStore } from '../../features/minigame/flipcardgame/model/filpCardStore';
+import { flipCardApi } from '@/shared/api/minigames';
 import { useWordQuizStore } from '../../features/minigame/wordquizgame/model/wordQuizStore';
 import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
 import { Link, useNavigate } from 'react-router-dom';
@@ -8,8 +8,6 @@ import styled from 'styled-components';
 
 const MiniGamePage = () => {
   const { username, currentPoints, setUser } = useUserStore();
-  const { isPlayable: isCardPlayable, setLastPlayed: setCardLastPlayed } =
-    useFlipCardStore();
   const {
     isPlayable: isWordQuizPlayable,
     setLastPlayedDate: setWordQuizLastPlayedDate,
@@ -23,9 +21,17 @@ const MiniGamePage = () => {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const [isPlayable, setIsPlayable] = useState({
+    begin: false,
+    mid: false,
+    adv: false,
+  });
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
+
   useEffect(() => {
     // 초기 사용자 데이터 설정
     setUser({
+      memberId: 3,
       loginId: 'minnie123',
       username: 'Minnie',
       email: 'minnie@example.com',
@@ -52,17 +58,52 @@ const MiniGamePage = () => {
         status: '대기',
       },
     ]);
+
+    // API 호출로 난이도별 가능 여부 확인
+    const fetchAvailability = async () => {
+      try {
+        const response = await flipCardApi.checkDifficultyAvailability();
+        console.log('Flip Card Availability:', response); // 디버그 로그
+        setIsPlayable({
+          begin: response.isBegin,
+          mid: response.isMid,
+          adv: response.isAdv,
+        });
+      } catch (error) {
+        console.error('Failed to fetch difficulty availability:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAvailability();
   }, [setUser, setLotteries]);
 
-  // 카드 뒤집기 플레이 핸들러
-  const handleFlipCardPlay = async (
-    level: 'beginner' | 'medium' | 'advanced'
-  ) => {
-    if (isCardPlayable(level)) {
-      setCardLastPlayed(level, new Date());
-      navigate(`/flip-card/${level}`);
+  const handleFlipCardPlay = async (difficulty: 'begin' | 'mid' | 'adv') => {
+    if (isPlayable[difficulty]) {
+      try {
+        // localStorage에서 memberId 가져오기
+        const memberIdString = localStorage.getItem('memberId') || '3'; // 기본값으로 '0' 설정
+        const memberId = Number(memberIdString); // 숫자로 변환
+  
+        // memberId가 유효한 숫자인지 확인
+        if (isNaN(memberId) || memberId <= 0) {
+          throw new Error('Invalid member ID');
+        }
+  
+        // API 호출로 마지막 플레이 타임 갱신
+        // API 호출로 마지막 플레이 타임 갱신
+      const response = await flipCardApi.updateLastPlayTime(memberId, difficulty);
+      console.log(`Successfully updated last play time for difficulty "${difficulty}":`, response.lastPlayTime); // 갱신된 마지막 플레이 타임 로그
+        navigate(`/flip-card/${difficulty}`); // 성공적으로 갱신된 경우 해당 경로로 이동
+      } catch (error) {
+        console.error('Failed to update last play time:', error);
+        alert('플레이 타임 갱신에 실패했습니다. 다시 시도해주세요.');
+      }
+    } else {
+      alert('이 난이도는 오늘 플레이할 수 없습니다.');
     }
-  };
+  };  
 
   // 낱말 퀴즈 플레이 핸들러
   const handleWordQuizPlay = async (
@@ -92,6 +133,10 @@ const MiniGamePage = () => {
     setModalVisible(false);
     setSelectedGame(null);
   };
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <PageContainer>
@@ -173,23 +218,23 @@ const MiniGamePage = () => {
                 {selectedGame === '카드 뒤집기' && (
                   <>
                     <ModalButton
-                      level="beginner"
-                      onClick={() => handleFlipCardPlay('beginner')}
-                      disabled={!isCardPlayable('beginner')}
+                      difficulty="begin"
+                      onClick={() => handleFlipCardPlay('begin')}
+                      disabled={!isPlayable.begin}
                     >
                       쉬움
                     </ModalButton>
                     <ModalButton
-                      level="medium"
-                      onClick={() => handleFlipCardPlay('medium')}
-                      disabled={!isCardPlayable('medium')}
+                       difficulty="mid"
+                       onClick={() => handleFlipCardPlay('mid')}
+                       disabled={!isPlayable.mid}
                     >
                       보통
                     </ModalButton>
                     <ModalButton
-                      level="advanced"
-                      onClick={() => handleFlipCardPlay('advanced')}
-                      disabled={!isCardPlayable('advanced')}
+                     difficulty="adv"
+                     onClick={() => handleFlipCardPlay('adv')}
+                     disabled={!isPlayable.adv}
                     >
                       어려움
                     </ModalButton>
@@ -200,21 +245,21 @@ const MiniGamePage = () => {
             {selectedGame === '낱말 퀴즈' && (
               <>
                 <ModalButton
-                  level="beginner"
+                  difficulty="begin"
                   onClick={() => handleWordQuizPlay('beginner')}
                   disabled={!isWordQuizPlayable('beginner')}
                 >
                   쉬움
                 </ModalButton>
                 <ModalButton
-                  level="medium"
+                  difficulty="mid"
                   onClick={() => handleWordQuizPlay('medium')}
                   disabled={!isWordQuizPlayable('medium')}
                 >
                   보통
                 </ModalButton>
                 <ModalButton
-                  level="advanced"
+                  difficulty="adv"
                   onClick={() => handleWordQuizPlay('advanced')}
                   disabled={!isWordQuizPlayable('advanced')}
                 >
@@ -433,7 +478,7 @@ const ModalContent = styled.div`
 `;
 
 const ModalButton = styled.button<{
-  level: 'beginner' | 'medium' | 'advanced';
+  difficulty: 'begin' | 'mid' | 'adv';
 }>`
   width: 100%;
   margin-top: 10px;
@@ -442,19 +487,19 @@ const ModalButton = styled.button<{
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  background-color: ${({ level }) =>
-    level === 'beginner'
+  background-color: ${({ difficulty }) =>
+    difficulty === 'begin'
       ? '#9CDBA6'
-      : level === 'medium'
+      : difficulty === 'mid'
         ? '#50B498'
         : '#468585'};
   color: white;
 
   &:hover {
-    background-color: ${({ level }) =>
-      level === 'beginner'
+    background-color: ${({ difficulty }) =>
+      difficulty === 'begin'
         ? '#8BCF96'
-        : level === 'medium'
+        : difficulty === 'mid'
           ? '#44997E'
           : '#3A7572'};
   }

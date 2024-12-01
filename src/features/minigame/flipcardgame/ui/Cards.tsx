@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import type { Card } from '../../../../features/minigame/flipcardgame/types/cardTypes';
 
 interface CardsProps {
-  level: 'beginner' | 'medium' | 'advanced';
+  difficulty: 'begin' | 'mid' | 'adv';
   shuffledCards: Card[];
   flippedCards: number[];
   matchedCards: number[];
@@ -11,7 +11,7 @@ interface CardsProps {
 }
 
 export function Cards({
-  level,
+  difficulty,
   shuffledCards,
   flippedCards,
   matchedCards,
@@ -19,19 +19,19 @@ export function Cards({
   onCardClick,
 }: CardsProps) {
   return (
-    <GameGrid level={level}>
+    <GameGrid difficulty={difficulty}>
       {shuffledCards.map((card, index) => (
         <Card
           key={card.card_id}
           flipped={
             gamePhase === 'memorize' || flippedCards.includes(index) || matchedCards.includes(index)
           }
-          level={level}
+          difficulty={difficulty}
           onClick={() => (gamePhase === 'play' ? onCardClick(index) : null)}
         >
           <div className="card-inner">
             <div className="card-front">
-              <div className="category">{card.category}</div>
+              <div className="category">{card.card_category}</div>
               <div className="title">{card.card_title}</div>
               <div className="description">{card.card_content}</div>
             </div>
@@ -45,35 +45,35 @@ export function Cards({
   );
 }
 
-const GameGrid = styled.div<{ level?: string }>`
+const GameGrid = styled.div<{ difficulty?: string }>`
   display: grid;
   grid-template-columns: repeat(
-    ${({ level }) => (level === 'beginner' ? 2 : level === 'medium' ? 3 : 4)},
-    ${({ level }) =>
-      level === 'beginner' ? '100px' : level === 'medium' ? '90px' : '80px'}
+    ${({ difficulty }) => (difficulty === 'begin' ? 2 : difficulty === 'mid' ? 3 : 4)},
+    ${({ difficulty }) =>
+      difficulty === 'begin' ? '100px' : difficulty === 'mid' ? '90px' : '80px'}
   );
-  column-gap: ${({ level }) =>
-    level === 'beginner' ? '20px' : level === 'medium' ? '15px' : '10px'};
+  column-gap: ${({ difficulty }) =>
+    difficulty === 'begin' ? '20px' : difficulty === 'mid' ? '15px' : '10px'};
   row-gap: 10px; /* 상하 간격 */
   margin-top: 100px; /* 상단 간격 고정 */
   margin-bottom: 40px; /* 하단 간격 고정 */
   margin-left: auto;
   margin-right: auto;
-  max-width: ${({ level }) =>
-    level === 'beginner'
+  max-width: ${({ difficulty }) =>
+    difficulty === 'begin'
       ? 'calc(2 * 100px + 20px)' // 카드 크기와 간격 계산
-      : level === 'medium'
+      : difficulty === 'mid'
       ? 'calc(3 * 90px + 30px)' // 카드 크기와 간격 계산
       : 'calc(4 * 80px + 30px)'}; // 카드 크기와 간격 계산
   justify-items: center;
   align-items: center;
 `;
 
-const Card = styled.div<{ flipped: boolean; level?: string }>`
-  width: ${({ level }) =>
-    level === 'medium' ? '80px' : level === 'advanced' ? '70px' : '100px'};
-  height: ${({ level }) =>
-    level === 'medium' ? '130px' : level === 'advanced' ? '120px' : '150px'};
+const Card = styled.div<{ flipped: boolean; difficulty?: string }>`
+  width: ${({ difficulty }) =>
+    difficulty === 'mid' ? '80px' : difficulty === 'adv' ? '70px' : '100px'};
+  height: ${({ difficulty }) =>
+    difficulty === 'mid' ? '130px' : difficulty === 'adv' ? '120px' : '150px'};
   position: relative; /* 카드의 앞면과 뒷면을 포개기 위해 */
   perspective: 1000px; /* 3D 효과를 위해 필수 */
 
