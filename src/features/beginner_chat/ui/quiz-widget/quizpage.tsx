@@ -1,15 +1,15 @@
-// ui/quizpage.tsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import QuizCard from './quizcard';
-import { FastGraph } from '../fast-graph/fast-graph';
-import { BeginQuiz } from '../../model/types/quiz';
-import { BeginStock } from '../../model/types/stock';
+import QuizCard from '@/features/beginner_chat/ui/quiz-widget/quizcard';
+import { FastGraph } from '@/features/beginner_chat/ui/fast-graph/fast-graph';
+import { useGraphStore } from '@/features/beginner_chat/model/store/graph.store';
+import { useQuizStore } from '@/features/beginner_chat/model/store/quiz.store';
+import axios from 'axios';
 
 const PageContainer = styled.div`
   padding: 16px;
   background-color: #ffffff;
-  min-height: 100%;
+  min-height: 100vh;
 `;
 
 const DateDisplay = styled.div`
@@ -61,72 +61,69 @@ const ModalText = styled.p`
   color: #333;
 `;
 
+const LoadingSpinner = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 16px;
+  color: #666;
+`;
+
 const QuizPage: React.FC = () => {
+  const { stockData, isLoading: isStockLoading, error: stockError, fetchStockData } = useGraphStore();
+  const { currentQuiz, error: quizError } = useQuizStore();
   const [selectedAnswer, setSelectedAnswer] = useState<string>();
-  const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  
+
   useEffect(() => {
+    fetchStockData();
+  }, [fetchStockData]);
+
+  const handleAnswer = async (answer: string) => {
     try {
-      // 데이터 로딩 시뮬레이션
-      setIsLoading(true);
-      // 실제 데이터 로딩 로직이 들어갈 자리
-      setIsLoading(false);
+      setSelectedAnswer(answer);
+      await axios.post('/api/v1/begin-stocks/submissions', 
+        { answer },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      setShowModal(true);
     } catch (error) {
-      console.error('데이터 로딩 중 오류:', error);
-      setIsLoading(false);
+      console.error('답변 제출 오류:', error);
     }
-  }, []);
-
-  const tempStockData: BeginStock[] = [
-    { begin_id: 1, price: 205, trade_day: '월' },
-    { begin_id: 2, price: 305, trade_day: '화' },
-    { begin_id: 3, price: 405, trade_day: '수' },
-    { begin_id: 4, price: 105, trade_day: '목' },
-    { begin_id: 5, price: 75, trade_day: '금' },
-    { begin_id: 6, price: 150, trade_day: '토' },
-    { begin_id: 7, price: 270, trade_day: '일' }
-  ];
-
-  const formattedData = tempStockData.map(stock => ({
-    value: stock.price,
-    date: stock.trade_day
-  }));
-
-  const sampleQuiz: BeginQuiz = {
-    quiz_id: 1,
-    content: "금융 퀴즈에 대한 예시 질문입니다.",
-    answer: "X",
-    o_content: "정답",
-    x_content: "오답",
-    created_date: "2024-03-19",
-    begin_id: 1
   };
 
-  const handleAnswer = (answer: string) => {
-    setSelectedAnswer(answer);
-    setShowModal(true);
-  };
+  if (isStockLoading) {
+    return <LoadingSpinner>로딩중...</LoadingSpinner>;
+  }
 
-  if (isLoading) {
-    return <div>로딩 중...</div>;
+  if (stockError || quizError) {
+    return <div>에러가 발생했습니다: {stockError || quizError}</div>;
   }
 
   return (
     <PageContainer>
-      <FastGraph data={formattedData} />
+      <FastGraph data={stockData} />
       <DateDisplay>{new Date().toLocaleDateString()}</DateDisplay>
-      <QuizCard 
-        quiz={sampleQuiz}
-        onAnswer={handleAnswer}
-        selectedAnswer={selectedAnswer}
-      />
+      {currentQuiz && (
+        <QuizCard 
+          quiz={currentQuiz}
+          onAnswer={handleAnswer}
+          selectedAnswer={selectedAnswer}
+        />
+      )}
 
       {showModal && (
         <>
           <ModalOverlay onClick={() => setShowModal(false)} />
           <Modal>
-            <ModalText>정답입니다!</ModalText>
+            <ModalText>
+              {selectedAnswer === currentQuiz?.answer ? '정답입니다!' : '틀렸습니다.'}
+            </ModalText>
             <ConfirmButton onClick={() => setShowModal(false)}>
               확인
             </ConfirmButton>

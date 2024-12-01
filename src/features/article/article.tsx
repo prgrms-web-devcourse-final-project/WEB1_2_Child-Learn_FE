@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import imagex from '../../../public/img/imagex.jpg';
+import imagex from '../../../public/img/imagex.png';
 import { Article, TrendPrediction, Relevance } from '../article/type/article';
 
 //style.css
@@ -82,8 +82,7 @@ const ArticleComponent: React.FC<{ article: Article }> = ({ article }) => {
         <Subtitle>오늘의 뉴스</Subtitle>
       </Header>
 
-      <MainImage src={imagex} alt="연습용 이미지" />
-      
+      <MainImage src="/img/imagex.png" alt="연습용 이미지" />
       <ContentSection>
         <ContentTitle>
           반도체 투톱인 삼성전자와 SK하이닉스 주가가 3%대 하락하며 동반 약세 반도체 시장 이대로 !!
