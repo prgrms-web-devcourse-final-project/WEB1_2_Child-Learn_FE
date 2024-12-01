@@ -30,8 +30,17 @@ const MiniGamePage = () => {
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
+    if (isLoading) {
+      return; // 로딩 중에는 아무 작업도 하지 않음
+    }
+  
     if (isError) {
       console.error('Failed to fetch user info.');
+      return;
+    }
+  
+    if (!userInfo) {
+      console.warn('User info is not available.');
       return;
     }
 
@@ -69,7 +78,7 @@ const MiniGamePage = () => {
     };
 
     fetchAvailability();
-  }, [isError, setLotteries]);
+  }, [isLoading, isError, userInfo, setLotteries]);
 
   const handleFlipCardPlay = async (difficulty: 'begin' | 'mid' | 'adv') => {
     if (isPlayable[difficulty]) {
