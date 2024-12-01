@@ -76,7 +76,14 @@ const jsonData = [
 // 변환된 데이터 가져오기
 const convertedData = convertCardData(jsonData);
   // 데이터를 랜덤으로 섞음
-  const shuffledCards = shuffleArray(convertedData);
+const shuffledCards = shuffleArray(convertedData);
+
+// 난이도별 가능 여부 Mock 데이터
+const mockDifficultyAvailability = {
+  isBegin: true,
+  isMid: true,
+  isAdv: false,
+};
 
 // Handlers
 export const flipCardGameHandlers = [
@@ -119,8 +126,36 @@ http.get('/api/v1/flip-card', async ({ request }) => {
   });
 }),
 
+ // 난이도별 가능 여부 확인
+ http.get('/api/v1/flip-card/available', async ({ request }) => {
+  const authorization = request.headers.get('Authorization');
+  await delay(200);
+
+  if (!authorization || !authorization.startsWith('Bearer')) {
+    return new Response(
+      JSON.stringify({
+        message: 'Unauthorized access.',
+        error: 'UNAUTHORIZED',
+      }),
+      {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+
+  return new Response(JSON.stringify(mockDifficultyAvailability), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+}),
+
    // 난이도별 마지막 플레이 타임 갱신
-   http.put('/api/v1/flip-card/:memberId/:difficulty', async ({ params }) => {
+   http.put('/api/v1/flip-card/:memberId', async ({ params }) => {
     const { memberId, difficulty } = params as { memberId: string; difficulty: string };
     await delay(200);
   

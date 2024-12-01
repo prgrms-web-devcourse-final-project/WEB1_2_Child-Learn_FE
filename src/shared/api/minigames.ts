@@ -1,8 +1,10 @@
+import { Card } from "@/features/minigame/flipcardgame/types/cardTypes";
+
 const BASE_URL = '/api/v1/flip-card';
 
 export const flipCardApi = {
   // 카드 목록 조회
-  getCardList: async (difficulty: string) => {
+  getCardList: async (difficulty: string): Promise<Card[]> => {
     try {
       const response = await fetch(`${BASE_URL}?difficulty=${difficulty}`);
       if (!response.ok) {
