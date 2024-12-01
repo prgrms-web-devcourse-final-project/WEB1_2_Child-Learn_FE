@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
+import { BeginQuiz } from '../types/quiz';
 import axios from 'axios';
 
 interface QuizStore {
@@ -25,16 +25,11 @@ export const useQuizStore = create<QuizStore>((set) => ({
   fetchQuizzes: async () => {
     try {
       set({ isLoading: true });
-      const token = localStorage.getItem('token');
-      console.log('토큰:', token);
-
       const response = await axios.get('/api/v1/begin-stocks', {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-
-      console.log('퀴즈 응답:', response.data);
 
       if (response.data.quiz && response.data.quiz.length > 0) {
         set({
@@ -43,9 +38,9 @@ export const useQuizStore = create<QuizStore>((set) => ({
           isLoading: false
         });
       }
-    } catch (error: any) {
-      console.log('에러 상세:', error.response);
+    } catch (error) {
       set({ error: '퀴즈 데이터 로딩 실패', isLoading: false });
+      console.error('Quiz fetch error:', error);
     }
   },
 
