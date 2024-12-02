@@ -26,7 +26,7 @@ export const useFlipCardLogic = (difficulty: 'begin' | 'mid' | 'adv') => {
         // 카드 쌍 생성 및 섞기
         const pairedCards = shuffleArray([...cards, ...cards].map((card, index) => ({
           ...card,
-          card_id: card.card_id * 100 + index, // 고유 ID 보장
+          card_id: card.id * 100 + index, // 고유 ID 보장
         })));
         setShuffledCards(pairedCards);
       } catch (err) {
