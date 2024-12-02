@@ -1,5 +1,17 @@
-import { http, delay } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { Card } from '@/features/minigame/flipcardgame/types/cardTypes';
+
+interface PlayTimes {
+  beginLastPlayed: string;
+  midLastPlayed: string;
+  advLastPlayed: string;
+}
+
+let mockPlayTimes: PlayTimes = {
+  beginLastPlayed: "2024-11-01",
+  midLastPlayed: "2024-11-15",
+  advLastPlayed: "2024-11-20",
+};
 
 // 변환 로직
 const convertCardData = (data: any[]): Card[] => {
@@ -78,59 +90,6 @@ const convertedData = convertCardData(jsonData);
   // 데이터를 랜덤으로 섞음
 const shuffledCards = shuffleArray(convertedData);
 
-// 난이도별 가능 여부 Mock 데이터
-const mockDifficultyAvailability = {
-  isBegin: true,
-  isMid: true,
-  isAdv: true,
-};
-
-// 난이도별 마지막 플레이 타임 Mock 데이터
-const loadLastPlayTimesFromStorage = (): Record<string, Record<string, string | null>> => {
-  const data = localStorage.getItem('lastPlayTimes');
-  return data ? JSON.parse(data) : {};
-};
-
-const saveLastPlayTimesToStorage = (lastPlayTimes: Record<string, Record<string, string | null>>) => {
-  localStorage.setItem('lastPlayTimes', JSON.stringify(lastPlayTimes));
-};
-
-let lastPlayTimes = loadLastPlayTimesFromStorage();
-
-// 마지막 초기화 날짜
-let lastResetDate = localStorage.getItem('lastResetDate') || new Date().toISOString().split('T')[0];
-
-// 날짜 기반 초기화 함수
-const resetAvailabilityIfNeeded = () => {
-  const today = new Date().toISOString().split('T')[0];
-  if (lastResetDate !== today) {
-    // 새 날이 되면 초기화
-    mockDifficultyAvailability.isBegin = true;
-    mockDifficultyAvailability.isMid = true;
-    mockDifficultyAvailability.isAdv = true;
-
-    // 초기화 후 마지막 초기화 날짜 갱신
-    lastResetDate = today;
-    localStorage.setItem('lastResetDate', today);
-
-    // 마지막 플레이 타임 초기화
-    lastPlayTimes = {};
-    saveLastPlayTimesToStorage(lastPlayTimes);
-  }
-};
-
-// 난이도별 가능 여부 계산 함수
-const calculateAvailability = (uniqueKey: string): Record<string, boolean> => {
-  const today = new Date().toISOString().split('T')[0];
-  const memberLastPlayTimes = lastPlayTimes[uniqueKey] || { begin: null, mid: null, adv: null };
-
-  return {
-    isBegin: !(memberLastPlayTimes.begin && memberLastPlayTimes.begin.startsWith(today)),
-    isMid: !(memberLastPlayTimes.mid && memberLastPlayTimes.mid.startsWith(today)),
-    isAdv: !(memberLastPlayTimes.adv && memberLastPlayTimes.adv.startsWith(today)),
-  };
-};
-
 // Handlers
 export const flipCardGameHandlers = [
 http.get('/api/v1/flip-card', async ({ request }) => {
@@ -172,156 +131,45 @@ http.get('/api/v1/flip-card', async ({ request }) => {
   });
 }),
 
- // 난이도별 가능 여부 확인
- http.get('/api/v1/flip-card/available', async ({ request }) => {
-  resetAvailabilityIfNeeded(); // 매 요청 시 초기화 필요 여부 확인
-
-  const authorization = request.headers.get('Authorization');
-  await delay(200);
-
-  if (!authorization || !authorization.startsWith('Bearer')) {
-    return new Response(
-      JSON.stringify({
-        message: 'Unauthorized access.',
-        error: 'UNAUTHORIZED',
-      }),
-      {
-        status: 401,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  }
-
-  try {
-    // 토큰 자체를 키로 사용
-    const token = authorization.split(' ')[1]; // 'Bearer <token>'에서 토큰 추출
-
-    if (!token) {
-      throw new Error('Invalid token.');
-    }
-
-    // 토큰 자체를 키로 난이도 가능 여부 계산
-    const dynamicAvailability = calculateAvailability(token);
-
-    return new Response(JSON.stringify(dynamicAvailability), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  } catch (error) {
-    console.error('Token-based availability calculation failed:', error);
-    return new Response(
-      JSON.stringify({
-        message: 'Invalid token or availability calculation failed.',
-        error: 'INVALID_TOKEN',
-      }),
-      {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  }
+ // 플레이 가능 여부 확인 핸들러
+ http.get('/api/v1/flip-card/available', () => {
+  console.log('MSW: Checking play availability');
+  return HttpResponse.json({
+    isBegin: true,
+    isMid: false,
+    isAdv: true
+  });
 }),
 
 // 난이도별 마지막 플레이 타임 갱신
 http.put('/api/v1/flip-card/:memberId', async ({ params, request }) => {
-  resetAvailabilityIfNeeded(); // 매 요청 시 초기화 필요 여부 확인
-
+  const memberId = Number(params.memberId);
   const url = new URL(request.url);
-  const difficulty = url.searchParams.get('difficulty'); // 쿼리 파라미터에서 난이도 확인
-  const memberIdString = Array.isArray(params.memberId)
-    ? params.memberId[0]
-    : params.memberId; // params에서 문자열로 가져오기
-
-  // memberId를 숫자로 변환
-  const memberId = Number(memberIdString);
-
-  await delay(200);
-
+  const difficulty = url.searchParams.get('difficulty'); // 쿼리 파라미터에서 
   // 파라미터 유효성 검사
-  if (isNaN(memberId) || !difficulty || !['begin', 'mid', 'adv'].includes(difficulty)) {
-    return new Response(
-      JSON.stringify({
-        message: 'Valid Member ID (number) and difficulty are required.',
-        error: 'MISSING_PARAMETERS',
-      }),
-      {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  }
 
-  // 난이도별 가능 여부 확인
-  if (
-    (difficulty === 'begin' && !mockDifficultyAvailability.isBegin) ||
-    (difficulty === 'mid' && !mockDifficultyAvailability.isMid) ||
-    (difficulty === 'adv' && !mockDifficultyAvailability.isAdv)
-  ) {
-    return new Response(
-      JSON.stringify({
-        message: `Difficulty ${difficulty} is not playable today.`,
-        error: 'DIFFICULTY_NOT_PLAYABLE',
-      }),
-      {
-        status: 403,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  }
+  console.log(`MSW: Play time update request received for member ID: ${memberId}, difficulty: ${difficulty}`);
 
-  // 같은 날에 이미 플레이했는지 확인
-  const today = new Date().toISOString().split('T')[0]; // 현재 날짜 (YYYY-MM-DD)
-  const lastPlayTime = lastPlayTimes[memberIdString]?.[difficulty] || null;
+ // 난이도별 처리 및 mock 데이터 갱신
+ switch (difficulty) {
+  case 'begin':
+    mockPlayTimes.beginLastPlayed = new Date().toISOString().split('T')[0];
+    console.log(`MSW: Updated play time for 'begin': ${mockPlayTimes.beginLastPlayed}`);
+    break;
+  case 'mid':
+    mockPlayTimes.midLastPlayed = new Date().toISOString().split('T')[0];
+    console.log(`MSW: Updated play time for 'mid': ${mockPlayTimes.midLastPlayed}`);
+    break;
+  case 'adv':
+    mockPlayTimes.advLastPlayed = new Date().toISOString().split('T')[0];
+    console.log(`MSW: Updated play time for 'adv': ${mockPlayTimes.advLastPlayed}`);
+    break;
+  default:
+    console.warn(`MSW: Invalid difficulty received: ${difficulty}`);
+    return new HttpResponse(null, { status: 400 });
+}
 
-  if (lastPlayTime && lastPlayTime.startsWith(today)) {
-    return new Response(
-      JSON.stringify({
-        message: `You have already played difficulty "${difficulty}" today.`,
-        error: 'ALREADY_PLAYED_TODAY',
-      }),
-      {
-        status: 403,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  }
-
-  // 마지막 플레이 타임 갱신
-  const newLastPlayTime = new Date().toISOString();
-  lastPlayTimes[memberIdString] = {
-    ...lastPlayTimes[memberIdString],
-    [difficulty]: newLastPlayTime,
-  };
-  saveLastPlayTimesToStorage(lastPlayTimes); // 로컬 스토리지에 저장
-
-  // 난이도 가능 여부를 false로 설정
-  if (difficulty === 'begin') mockDifficultyAvailability.isBegin = false;
-  if (difficulty === 'mid') mockDifficultyAvailability.isMid = false;
-  if (difficulty === 'adv') mockDifficultyAvailability.isAdv = false;
-
-  return new Response(
-    JSON.stringify({
-      message: `Last play time updated for member ${memberId} on difficulty ${difficulty}.`,
-      lastPlayTime: newLastPlayTime, // 갱신된 마지막 플레이 타임 반환
-    }),
-    {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+// 성공적으로 처리된 경우
+return new HttpResponse(null, { status: 204 });
 }),
 ];
