@@ -16,10 +16,10 @@ const WordQuizResultPage = () => {
 
   return (
     <Container>
-      <CheckImage/>
+      <CheckImage src="/img/Check.png" alt="Check"/>
       <StarsContainer>
         {Array.from({ length: stars }).map((_, index) => (
-          <Star key={index} src="/public/img/star.png" alt="Star" />
+          <Star key={index} src="/img/star.png" alt="Star" />
         ))}
       </StarsContainer>
       <PointsText>총 {correctAnswers * 100} Points를 획득하셨습니다!</PointsText>
