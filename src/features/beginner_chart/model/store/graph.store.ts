@@ -1,8 +1,7 @@
 import { create } from 'zustand';
-import { BeginStockResponse } from '../types/stock';
-import { FastGraphData } from '../types/graph';
 import { baseApi } from '@/shared/api/base';
-import { BeginStock } from '../types/stock';
+import { BeginStock, BeginStockResponse } from '../types/stock';
+import { FastGraphData } from '../types/graph';
 
 interface GraphStore {
   stockData: FastGraphData[];
@@ -18,9 +17,15 @@ export const useGraphStore = create<GraphStore>((set) => ({
   fetchStockData: async () => {
     try {
       set({ isLoading: true });
+      // 토큰 키를 'jwt'로 변경
+      const token = localStorage.getItem('jwt');
+      if (!token) {
+        throw new Error('인증 토큰이 없습니다');
+      }
+
       const response = await baseApi.get<BeginStockResponse>('/begin-stocks', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          Authorization: `Bearer ${token}`
         }
       });
 
