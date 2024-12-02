@@ -4,7 +4,7 @@ import QuizCard from '@/features/beginner_chart/ui/quiz-widget/quizcard';
 import { FastGraph } from '@/features/beginner_chart/ui/fast-graph/fast-graph';
 import { useGraphStore } from '@/features/beginner_chart/model/store/graph.store';
 import { useQuizStore } from '@/features/beginner_chart/model/store/quiz.store';
-import axios from 'axios';
+
 
 const PageContainer = styled.div`
   padding: 16px;
@@ -83,14 +83,7 @@ const QuizPage: React.FC = () => {
   const handleAnswer = async (answer: string) => {
     try {
       setSelectedAnswer(answer);
-      await axios.post('/api/v1/begin-stocks/submissions', 
-        { answer },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
+      await useQuizStore.getState().submitAnswer(answer);
       setShowModal(true);
     } catch (error) {
       console.error('답변 제출 오류:', error);
