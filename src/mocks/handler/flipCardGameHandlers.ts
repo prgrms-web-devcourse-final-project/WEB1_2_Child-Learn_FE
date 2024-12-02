@@ -11,7 +11,7 @@ const convertCardData = (data: any[]): Card[] => {
   }));
 };
 
-// 배열을 섞는 유틸리티 함수
+// 배열을 섞는 유틸리티 함수         
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
