@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import axios from 'axios';
+import { baseApi } from '@/shared/api/base';
 import { 
   MidStock, 
   StockPrice, 
@@ -37,7 +37,7 @@ export const useStockStore = create<StockStore>((set) => ({
   fetchStocks: async () => {
     try {
       set({ isLoading: true });
-      const response = await axios.get<MidStock[]>('/api/v1/mid-stocks/list');
+      const response = await baseApi.get<MidStock[]>('/mid-stocks/list');
       set({ stocks: response.data, isLoading: false });
     } catch (error) {
       set({ error: '주식 데이터 로딩 실패', isLoading: false });
@@ -48,7 +48,7 @@ export const useStockStore = create<StockStore>((set) => ({
   fetchStockPrices: async (stockId: number) => {
     try {
       set({ isLoading: true });
-      const response = await axios.get<StockPrice[]>(`/api/v1/mid-stocks/${stockId}/price`);
+      const response = await baseApi.get<StockPrice[]>(`/mid-stocks/${stockId}/price`);
       set({ currentStockPrices: response.data, isLoading: false });
     } catch (error) {
       set({ error: '주가 데이터 로딩 실패', isLoading: false });
@@ -59,14 +59,17 @@ export const useStockStore = create<StockStore>((set) => ({
   fetchStockDetails: async (stockId: number) => {
     try {
       set({ isLoading: true });
-      const response = await axios.get<TradeDetail[]>(
-        `/api/v1/mid-stocks/${stockId}`,
+      const response = await baseApi.get<TradeDetail[]>(
+        `/mid-stocks/${stockId}`,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
         }
       );
-      const currentStock = (await axios.get<MidStock[]>('/api/v1/mid-stocks/list')).data
-        .find(stock => stock.midStockId === stockId);
+      
+      const stocksResponse = await baseApi.get<MidStock[]>('/mid-stocks/list');
+      const currentStock = stocksResponse.data.find(stock => stock.midStockId === stockId);
       
       if (currentStock) {
         const stockWithDetails: StockWithDetails = {
@@ -87,10 +90,12 @@ export const useStockStore = create<StockStore>((set) => ({
   fetchAllStockDetails: async () => {
     try {
       set({ isLoading: true });
-      const response = await axios.get<StockWithDetails[]>(
-        '/api/v1/mid-stocks',
+      const response = await baseApi.get<StockWithDetails[]>(
+        '/mid-stocks',
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
         }
       );
       set({ stockDetails: response.data, isLoading: false });
@@ -102,10 +107,12 @@ export const useStockStore = create<StockStore>((set) => ({
 
   checkTradeAvailability: async (stockId: number) => {
     try {
-      const response = await axios.get<TradeAvailability>(
-        `/api/v1/mid-stocks/${stockId}/available`,
+      const response = await baseApi.get<TradeAvailability>(
+        `/mid-stocks/${stockId}/available`,
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
         }
       );
       set({ tradeAvailability: response.data });
@@ -118,18 +125,20 @@ export const useStockStore = create<StockStore>((set) => ({
   executeTrade: async (stockId: number, tradePoint: number, type: 'buy' | 'sell') => {
     try {
       const endpoint = type === 'buy' ? 'buy' : 'sell';
-      const response = await axios.post(
-        `/api/v1/mid-stocks/${stockId}/${endpoint}`,
+      const response = await baseApi.post(
+        `/mid-stocks/${stockId}/${endpoint}`,
         { tradePoint },
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
         }
       );
       
       // 거래 후 상세 정보 갱신
       await Promise.all([
-        (async () => await useStockStore.getState().fetchStockDetails(stockId))(),
-        (async () => await useStockStore.getState().checkTradeAvailability(stockId))()
+        useStockStore.getState().fetchStockDetails(stockId),
+        useStockStore.getState().checkTradeAvailability(stockId)
       ]);
       
       return response.data;
