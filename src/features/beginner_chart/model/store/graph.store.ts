@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import axios from 'axios';
-import { BeginStock, BeginStockResponse } from '../types/stock';
+import { BeginStockResponse } from '../types/stock';
 import { FastGraphData } from '../types/graph';
+import { baseApi } from '@/shared/api/base';
+import { BeginStock } from '../types/stock';
 
 interface GraphStore {
   stockData: FastGraphData[];
@@ -17,9 +18,9 @@ export const useGraphStore = create<GraphStore>((set) => ({
   fetchStockData: async () => {
     try {
       set({ isLoading: true });
-      const response = await axios.get<BeginStockResponse>('/api/v1/begin-stocks', {
+      const response = await baseApi.get<BeginStockResponse>('/begin-stocks', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
       });
 
