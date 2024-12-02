@@ -77,7 +77,7 @@ const FlipCardGamePage = () => {
       const firstCard = shuffledCards[firstIndex];
       const secondCard = shuffledCards[index];
   
-      if (firstCard.card_title === secondCard.card_title) {
+      if ((firstCard.cardContent === secondCard.cardContent)) {
         // 매칭 성공
         setMatchedCards((prev) => [...prev, firstIndex, index]);
         setFlippedCards([]);
