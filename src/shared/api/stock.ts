@@ -1,5 +1,5 @@
 // shared/api/stock.ts
-import { MidStock, StockWithDetails, StockPrice, TradeResponse, TradeAvailability, TradeDetail } from '@/features/Intermediate_chat/model/types/stock';
+import { MidStock, StockWithDetails, StockPrice, TradeResponse, TradeAvailability, TradeDetail } from '@/features/Intermediate_chart/model/types/stock';
 
 const BASE_URL = '/api/v1/mid-stocks';
 

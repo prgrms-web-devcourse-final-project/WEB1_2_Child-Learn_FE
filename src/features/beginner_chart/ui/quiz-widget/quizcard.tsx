@@ -1,11 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
-import { BeginQuiz } from '@/features/beginner_chat/model/types/quiz';
+import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
 
 
 
 interface OptionButtonProps {
-  $isSelected?: boolean;  // $ prefix 추가
+  $isSelected?: boolean;  
 }
 
 interface QuizCardProps {

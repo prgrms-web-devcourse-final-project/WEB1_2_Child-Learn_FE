@@ -31,7 +31,25 @@ interface SubmissionBody {
 
 export const beginUserHandlers = [
   // GET: 초급 그래프 데이터 조회
-  http.get(`${BASE_URL}/begin-stocks`, () => {
+  http.get(`${BASE_URL}/begin-stocks`, ({ request }) => {
+    // 인증 헤더 확인
+    const authHeader = request.headers.get('Authorization');
+    
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: '로그인이 필요합니다' 
+        }),
+        {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
+
     return new Response(
       JSON.stringify(mockStockData),
       {
@@ -40,7 +58,7 @@ export const beginUserHandlers = [
           'Content-Type': 'application/json',
         },
       }
-    )
+    );
   }),
 
   // POST: 사용자 답변 제출

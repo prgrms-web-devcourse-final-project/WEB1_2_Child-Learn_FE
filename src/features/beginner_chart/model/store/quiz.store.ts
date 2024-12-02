@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { BeginQuiz } from '../types/quiz';
-import axios from 'axios';
+import { baseApi } from '@/shared/api/base';
 
 interface QuizStore {
   quizzes: BeginQuiz[];
@@ -9,6 +9,7 @@ interface QuizStore {
   isLoading: boolean;
   error: string | null;
   fetchQuizzes: () => Promise<void>;
+  submitAnswer: (answer: string) => Promise<void>;
   setCurrentQuiz: (quiz: BeginQuiz) => void;
   setAnswer: (answer: string) => void;
   setLoading: (loading: boolean) => void;
@@ -25,9 +26,9 @@ export const useQuizStore = create<QuizStore>((set) => ({
   fetchQuizzes: async () => {
     try {
       set({ isLoading: true });
-      const response = await axios.get('/api/v1/begin-stocks', {
+      const response = await baseApi.get('/begin-stocks', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
         }
       });
 
@@ -41,6 +42,24 @@ export const useQuizStore = create<QuizStore>((set) => ({
     } catch (error) {
       set({ error: '퀴즈 데이터 로딩 실패', isLoading: false });
       console.error('Quiz fetch error:', error);
+    }
+  },
+
+  submitAnswer: async (answer: string) => {
+    try {
+      await baseApi.post('/begin-stocks/submissions', 
+        { answer },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          }
+        }
+      );
+      set({ selectedAnswer: answer });
+      return Promise.resolve();
+    } catch (error) {
+      console.error('Answer submission error:', error);
+      return Promise.reject(error);
     }
   },
 
