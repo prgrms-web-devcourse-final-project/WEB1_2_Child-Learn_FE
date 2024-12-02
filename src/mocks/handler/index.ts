@@ -7,7 +7,7 @@ import { loginUserHandlers } from './loginUserHandlers';
 import { findIdHandlers } from './findIdHandlers';
 import { advancedGameHandlers } from './advancedHandlers';
 import { beginUserHandlers } from './beginnerHandlers';
-
+import { walletHandlers } from './walletHandlers'
 import { flipCardGameHandlers } from './flipCardGameHandlers';
 
 export const handlers = [
@@ -21,4 +21,5 @@ export const handlers = [
   ...flipCardGameHandlers,
   ...advancedGameHandlers,
   ...beginUserHandlers,
+  ...walletHandlers,
 ];
