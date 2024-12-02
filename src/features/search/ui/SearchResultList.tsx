@@ -1,0 +1,116 @@
+import styled from 'styled-components';
+import { SearchedUser } from '../model/types';
+
+interface SearchResultListProps {
+  users: SearchedUser[];
+  isLoading: boolean;
+  onFriendRequest: (loginId: string) => void;
+  isSending: boolean;
+}
+
+export const SearchResultList = ({
+  users,
+  isLoading,
+  onFriendRequest,
+  isSending,
+}: SearchResultListProps) => {
+  if (isLoading) {
+    return <LoadingText>검색중...</LoadingText>;
+  }
+
+  return (
+    <ResultsContainer>
+      {users?.map((user) => (
+        <UserItem key={user.id}>
+          <UserInfoWrapper>
+            <ProfileImage
+              src={user.profileImage || '/img/basic-profile.png'}
+              alt="프로필"
+            />
+            <UserInfo>
+              <UserName>{user.username}</UserName>
+              <UserLoginId>{user.loginId}</UserLoginId>
+            </UserInfo>
+          </UserInfoWrapper>
+          <AddFriendButton
+            onClick={() => onFriendRequest(user.loginId)}
+            disabled={isSending}
+          >
+            친구 추가
+          </AddFriendButton>
+        </UserItem>
+      ))}
+    </ResultsContainer>
+  );
+};
+
+const ResultsContainer = styled.div`
+  padding: 20px 0;
+`;
+
+const LoadingText = styled.p`
+  text-align: center;
+  color: #666;
+  padding: 20px 0;
+`;
+
+const UserItem = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const UserInfoWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const ProfileImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const UserName = styled.span`
+  font-weight: 500;
+  color: #333;
+  font-size: 16px;
+`;
+
+const UserLoginId = styled.span`
+  color: #666;
+  font-size: 14px;
+`;
+
+const AddFriendButton = styled.button`
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  background-color: #6cc2a1;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #5ba88d;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+`;
+
+export default SearchResultList;

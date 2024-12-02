@@ -2,6 +2,7 @@ export interface SearchedUser {
   id: number;
   loginId: string;
   username: string;
+  profileImage?: string; // 프로필 이미지 필드 추가
 }
 
 export interface UserSearchResponse {

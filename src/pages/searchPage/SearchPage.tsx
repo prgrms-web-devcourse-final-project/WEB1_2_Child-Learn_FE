@@ -1,9 +1,19 @@
 import styled from 'styled-components';
 import { useState } from 'react';
 import { SearchBar } from '@/shared/ui/SearchBar/SearchBar';
+import {
+  useSearchUsers,
+  useSendFriendRequest,
+} from '@/features/search/lib/queries';
+import { useDebounce } from '@/features/search/lib/useDebounce';
+import { SearchResultList } from '@/features/search/ui/SearchResultList';
 
 const SearchPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 300);
+
+  const { data: searchResults, isLoading } = useSearchUsers(debouncedSearch);
+  const { mutate: sendFriendRequest, isPending } = useSendFriendRequest(); // isLoading -> isPending
 
   return (
     <ContentContainer>
@@ -15,11 +25,15 @@ const SearchPage = () => {
           placeholder="Search"
         />
       </SearchBarWrapper>
-      <ResultsContainer>{/* 검색 결과 컴포넌트들 */}</ResultsContainer>
+      <SearchResultList
+        users={searchResults?.content || []}
+        isLoading={isLoading}
+        onFriendRequest={sendFriendRequest}
+        isSending={isPending} // isLoading -> isPending
+      />
     </ContentContainer>
   );
 };
-
 export default SearchPage;
 
 const ContentContainer = styled.div`
@@ -37,8 +51,4 @@ const PageTitle = styled.h1`
 
 const SearchBarWrapper = styled.div`
   margin-bottom: 24px;
-`;
-
-const ResultsContainer = styled.div`
-  padding: 20px 0;
 `;
