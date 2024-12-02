@@ -16,10 +16,10 @@ let mockPlayTimes: PlayTimes = {
 // 변환 로직
 const convertCardData = (data: any[]): Card[] => {
   return data.map(item => ({
-    card_id: item.id, // JSON 데이터의 "id"를 "card_id"로 매핑
-    card_title: item.cardTitle,
-    card_content: item.cardContent,
-    card_category: item.cardCategory,
+    id: item.id, 
+    cardTitle: item.cardTitle,
+    cardContent: item.cardContent,
+    cardCategory: item.cardCategory,
   }));
 };
 

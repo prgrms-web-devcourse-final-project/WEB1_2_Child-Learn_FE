@@ -26,7 +26,7 @@ export const useFlipCardStore = create<FlipCardState>((set, get) => ({
     // 쌍을 만들고 섞기
     const pairedCards = shuffleArray([...selectedCards, ...selectedCards].map((card, index) => ({
       ...card,
-      card_id: card.card_id * 100 + index, // 고유 ID 보장
+      id: card.id * 100 + index, // 고유 ID 보장
     })));
 
     return pairedCards;
@@ -58,7 +58,7 @@ function getRandomUniqueCards(cards: Card[], count: number): Card[] {
 
   while (selected.length < count) {
     const randomCard = cards[Math.floor(Math.random() * cards.length)];
-    const uniqueKey = `${randomCard.card_category}-${randomCard.card_title}-${randomCard.card_content}`;
+    const uniqueKey = `${randomCard.cardCategory}-${randomCard.cardTitle}-${randomCard.cardContent}`;
 
     // 중복되지 않는 카드를 선택
     if (!uniqueCards.has(uniqueKey)) {

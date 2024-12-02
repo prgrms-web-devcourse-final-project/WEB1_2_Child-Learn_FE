@@ -14,7 +14,7 @@ export function Timer({ time, phase }: TimerProps) {
 
   return (
     <StyledTimer>
-      <img src="/public/img/timer.png" alt="Timer Icon" />
+      <img src="/img/timer.png" alt="Timer Icon" />
       {phase === 'memorize' ? time : formatTime(time)}
     </StyledTimer>
   );
