@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { SearchedUser } from '../model/types';
+import { SearchedUser } from '@/features/search/model/types';
 
 interface SearchResultListProps {
   users: SearchedUser[];

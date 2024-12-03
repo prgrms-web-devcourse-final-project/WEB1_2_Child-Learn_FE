@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import searchIcon from '/public/img/search.png'; // 돋보기 아이콘 추가 필요
+import searchIcon from '/public/img/search.png';
 
 interface SearchBarProps {
   value: string;

@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { userApi } from '../api/userApi';
-import { SearchedUser, UserSearchResponse } from '../model/types';
+import { userApi } from '@/features/search/api/userApi';
+import {
+  SearchedUser,
+  UserSearchResponse,
+} from '@/features/search/model/types';
 import showToast from '@/shared/lib/toast';
 
 export const useSearchUsers = (
