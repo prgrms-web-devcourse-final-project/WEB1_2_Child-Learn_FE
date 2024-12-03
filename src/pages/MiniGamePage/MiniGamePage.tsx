@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';;
 import { useUserInfo } from '@/entities/User/lib/queries';
 import { flipCardApi } from '@/shared/api/minigames';
-import { useWordQuizStore } from '../../features/minigame/wordquizgame/model/wordQuizStore';
-import { useLotteryStore } from '../../app/providers/state/zustand/useLotteryStore';
+import { walletApi } from '@/shared/api/wallets';
+import { MiniGameTransaction, PointTransaction } from '@/features/minigame/points/types/pointTypes';
+import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
+import { useLotteryStore } from '@/app/providers/state/zustand/useLotteryStore';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -19,6 +21,7 @@ const MiniGamePage = () => {
   } = useLotteryStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [todayPoints, setTodayPoints] = useState<number>(0);
   const navigate = useNavigate();
 
   const [isPlayable, setIsPlayable] = useState({
@@ -28,6 +31,31 @@ const MiniGamePage = () => {
   });
   
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
+
+   // 오늘의 미니게임으로 얻은 포인트 조회
+   useEffect(() => {
+    const fetchTodayPoints = async () => {
+      if (!userInfo || !userInfo.id) return;
+
+      try {
+        const allPoints: PointTransaction[] = await walletApi.getPointTypeHistory(
+          userInfo.id,
+          'GAME'
+        );
+
+        const today = new Date().toISOString().split('T')[0];
+        const todayPoints = allPoints
+          .filter((point) => point.createdAt.startsWith(today))
+          .reduce((total, point) => total + point.points, 0);
+
+        setTodayPoints(todayPoints);
+      } catch (error) {
+        console.error('Failed to fetch today\'s points:', error);
+      }
+    };
+
+    fetchTodayPoints();
+  }, [userInfo]);
 
   useEffect(() => {
     if (isLoading) {
@@ -170,12 +198,12 @@ const MiniGamePage = () => {
         <div>
     <p>오늘 미니게임으로</p>
     <p>획득한 포인트</p>
-    <h2>300 Points</h2>
+    <h2>{todayPoints} Points</h2>
   </div>
           <StyledLink to="/exchange">환전하러 가기</StyledLink>
         </TopSection>
 
-        <GameGrid>
+        <GameGrid> 
           {/* 낱말 퀴즈 */}
           <GameCard onClick={() => openModal('낱말 퀴즈')}>
             <CardTitle>낱말 퀴즈</CardTitle>

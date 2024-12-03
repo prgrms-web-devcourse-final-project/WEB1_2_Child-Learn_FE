@@ -1,5 +1,5 @@
 import { baseApi } from "./base";
-import { MiniGameTransaction, Wallet, ExchangeRequest } from "@/features/minigame/points/types/pointTypes";
+import { MiniGameTransaction, Wallet, ExchangeRequest, PointType, PointTransaction } from "@/features/minigame/points/types/pointTypes";
 
 // Wallet API
 export const walletApi = {
@@ -25,7 +25,8 @@ export const walletApi = {
       const token = localStorage.getItem("token");
       const response = await baseApi.post(`/wallet/exchange`, request, {
         headers: {
-          Authorization: `Bearer ${token}`, // Authorization 헤더 설정
+          Authorization: `Bearer ${token}`, // 인증 헤더
+        "Content-Type": "application/json", // JSON 요청
         },
       });
       return response.data;
@@ -39,7 +40,7 @@ export const walletApi = {
   processMiniGamePoints: async (transaction: MiniGameTransaction): Promise<Wallet> => {
     try {
       const token = localStorage.getItem("token");
-      const response = await baseApi.post(`/wallet/minigame`, transaction, {
+      const response = await baseApi.post(`/wallet/game`, transaction, {
         headers: {
           Authorization: `Bearer ${token}`, // Authorization 헤더 설정
         },
@@ -49,6 +50,21 @@ export const walletApi = {
       console.error("Failed to process mini-game points:", error);
       throw error;
     }
+  },
+
+  getPointTypeHistory: async (memberId: number, pointType: PointType): Promise<PointTransaction[]> => {
+    const response = await baseApi.post(
+      `/wallet/history/point-type`,
+      { memberId, pointType },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    return response.data; // LIST of point history records
   },
 };
 
