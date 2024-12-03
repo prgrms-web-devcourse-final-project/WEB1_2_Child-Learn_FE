@@ -1,7 +1,7 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userApi } from '../api/userApi';
+import { SearchedUser, UserSearchResponse } from '../model/types';
 import showToast from '@/shared/lib/toast';
-import { UserSearchResponse } from '@/features/search/model/types';
 
 export const useSearchUsers = (username: string) => {
   return useQuery<UserSearchResponse, Error>({
@@ -13,12 +13,38 @@ export const useSearchUsers = (username: string) => {
 };
 
 export const useSendFriendRequest = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: userApi.sendFriendRequest,
-    onSuccess: () => {
-      showToast.success('친구 요청을 보냈습니다.');
+    mutationFn: (receiverId: string) => {
+      return userApi.sendFriendRequest(receiverId);
     },
-    onError: () => {
+    onSuccess: (_, variables) => {
+      showToast.success('친구 요청을 보냈습니다.');
+
+      // 모든 userSearch 쿼리 찾기
+      const queries = queryClient.getQueriesData<UserSearchResponse>({
+        queryKey: ['userSearch'],
+      });
+
+      // 각 쿼리 데이터 업데이트
+      queries.forEach(([queryKey, queryData]) => {
+        queryClient.setQueryData<UserSearchResponse>(queryKey, () => {
+          if (!queryData) return queryData;
+
+          return {
+            ...queryData,
+            content: queryData.content.map((user: SearchedUser) =>
+              user.loginId === variables
+                ? { ...user, requestStatus: 'PENDING' }
+                : user
+            ),
+          };
+        });
+      });
+    },
+    onError: (error) => {
+      console.error('Friend request error:', error);
       showToast.error('친구 요청에 실패했습니다.');
     },
   });

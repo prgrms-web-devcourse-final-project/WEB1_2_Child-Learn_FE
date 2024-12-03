@@ -22,6 +22,27 @@ export const SearchResultList = ({
     return <NoResultText>검색 결과가 없습니다.</NoResultText>;
   }
 
+  const renderFriendButton = (user: SearchedUser) => {
+    if (user.isFriend) {
+      return <FriendLabel>친구</FriendLabel>;
+    }
+
+    switch (user.requestStatus) {
+      case 'PENDING':
+        return <PendingButton disabled>친구 요청중</PendingButton>;
+      case 'REJECTED':
+      case undefined:
+        return (
+          <AddFriendButton
+            onClick={() => onFriendRequest(user.loginId)}
+            disabled={isSending}
+          >
+            친구 추가
+          </AddFriendButton>
+        );
+    }
+  };
+
   return (
     <ResultsContainer>
       {users.map((user) => (
@@ -36,18 +57,12 @@ export const SearchResultList = ({
               <UserLoginId>{user.loginId}</UserLoginId>
             </UserInfo>
           </UserInfoWrapper>
-          <AddFriendButton
-            onClick={() => onFriendRequest(user.loginId)}
-            disabled={isSending}
-          >
-            친구 추가
-          </AddFriendButton>
+          {renderFriendButton(user)}
         </UserItem>
       ))}
     </ResultsContainer>
   );
 };
-
 const ResultsContainer = styled.div`
   padding: 5px 0;
 `;
@@ -121,6 +136,25 @@ const NoResultText = styled.p`
   padding: 200px 0;
   font-size: 15px;
   font-weight: 500;
+`;
+
+const FriendLabel = styled.span`
+  padding: 8px 16px;
+  border-radius: 20px;
+  background-color: #e8e8e8;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+`;
+
+const PendingButton = styled(AddFriendButton)`
+  background-color: #ffb74d;
+
+  &:disabled {
+    background-color: #ffb74d;
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 `;
 
 export default SearchResultList;

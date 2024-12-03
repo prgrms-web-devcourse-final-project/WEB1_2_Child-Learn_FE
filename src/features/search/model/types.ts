@@ -1,8 +1,12 @@
+export type RequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+
 export interface SearchedUser {
   id: number;
   loginId: string;
   username: string;
-  profileImage?: string; // 프로필 이미지 필드 추가
+  profileImage?: string;
+  requestStatus?: RequestStatus; // 친구 요청 상태
+  isFriend?: boolean; // 친구 여부
 }
 
 export interface UserSearchResponse {
