@@ -6,7 +6,51 @@ import { useGraphStore } from '@/features/beginner_chart/model/store/graph.store
 import { useQuizStore } from '@/features/beginner_chart/model/store/quiz.store';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 
-const PageContainer = styled.div`
+
+
+const QuizGraphPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [showArticle, setShowArticle] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string>();
+  const [showModal, setShowModal] = useState(false);
+  const [earnedPoints, setEarnedPoints] = useState<number>(0);
+  
+  const { stockData, fetchStockData, isLoading } = useGraphStore();
+  const { currentQuiz, submitAnswer } = useQuizStore();
+
+  type SubmitAnswerResponse = {
+    points: number;
+  };
+
+  useEffect(() => {
+    fetchStockData();
+  }, []);
+
+  const handleChartClick = () => {
+    setShowArticle(true);
+  };
+
+  const handleAnswer = async (answer: string) => {
+    try {
+      setSelectedAnswer(answer);
+      const result = await submitAnswer(answer) as unknown as SubmitAnswerResponse;
+      setEarnedPoints(result.points);
+      setShowModal(true);
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    setShowArticle(false);
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  const PageContainer = styled.div`
   padding: 20px;
   background-color: #ffffff;
   min-height: 100vh;
@@ -171,48 +215,6 @@ const ConfirmButton = styled.button`
   cursor: pointer;
   font-size: 16px;
 `;
-
-const QuizGraphPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [showArticle, setShowArticle] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<string>();
-  const [showModal, setShowModal] = useState(false);
-  const [earnedPoints, setEarnedPoints] = useState<number>(0);
-  
-  const { stockData, fetchStockData, isLoading } = useGraphStore();
-  const { currentQuiz, submitAnswer } = useQuizStore();
-
-  type SubmitAnswerResponse = {
-    points: number;
-  };
-
-  useEffect(() => {
-    fetchStockData();
-  }, []);
-
-  const handleChartClick = () => {
-    setShowArticle(true);
-  };
-
-  const handleAnswer = async (answer: string) => {
-    try {
-      setSelectedAnswer(answer);
-      const result = await submitAnswer(answer) as unknown as SubmitAnswerResponse;
-      setEarnedPoints(result.points);
-      setShowModal(true);
-    } catch (error) {
-      console.error('Error submitting answer:', error);
-    }
-  };
-
-  const handleModalClose = () => {
-    setShowModal(false);
-    setShowArticle(false);
-  };
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <PageContainer>
