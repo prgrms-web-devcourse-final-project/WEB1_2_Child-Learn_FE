@@ -34,6 +34,7 @@ const HIDDEN_GNB_PATHS = [
   '/avatar',
   '/auth/find-id',
   '/advanced',
+  '/begin-stocks',
 ];
 
 // BackButton만 표시할 페이지 경로들
