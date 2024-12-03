@@ -18,9 +18,13 @@ export const SearchResultList = ({
     return <LoadingText>검색중...</LoadingText>;
   }
 
+  if (users.length === 0) {
+    return <NoResultText>검색 결과가 없습니다.</NoResultText>;
+  }
+
   return (
     <ResultsContainer>
-      {users?.map((user) => (
+      {users.map((user) => (
         <UserItem key={user.id}>
           <UserInfoWrapper>
             <ProfileImage
@@ -45,7 +49,7 @@ export const SearchResultList = ({
 };
 
 const ResultsContainer = styled.div`
-  padding: 20px 0;
+  padding: 5px 0;
 `;
 
 const LoadingText = styled.p`
@@ -55,8 +59,7 @@ const LoadingText = styled.p`
 `;
 
 const UserItem = styled.div`
-  padding: 16px;
-  border-bottom: 1px solid #eee;
+  padding: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -69,8 +72,8 @@ const UserInfoWrapper = styled.div`
 `;
 
 const ProfileImage = styled.img`
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   object-fit: cover;
 `;
@@ -78,18 +81,17 @@ const ProfileImage = styled.img`
 const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
 `;
 
 const UserName = styled.span`
-  font-weight: 500;
-  color: #333;
+  font-weight: 700;
+  color: #181818;
   font-size: 16px;
 `;
 
 const UserLoginId = styled.span`
   color: #666;
-  font-size: 14px;
+  font-size: 12px;
 `;
 
 const AddFriendButton = styled.button`
@@ -111,6 +113,14 @@ const AddFriendButton = styled.button`
     background-color: #ccc;
     cursor: not-allowed;
   }
+`;
+
+const NoResultText = styled.p`
+  text-align: center;
+  color: #666;
+  padding: 200px 0;
+  font-size: 15px;
+  font-weight: 500;
 `;
 
 export default SearchResultList;
