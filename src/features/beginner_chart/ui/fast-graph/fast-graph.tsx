@@ -13,7 +13,7 @@ interface FastGraphProps {
 }
 
 const GraphContainer = styled.div`
-  width: 355px;
+  width: 335px;
   background: white;
   padding: 5px;
   margin-bottom: 20px;
@@ -113,7 +113,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data, onChartClick }) => {
     plotOptions: {
       bar: {
         columnWidth: '30%',
-        borderRadius: 8,
+        borderRadius: 6,
         borderRadiusApplication: 'end',
       },
     },
@@ -138,9 +138,9 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data, onChartClick }) => {
       },
     },
     yaxis: {
-      min: 100,
-      max: 1000,
-      tickAmount: 6,
+      min: 0,
+      max: 800,
+      tickAmount: 8,
       labels: {
         style: {
           colors: '#666',
