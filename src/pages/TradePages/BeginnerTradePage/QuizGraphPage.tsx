@@ -197,7 +197,8 @@ const QuizGraphPage: React.FC = () => {
   const handleAnswer = async (answer: string) => {
     try {
       setSelectedAnswer(answer);
-      await submitAnswer(answer);
+      const result = await submitAnswer(answer) as unknown as SubmitAnswerResponse;
+      setEarnedPoints(result.points);
       setShowModal(true);
     } catch (error) {
       console.error('Error submitting answer:', error);
