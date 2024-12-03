@@ -1,6 +1,6 @@
 // shared/api/stock.ts
 import { baseApi } from '@/shared/api/base';
-import { MidStock, StockPrice, TradeResponse, TradeAvailability } from '@/features/Intermediate_chart/model/types/stock';
+import { MidStock, StockPrice, TradeAvailability } from '@/features/Intermediate_chart/model/types/stock';
 
 export const stockApi = {
   getStockList: async () => {
@@ -45,3 +45,9 @@ export const stockApi = {
     return response.data;
   }
 };
+
+export interface TradeResponse {
+  success: boolean;
+  message: string;
+  // 필요한 다른 필드들 추가
+}

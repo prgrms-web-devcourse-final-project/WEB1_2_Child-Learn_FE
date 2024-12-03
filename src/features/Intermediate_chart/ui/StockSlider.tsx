@@ -123,8 +123,8 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
         : stockApi.sellStock(currentStock.midStockId, tradePoint));
 
       setTradeResult({
-        success: !result.warning,
-        message: result.warning ? `${tradeType === 'buy' ? '매수' : '매도'} 실패` : `${tradeType === 'buy' ? '매수' : '매도'} 완료`,
+        success: result.success,
+        message: result.success ? `${tradeType === 'buy' ? '매수' : '매도'} 완료` : `${tradeType === 'buy' ? '매수' : '매도'} 실패`,
         tradeType: tradeType,
         stockName: currentStock.midName,
         price: parseInt(price.replace(/,/g, '')),
@@ -132,7 +132,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
         totalPrice: tradePoint
       });
 
-      if (!result.warning) {
+      if (result.success) {
         setShowTradeModal(false);
         setShowResultModal(true);
         setHasTradedToday(true);
