@@ -7,7 +7,7 @@ const GraphExplanationPage = () => {
   const navigate = useNavigate();
   
   const handleStartClick = () => {
-    navigate('/quiz');
+    navigate('/begin-stocks');
   };
 
   const Container = styled.div`
