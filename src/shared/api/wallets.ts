@@ -1,5 +1,5 @@
 import { baseApi } from "./base";
-import { MiniGameTransaction, Wallet, ExchangeRequest } from "@/features/minigame/points/types/pointTypes";
+import { MiniGameTransaction, Wallet, ExchangeRequest, PointType } from "@/features/minigame/points/types/pointTypes";
 
 // Wallet API
 export const walletApi = {
@@ -50,6 +50,21 @@ export const walletApi = {
       console.error("Failed to process mini-game points:", error);
       throw error;
     }
+  },
+
+  getPointTypeHistory: async (memberId: number, pointType: PointType) => {
+    const response = await baseApi.post(
+      `/wallet/history/point-type`,
+      { memberId, pointType },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    return response.data; // LIST of point history records
   },
 };
 

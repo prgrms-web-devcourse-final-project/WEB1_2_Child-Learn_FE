@@ -70,10 +70,9 @@ const FlipCardGamePage = () => {
           console.error('User ID is not available');
           return;
         }
-        
+
         try {
           const transaction: MiniGameTransaction = {
-            memberId: userInfo.id,
             gameType: 'CARD_FLIP',
             points: 100, // 성공 시 부여할 포인트
             pointType: 'GAME',

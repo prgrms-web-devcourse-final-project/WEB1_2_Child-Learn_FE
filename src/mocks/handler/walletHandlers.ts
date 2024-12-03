@@ -1,11 +1,31 @@
 import { http, HttpResponse } from 'msw';
-import { MiniGameTransaction, Wallet, TransactionType } from '@/features/minigame/points/types/pointTypes';
+import { MiniGameTransaction, Wallet, PointType, PointTransaction } from '@/features/minigame/points/types/pointTypes';
 // Mock 데이터
 let mockWallet: Wallet = {
-  memberId: 1,
   currentPoints: 5000,
   currentCoins: 50,
 };
+
+export const mockPointDetails: PointTransaction[] = [
+  {
+    id: 1,
+    transactionType: 'EARNED',
+    points: 100,
+    pointType: 'GAME',
+    subType: 'MINIGAME',
+    description: '카드 뒤집기 성공',
+    createdAt: '2024-12-04T10:00:00',
+  },
+  {
+    id: 2,
+    transactionType: 'EARNED',
+    points: 50,
+    pointType: 'GAME',
+    subType: 'MINIGAME',
+    description: 'OX 퀴즈 성공',
+    createdAt: '2024-12-04T12:00:00',
+  },
+];
 
 let mockTransactions: MiniGameTransaction[] = [];
 
@@ -16,7 +36,7 @@ export const walletHandlers = [
 
     console.log(`MSW: Request to fetch wallet for member ID: ${memberId}`);
 
-    if (mockWallet.memberId !== memberId) {
+    if (!memberId) {
       return new HttpResponse(
         JSON.stringify({ error: 'Wallet not found' }),
         { status: 404 }
@@ -24,7 +44,6 @@ export const walletHandlers = [
     }
 
     return HttpResponse.json({
-      memberId: mockWallet.memberId,
       currentPoints: mockWallet.currentPoints,
       currentCoins: mockWallet.currentCoins,
     });
@@ -57,7 +76,6 @@ export const walletHandlers = [
     console.log('MSW: Exchange successful. Updated wallet:', mockWallet);
 
     return HttpResponse.json({
-      memberId: mockWallet.memberId,
       currentPoints: mockWallet.currentPoints,
       currentCoins: mockWallet.currentCoins,
     });
@@ -81,7 +99,6 @@ export const walletHandlers = [
     }
   
     mockTransactions.push({
-      memberId: mockWallet.memberId,
       gameType: body.gameType,
       points: body.points,
       pointType: 'GAME',
@@ -91,9 +108,33 @@ export const walletHandlers = [
     console.log('MSW: Mini-game processed. Updated wallet:', mockWallet);
   
     return HttpResponse.json({
-      memberId: mockWallet.memberId,
       currentPoints: mockWallet.currentPoints,
       currentCoins: mockWallet.currentCoins,
     });
   }),  
+
+   // 포인트 기록 전체 조회 핸들러
+    // 포인트 유형별 기록 조회 핸들러
+  http.post('/api/v1/wallet/history/point-type', async ({ request }) => {
+    const body = await request.json() as { memberId: number; pointType: PointType };
+
+    console.log('MSW: Point type history request received:', body);
+
+    // 요청 데이터 유효성 검사
+    if (!body.memberId || !body.pointType) {
+      return new HttpResponse(
+        JSON.stringify({ error: 'Member ID and pointType are required.' }),
+        { status: 400 }
+      );
+    }
+
+    // 필터링: 해당 멤버 ID와 pointType에 맞는 데이터 반환
+    const filteredData = mockPointDetails.filter(
+      (item) => item.pointType === body.pointType
+    );  
+
+    console.log('MSW: Filtered point type history:', filteredData);
+
+    return HttpResponse.json(filteredData);
+  }),
 ];
