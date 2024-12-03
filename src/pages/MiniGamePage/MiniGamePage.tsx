@@ -32,23 +32,8 @@ const MiniGamePage = () => {
   
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
-  useEffect(() => {
-    if (isLoading) {
-      return; // 로딩 중에는 아무 작업도 하지 않음
-    }
-  
-    if (isError) {
-      console.error('Failed to fetch user info.');
-      return;
-    }
-  
-    if (!userInfo) {
-      console.warn('User info is not available.');
-      return;
-    }
-
-     // 오늘의 미니게임으로 얻은 포인트 조회
-  useEffect(() => {
+   // 오늘의 미니게임으로 얻은 포인트 조회
+   useEffect(() => {
     const fetchTodayPoints = async () => {
       if (!userInfo || !userInfo.id) return;
 
@@ -71,6 +56,21 @@ const MiniGamePage = () => {
 
     fetchTodayPoints();
   }, [userInfo]);
+
+  useEffect(() => {
+    if (isLoading) {
+      return; // 로딩 중에는 아무 작업도 하지 않음
+    }
+  
+    if (isError) {
+      console.error('Failed to fetch user info.');
+      return;
+    }
+  
+    if (!userInfo) {
+      console.warn('User info is not available.');
+      return;
+    }
 
     // 로또 초기 데이터 설정
     setLotteries([
