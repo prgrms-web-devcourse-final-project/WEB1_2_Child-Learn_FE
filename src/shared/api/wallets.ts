@@ -1,5 +1,5 @@
 import { baseApi } from "./base";
-import { MiniGameTransaction, Wallet, ExchangeRequest, PointType } from "@/features/minigame/points/types/pointTypes";
+import { MiniGameTransaction, Wallet, ExchangeRequest, PointType, PointTransaction } from "@/features/minigame/points/types/pointTypes";
 
 // Wallet API
 export const walletApi = {
@@ -52,7 +52,7 @@ export const walletApi = {
     }
   },
 
-  getPointTypeHistory: async (memberId: number, pointType: PointType) => {
+  getPointTypeHistory: async (memberId: number, pointType: PointType): Promise<PointTransaction[]> => {
     const response = await baseApi.post(
       `/wallet/history/point-type`,
       { memberId, pointType },

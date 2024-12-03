@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Timer }  from '../../../features/minigame/flipcardgame/ui/Timer'
-import { Modal } from '../../../features/minigame/flipcardgame/ui/Modal'
-import { Cards } from '../../../features/minigame/flipcardgame/ui/Cards';
+import { Timer }  from '@/features/minigame/flipcardgame/ui/Timer'
+import { Modal } from '@/features/minigame/flipcardgame/ui/Modal'
+import { Cards } from '@/features/minigame/flipcardgame/ui/Cards';
 import { useUserInfo } from '@/entities/User/lib/queries';
-import { useFlipCardLogic } from '../../../features/minigame/flipcardgame/lib/useFlipCardLogic';
+import { useFlipCardLogic } from '@/features/minigame/flipcardgame/lib/useFlipCardLogic';
 import { walletApi } from '@/shared/api/wallets';
 import { MiniGameTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -73,6 +73,7 @@ const FlipCardGamePage = () => {
 
         try {
           const transaction: MiniGameTransaction = {
+            memberId: userInfo.id,
             gameType: 'CARD_FLIP',
             points: 100, // 성공 시 부여할 포인트
             pointType: 'GAME',
