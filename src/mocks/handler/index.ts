@@ -9,6 +9,7 @@ import { advancedGameHandlers } from './advancedHandlers';
 import { beginUserHandlers } from './beginnerHandlers';
 import { walletHandlers } from './walletHandlers'
 import { flipCardGameHandlers } from './flipCardGameHandlers';
+import { searchHandlers } from './searchHandlers';
 
 export const handlers = [
   ...signUpHandlers,
@@ -21,5 +22,6 @@ export const handlers = [
   ...flipCardGameHandlers,
   ...advancedGameHandlers,
   ...beginUserHandlers,
+  ...searchHandlers,
   ...walletHandlers,
 ];
