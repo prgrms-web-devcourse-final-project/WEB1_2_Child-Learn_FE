@@ -10,10 +10,20 @@ import { SearchResultList } from '@/features/search/ui/SearchResultList';
 
 const SearchPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(0); // 페이지 상태 추가
   const debouncedSearch = useDebounce(searchTerm, 500);
 
-  const { data: searchResults, isLoading } = useSearchUsers(debouncedSearch);
-  const { mutate: sendFriendRequest, isPending } = useSendFriendRequest(); // isLoading -> isPending
+  const { data: searchResults, isLoading } = useSearchUsers(
+    debouncedSearch,
+    currentPage,
+    8
+  ); // currentPage 전달
+  const { mutate: sendFriendRequest, isPending } = useSendFriendRequest();
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(0); // 새로운 검색어 입력시 페이지 초기화
+  };
 
   return (
     <ContentContainer>
@@ -21,7 +31,7 @@ const SearchPage = () => {
       <SearchBarWrapper>
         <SearchBar
           value={searchTerm}
-          onChange={setSearchTerm}
+          onChange={handleSearch} // 핸들러 함수로 변경
           placeholder="Search"
         />
       </SearchBarWrapper>
@@ -29,11 +39,15 @@ const SearchPage = () => {
         users={searchResults?.content || []}
         isLoading={isLoading}
         onFriendRequest={sendFriendRequest}
-        isSending={isPending} // isLoading -> isPending
+        isSending={isPending}
+        currentPage={currentPage} // 페이지 props 추가
+        totalPages={searchResults?.totalPages || 0} // 전체 페이지 수 전달
+        onPageChange={setCurrentPage} // 페이지 변경 핸들러 전달
       />
     </ContentContainer>
   );
 };
+
 export default SearchPage;
 
 const ContentContainer = styled.div`

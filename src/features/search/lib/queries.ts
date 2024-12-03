@@ -3,10 +3,14 @@ import { userApi } from '../api/userApi';
 import { SearchedUser, UserSearchResponse } from '../model/types';
 import showToast from '@/shared/lib/toast';
 
-export const useSearchUsers = (username: string) => {
+export const useSearchUsers = (
+  username: string,
+  page: number = 0,
+  pageSize: number = 8
+) => {
   return useQuery<UserSearchResponse, Error>({
-    queryKey: ['userSearch', username],
-    queryFn: () => userApi.searchUsers(username),
+    queryKey: ['userSearch', username, page, pageSize],
+    queryFn: () => userApi.searchUsers(username, page, pageSize),
     enabled: !!username,
     staleTime: 1000 * 60,
   });

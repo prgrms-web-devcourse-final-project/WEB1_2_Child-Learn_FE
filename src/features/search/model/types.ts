@@ -5,8 +5,8 @@ export interface SearchedUser {
   loginId: string;
   username: string;
   profileImage?: string;
-  requestStatus?: RequestStatus; // 친구 요청 상태
-  isFriend?: boolean; // 친구 여부
+  requestStatus?: RequestStatus;
+  isFriend?: boolean;
 }
 
 export interface UserSearchResponse {
@@ -19,9 +19,21 @@ export interface UserSearchResponse {
       sorted: boolean;
       unsorted: boolean;
     };
+    offset: number; // 추가
+    paged: boolean; // 추가
+    unpaged: boolean; // 추가
   };
   totalElements: number;
   totalPages: number;
+  size: number; // 추가
+  number: number; // 추가
+  sort: {
+    // 추가
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  numberOfElements: number; // 추가
   last: boolean;
   first: boolean;
   empty: boolean;

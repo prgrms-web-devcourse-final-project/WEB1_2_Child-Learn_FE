@@ -6,6 +6,9 @@ interface SearchResultListProps {
   isLoading: boolean;
   onFriendRequest: (loginId: string) => void;
   isSending: boolean;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }
 
 export const SearchResultList = ({
@@ -13,6 +16,9 @@ export const SearchResultList = ({
   isLoading,
   onFriendRequest,
   isSending,
+  currentPage,
+  totalPages,
+  onPageChange,
 }: SearchResultListProps) => {
   if (isLoading) {
     return <LoadingText>검색중...</LoadingText>;
@@ -43,26 +49,138 @@ export const SearchResultList = ({
     }
   };
 
+  const renderPageButtons = () => {
+    const pages = [];
+
+    if (totalPages <= 5) {
+      // 5페이지 이하면 모든 페이지 표시
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(
+          <PageButton
+            key={i}
+            onClick={() => onPageChange(i)}
+            $active={currentPage === i}
+          >
+            {i + 1}
+          </PageButton>
+        );
+      }
+    } else {
+      // 첫 페이지
+      pages.push(
+        <PageButton
+          key={0}
+          onClick={() => onPageChange(0)}
+          $active={currentPage === 0}
+        >
+          1
+        </PageButton>
+      );
+
+      // 현재 페이지가 처음이나 끝에 가까우면 생략 부호 한 번만 표시
+      if (currentPage <= 2) {
+        // 현재 페이지가 앞쪽에 있는 경우
+        for (let i = 1; i <= 2; i++) {
+          pages.push(
+            <PageButton
+              key={i}
+              onClick={() => onPageChange(i)}
+              $active={currentPage === i}
+            >
+              {i + 1}
+            </PageButton>
+          );
+        }
+        pages.push(<EllipsisSpan key="ellipsis">...</EllipsisSpan>);
+      } else if (currentPage >= totalPages - 3) {
+        // 현재 페이지가 뒤쪽에 있는 경우
+        pages.push(<EllipsisSpan key="ellipsis">...</EllipsisSpan>);
+        for (let i = totalPages - 3; i <= totalPages - 2; i++) {
+          pages.push(
+            <PageButton
+              key={i}
+              onClick={() => onPageChange(i)}
+              $active={currentPage === i}
+            >
+              {i + 1}
+            </PageButton>
+          );
+        }
+      } else {
+        // 현재 페이지가 중간에 있는 경우
+        pages.push(<EllipsisSpan key="ellipsis1">...</EllipsisSpan>);
+        pages.push(
+          <PageButton
+            key={currentPage}
+            onClick={() => onPageChange(currentPage)}
+            $active={true}
+          >
+            {currentPage + 1}
+          </PageButton>
+        );
+        pages.push(<EllipsisSpan key="ellipsis2">...</EllipsisSpan>);
+      }
+
+      // 마지막 페이지
+      pages.push(
+        <PageButton
+          key={totalPages - 1}
+          onClick={() => onPageChange(totalPages - 1)}
+          $active={currentPage === totalPages - 1}
+        >
+          {totalPages}
+        </PageButton>
+      );
+    }
+
+    return pages;
+  };
+
   return (
-    <ResultsContainer>
-      {users.map((user) => (
-        <UserItem key={user.id}>
-          <UserInfoWrapper>
-            <ProfileImage
-              src={user.profileImage || '/img/basic-profile.png'}
-              alt="프로필"
-            />
-            <UserInfo>
-              <UserName>{user.username}</UserName>
-              <UserLoginId>{user.loginId}</UserLoginId>
-            </UserInfo>
-          </UserInfoWrapper>
-          {renderFriendButton(user)}
-        </UserItem>
-      ))}
-    </ResultsContainer>
+    <Wrapper>
+      <ListContainer>
+        <ResultsContainer>
+          {users.map((user) => (
+            <UserItem key={user.id}>
+              <UserInfoWrapper>
+                <ProfileImage
+                  src={user.profileImage || '/img/basic-profile.png'}
+                  alt="프로필"
+                />
+                <UserInfo>
+                  <UserName>{user.username}</UserName>
+                  <UserLoginId>{user.loginId}</UserLoginId>
+                </UserInfo>
+              </UserInfoWrapper>
+              {renderFriendButton(user)}
+            </UserItem>
+          ))}
+        </ResultsContainer>
+      </ListContainer>
+
+      {totalPages > 1 && (
+        <Pagination>
+          <NavigationButton
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 0}
+          >
+            이전
+          </NavigationButton>
+
+          {renderPageButtons()}
+
+          <NavigationButton
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages - 1}
+          >
+            다음
+          </NavigationButton>
+        </Pagination>
+      )}
+    </Wrapper>
   );
 };
+
 const ResultsContainer = styled.div`
   padding: 5px 0;
 `;
@@ -74,10 +192,12 @@ const LoadingText = styled.p`
 `;
 
 const UserItem = styled.div`
+  min-height: 65px;
   padding: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-sizing: border-box;
 `;
 
 const UserInfoWrapper = styled.div`
@@ -155,6 +275,56 @@ const PendingButton = styled(AddFriendButton)`
     opacity: 0.7;
     cursor: not-allowed;
   }
+`;
+
+const Wrapper = styled.div`
+  position: relative;
+`;
+
+const ListContainer = styled.div`
+  height: 590px;
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 0;
+  margin-top: 8px;
+`;
+
+const EllipsisSpan = styled.span`
+  padding: 0 8px;
+  color: #666;
+`;
+
+const PageButton = styled.button<{ $active?: boolean }>`
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: ${(props) => (props.$active ? '#6cc2a1' : 'white')};
+  color: ${(props) => (props.$active ? 'white' : '#333')};
+  cursor: pointer;
+  font-size: 12px;
+  min-width: 28px;
+  height: 28px;
+  line-height: 1;
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: ${(props) => (props.$active ? '#5ba88d' : '#f5f5f5')};
+  }
+`;
+
+const NavigationButton = styled(PageButton)`
+  font-size: 11px;
+  padding: 4px 8px;
+  min-width: 40px;
 `;
 
 export default SearchResultList;
