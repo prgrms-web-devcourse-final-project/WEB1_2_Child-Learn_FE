@@ -170,7 +170,7 @@ const MiniGamePage = () => {
         <div>
     <p>오늘 미니게임으로</p>
     <p>획득한 포인트</p>
-    <h2>300 Points</h2>
+    <h2>0 Points</h2>
   </div>
           <StyledLink to="/exchange">환전하러 가기</StyledLink>
         </TopSection>

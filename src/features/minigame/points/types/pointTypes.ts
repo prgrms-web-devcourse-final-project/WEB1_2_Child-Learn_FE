@@ -10,11 +10,10 @@ export type GameType = 'CARD_FLIP' | 'OX_QUIZ' | 'WORD_QUIZ';
 // MiniGame Transaction Interface
 export interface MiniGameTransaction {
   memberId: number;
-  transactionType: TransactionType;
-  gameType: GameType;
   points: number;
+  pointType: 'GAME'; // 명세서에 따른 값 고정
+  gameType: GameType;
   isWin: boolean;
-  createdAt: string; // ISO 8601 format
 }
 
 // ExchangeRequest Interface
