@@ -1,31 +1,5 @@
 import { http, HttpResponse } from 'msw';
-
-// TransactionType Enum
-export type TransactionType = 'EARNED' | 'USED' | 'MAINTAINED' | 'EXCHANGED';
-
-// PointType Enum
-export type PointType = 'GAME' | 'STOCK' | 'EXCHANGE' | 'ATTENDANCE';
-
-// GameType Enum
-export type GameType = 'CARD_FLIP' | 'OX_QUIZ' | 'WORD_QUIZ';
-
-// MiniGame Transaction Interface
-export interface MiniGameTransaction {
-  memberId: number;
-  transactionType: TransactionType;
-  gameType: GameType;
-  points: number;
-  isWin: boolean;
-  createdAt: string; // ISO 8601 format
-}
-
-// Wallet Interface
-export interface Wallet {
-  memberId: number;
-  currentPoints: number;
-  currentCoins: number;
-}
-
+import { MiniGameTransaction, Wallet, TransactionType } from '@/features/minigame/points/types/pointTypes';
 // Mock 데이터
 let mockWallet: Wallet = {
   memberId: 1,

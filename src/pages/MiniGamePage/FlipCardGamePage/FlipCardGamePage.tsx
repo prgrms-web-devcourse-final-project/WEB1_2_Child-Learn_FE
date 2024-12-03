@@ -5,7 +5,7 @@ import { Modal } from '../../../features/minigame/flipcardgame/ui/Modal'
 import { Cards } from '../../../features/minigame/flipcardgame/ui/Cards';
 import { useFlipCardLogic } from '../../../features/minigame/flipcardgame/lib/useFlipCardLogic';
 import { walletApi } from '@/shared/api/wallets';
-import { MiniGameTransaction } from '@/mocks/handler/walletHandlers';
+import { MiniGameTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const FlipCardGamePage = () => {
