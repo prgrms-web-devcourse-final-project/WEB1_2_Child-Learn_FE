@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { TokenService } from '@/shared/lib/token';
 import { User } from '@/entities/User/model/types';
+import { logoutApi } from '@/features/mypage/api/logoutApi';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -12,7 +13,7 @@ interface AuthState {
     tokens: { accessToken: string; refreshToken: string },
     user: User
   ) => void;
-  logout: () => void;
+  logout: () => Promise<void>; // Promise<void>로 변경
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -31,13 +32,21 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      logout: () => {
-        TokenService.clearTokens();
-        set({
-          isAuthenticated: false,
-          accessToken: null,
-          user: null,
-        });
+      logout: async () => {
+        try {
+          // 서버에 로그아웃 요청
+          await logoutApi.logout();
+        } catch (error) {
+          console.error('Logout failed:', error);
+        } finally {
+          // 로컬 상태 초기화
+          TokenService.clearTokens();
+          set({
+            isAuthenticated: false,
+            accessToken: null,
+            user: null,
+          });
+        }
       },
     }),
     {
@@ -46,7 +55,7 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         accessToken: state.accessToken,
-      }), // accessToken과 민감한 정보는 저장하지 않음
+      }),
     }
   )
 );

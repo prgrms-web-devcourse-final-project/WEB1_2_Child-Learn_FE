@@ -4,6 +4,7 @@ import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 
 const BeginnerTradePage = () => {
   const navigate = useNavigate();
+  
 
   return (
     <Container>
