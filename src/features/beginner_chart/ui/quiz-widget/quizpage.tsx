@@ -1,130 +1,215 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import QuizCard from '@/features/beginner_chart/ui/quiz-widget/quizcard';
-import { FastGraph } from '@/features/beginner_chart/ui/fast-graph/fast-graph';
-import { useGraphStore } from '@/features/beginner_chart/model/store/graph.store';
-import { useQuizStore } from '@/features/beginner_chart/model/store/quiz.store';
+import ReactApexChart from 'react-apexcharts';
 
+interface GraphData {
+  value: number;
+  date: string;
+}
 
-const PageContainer = styled.div`
-  padding: 16px;
-  background-color: #ffffff;
-  min-height: 100vh;
+interface FastGraphProps {
+  data: GraphData[];
+  onChartClick: () => void;
+}
+
+const GraphContainer = styled.div`
+  width: 355px;
+  background: white;
+  padding: 5px;
+  margin-bottom: 20px;
 `;
 
-const DateDisplay = styled.div`
-  text-align: right;
-  padding: 8px;
+const GraphHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+`;
+
+const GraphTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+`;
+
+const StaminaIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
   color: #666;
   font-size: 14px;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: #f4a261;
+    border-radius: 50%;
+  }
 `;
 
-const Modal = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  width: 80%;
-  max-width: 320px;
-  z-index: 1000;
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-`;
-
-const ConfirmButton = styled.button`
-  background: #82C8BB;
-  color: white;
-  border: none;
-  padding: 10px 40px;
+const Select = styled.select`
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
   border-radius: 20px;
-  margin-top: 20px;
-  cursor: pointer;
-  font-size: 16px;
-`;
-
-const ModalText = styled.p`
-  margin: 0;
-  font-size: 16px;
-  color: #333;
-`;
-
-const LoadingSpinner = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-size: 16px;
+  background: white;
   color: #666;
+  outline: none;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #ccc;
+  }
 `;
 
-const QuizPage: React.FC = () => {
-  const { stockData, isLoading: isStockLoading, error: stockError, fetchStockData } = useGraphStore();
-  const { currentQuiz, error: quizError } = useQuizStore();
-  const [selectedAnswer, setSelectedAnswer] = useState<string>();
-  const [showModal, setShowModal] = useState(false);
+export const FastGraph: React.FC<FastGraphProps> = ({ data, onChartClick }) => {
+  const [selectedDay, setSelectedDay] = React.useState('Last 7 days');
+  const days = ['월', '화', '수', '목', '금', '토', '일'];
+  const today = new Date().getDay();
+  const adjustedToday = today === 0 ? 6 : today - 1;
+  const selectedDayIndex = days.indexOf(selectedDay);
 
-  useEffect(() => {
-    fetchStockData();
-  }, [fetchStockData]);
-
-  const handleAnswer = async (answer: string) => {
-    try {
-      setSelectedAnswer(answer);
-      await useQuizStore.getState().submitAnswer(answer);
-      setShowModal(true);
-    } catch (error) {
-      console.error('답변 제출 오류:', error);
-    }
+  const handleDaySelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedDay(event.target.value);
   };
 
-  if (isStockLoading) {
-    return <LoadingSpinner>로딩중...</LoadingSpinner>;
-  }
+  const series = [
+    {
+      name: '요일',
+      type: 'bar',
+      data: days.map((day) => {
+        const dayData = data.find((item) => item.date === day);
+        return dayData?.value || 0;
+      }),
+    },
+    {
+      name: '이동평균',
+      type: 'line',
+      data: days.map((day) => {
+        const dayData = data.find((item) => item.date === day);
+        return dayData?.value || 0;
+      }),
+    },
+  ];
 
-  if (stockError || quizError) {
-    return <div>에러가 발생했습니다: {stockError || quizError}</div>;
-  }
+  const options: ApexCharts.ApexOptions = {
+    chart: {
+      type: 'bar',
+      height: 350,
+      toolbar: {
+        show: false,
+      },
+      events: {
+        click: function() {
+          onChartClick();
+        },
+        dataPointSelection: function() {
+          onChartClick();
+        }
+      }
+    },
+    plotOptions: {
+      bar: {
+        columnWidth: '30%',
+        borderRadius: 8,
+        borderRadiusApplication: 'end',
+      },
+    },
+    stroke: {
+      width: [0, 2],
+      curve: 'straight',
+      colors: ['transparent', '#f4a261'],
+    },
+    markers: {
+      size: [0, 0],
+      colors: ['transparent', '#f4a261'],
+      strokeColors: ['transparent', '#f4a261'],
+      strokeWidth: 2,
+    },
+    xaxis: {
+      categories: days,
+      labels: {
+        style: {
+          colors: '#666',
+          fontSize: '14px',
+        },
+      },
+    },
+    yaxis: {
+      min: 0,
+      max: 600,
+      tickAmount: 6,
+      labels: {
+        style: {
+          colors: '#666',
+          fontSize: '12px',
+        },
+      },
+    },
+    grid: {
+      borderColor: '#f1f1f1',
+      xaxis: {
+        lines: {
+          show: true,
+        },
+      },
+      yaxis: {
+        lines: {
+          show: true,
+        },
+      },
+    },
+    colors: [
+      (context: { dataPointIndex: number }) => {
+        if (
+          selectedDay !== 'Last 7 days' &&
+          context.dataPointIndex === selectedDayIndex
+        ) {
+          return '#2e68a2';
+        }
+        if (
+          context.dataPointIndex === adjustedToday &&
+          selectedDay === 'Last 7 days'
+        ) {
+          return '#8ec3f8';
+        }
+        return '#FFE5D3';
+      },
+      '#f4a261',
+    ],
+    dataLabels: {
+      enabled: false,
+    },
+    tooltip: {
+      enabled: true,
+    },
+  };
 
   return (
-    <PageContainer>
-      <FastGraph data={stockData} />
-      <DateDisplay>{new Date().toLocaleDateString()}</DateDisplay>
-      {currentQuiz && (
-        <QuizCard 
-          quiz={currentQuiz}
-          onAnswer={handleAnswer}
-          selectedAnswer={selectedAnswer}
-        />
-      )}
-
-      {showModal && (
-        <>
-          <ModalOverlay onClick={() => setShowModal(false)} />
-          <Modal>
-            <ModalText>
-              {selectedAnswer === currentQuiz?.answer ? '정답입니다!' : '틀렸습니다.'}
-            </ModalText>
-            <ConfirmButton onClick={() => setShowModal(false)}>
-              확인
-            </ConfirmButton>
-          </Modal>
-        </>
-      )}
-    </PageContainer>
+    <GraphContainer>
+      <GraphHeader>
+        <GraphTitle>
+          <StaminaIndicator>
+            {selectedDay === 'Last 7 days' ? '요일' : `${selectedDay}요일`}
+          </StaminaIndicator>
+        </GraphTitle>
+        <Select value={selectedDay} onChange={handleDaySelect}>
+          <option value="Last 7 days">요일선택</option>
+          {days.map((day) => (
+            <option key={day} value={day}>
+              {day}요일
+            </option>
+          ))}
+        </Select>
+      </GraphHeader>
+      <ReactApexChart
+        options={options}
+        series={series}
+        type="bar"
+        height={350}
+        width={350}
+      />
+    </GraphContainer>
   );
 };
-
-export default React.memo(QuizPage);

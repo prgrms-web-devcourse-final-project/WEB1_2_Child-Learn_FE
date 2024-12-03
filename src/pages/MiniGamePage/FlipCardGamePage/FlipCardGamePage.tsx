@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Timer }  from '../../../features/minigame/flipcardgame/ui/Timer'
-import { Modal } from '../../../features/minigame/flipcardgame/ui/Modal'
-import { Cards } from '../../../features/minigame/flipcardgame/ui/Cards';
-import { useFlipCardLogic } from '../../../features/minigame/flipcardgame/lib/useFlipCardLogic';
+import { Timer }  from '@/features/minigame/flipcardgame/ui/Timer'
+import { Modal } from '@/features/minigame/flipcardgame/ui/Modal'
+import { Cards } from '@/features/minigame/flipcardgame/ui/Cards';
+import { useUserInfo } from '@/entities/User/lib/queries';
+import { useFlipCardLogic } from '@/features/minigame/flipcardgame/lib/useFlipCardLogic';
+import { walletApi } from '@/shared/api/wallets';
+import { MiniGameTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const FlipCardGamePage = () => {
   const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
   console.log('Difficulty from URL:', difficulty);
+  const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
   const {
     flippedCards,
     setFlippedCards,
@@ -23,6 +27,7 @@ const FlipCardGamePage = () => {
   const [gamePhase, setGamePhase] = useState<'memorize' | 'play' | 'end'>('memorize');
   const [showSuccessModal, setShowSuccessModal] = useState(false); // 성공 모달 상태
   const [showFailureModal, setShowFailureModal] = useState(false); // 실패 모달 상태
+  const [earnedPoints, setEarnedPoints] = useState<number | null>(null);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -58,8 +63,34 @@ const FlipCardGamePage = () => {
     if (matchedCards.length === shuffledCards.length && gamePhase === 'play') {
       setShowSuccessModal(true);
       setGamePhase('end');
+
+      // API 호출로 포인트 업데이트
+      const updatePoints = async () => {
+        if (!userInfo || !userInfo.id) {
+          console.error('User ID is not available');
+          return;
+        }
+
+        try {
+          const transaction: MiniGameTransaction = {
+            memberId: userInfo.id,
+            gameType: 'CARD_FLIP',
+            points: 100, // 성공 시 부여할 포인트
+            pointType: 'GAME',
+            isWin: true,
+          };
+          const updatedWallet = await walletApi.processMiniGamePoints(transaction);
+          console.log('Updated wallet:', updatedWallet);
+          setEarnedPoints(transaction.points);
+        } catch (error) {
+          console.error('Failed to update points after game success:', error);
+        }
+      };
+
+      updatePoints();
     }
-  }, [matchedCards, shuffledCards, gamePhase]);
+  }, [matchedCards, shuffledCards, gamePhase, userInfo]);
+
 
   const handleCardClick = (index: number) => {
     if (
@@ -88,7 +119,7 @@ const FlipCardGamePage = () => {
     }
   };
 
-  if (loading) {
+  if (loading || isUserInfoLoading) {
     return <Loading>Loading...</Loading>;
   }
 
@@ -119,6 +150,7 @@ const FlipCardGamePage = () => {
           emoji="😊"
           buttonText="미니게임 페이지로 돌아가기"
           isSuccess={true} 
+          points={earnedPoints || 0} 
           onButtonClick={() => navigate('/minigame')}
         />
       )}

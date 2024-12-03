@@ -1,6 +1,12 @@
-import { create } from 'zustand';
-import { BeginQuiz } from '../types/quiz';
 import { baseApi } from '@/shared/api/base';
+import { create } from 'zustand';
+import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
+
+interface Quiz {
+  id: number;
+  question: string;
+  // ... 기타 필요한 속성들
+}
 
 interface QuizStore {
   quizzes: BeginQuiz[];
@@ -14,24 +20,30 @@ interface QuizStore {
   setAnswer: (answer: string) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
-}
-
-export const useQuizStore = create<QuizStore>((set) => ({
+ }
+ 
+ export const useQuizStore = create<QuizStore>((set) => ({
   quizzes: [],
   currentQuiz: null,
   selectedAnswer: null,
   isLoading: false,
   error: null,
-
+ 
   fetchQuizzes: async () => {
     try {
       set({ isLoading: true });
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+ 
       const response = await baseApi.get('/begin-stocks', {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+          Authorization: `Bearer ${token}`
         }
       });
-
+ 
       if (response.data.quiz && response.data.quiz.length > 0) {
         set({
           quizzes: response.data.quiz,
@@ -44,27 +56,32 @@ export const useQuizStore = create<QuizStore>((set) => ({
       console.error('Quiz fetch error:', error);
     }
   },
-
+ 
   submitAnswer: async (answer: string) => {
     try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+ 
       await baseApi.post('/begin-stocks/submissions', 
         { answer },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+            Authorization: `Bearer ${token}`
           }
         }
       );
       set({ selectedAnswer: answer });
-      return Promise.resolve();
     } catch (error) {
       console.error('Answer submission error:', error);
       return Promise.reject(error);
     }
   },
-
+ 
   setCurrentQuiz: (quiz) => set({ currentQuiz: quiz }),
   setAnswer: (answer) => set({ selectedAnswer: answer }),
   setLoading: (loading) => set({ isLoading: loading }),
   setError: (error) => set({ error })
-}));
+ }));
