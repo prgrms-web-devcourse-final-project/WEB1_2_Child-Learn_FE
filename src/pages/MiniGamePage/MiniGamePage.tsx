@@ -48,7 +48,7 @@ const MiniGamePage = () => {
           .filter((point) => point.createdAt.startsWith(today))
           .reduce((total, point) => total + point.points, 0);
 
-        setTodayPoints(todayPoints);
+           setTodayPoints(todayPoints);
       } catch (error) {
         console.error('Failed to fetch today\'s points:', error);
       }
