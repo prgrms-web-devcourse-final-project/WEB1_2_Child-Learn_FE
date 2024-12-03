@@ -1,7 +1,6 @@
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/entities/User/model/store/authStore';
 import ArticlePage from '../../features/article/pages/articlepage';
-import QuizPage from '../../features/beginner_chart/ui/quiz-widget/quizpage';
 import { LoginPage } from '@/pages/auth/login/LoginPage';
 import { SignUpPage } from '@/pages/auth/signup/SignUpPage';
 import GraphExplanationPage from '../../features/beginner_chart/ui/fast-navgation/fast-navigation';
@@ -20,6 +19,8 @@ import showToast from '@/shared/lib/toast';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import MyPage from '@/pages/myPage/MyPage';
+import QuizGraphPage from '@/pages/TradePages/BeginnerTradePage/QuizGraphPage';
+
 
 // 인증이 필요하지 않은 페이지 경로들
 const PUBLIC_PATHS = ['/auth/login', '/auth/signup', '/', '/auth/find-id'];
@@ -60,7 +61,6 @@ export default function Router() {
         element={<AvatarDetailPage />}
       />
       <Route path="/exchange" element={<ExchangePage />} />
-      <Route path="/quiz" element={<QuizPage />} />
       <Route path="*" element={<div>Page not found</div>} />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/auth/login" element={<LoginPage />} />
@@ -72,6 +72,7 @@ export default function Router() {
       <Route path="/article" element={<ArticlePage />} />
       <Route path="/intermediate" element={<IntermediatePage />} />
       <Route path="/fast-navigation" element={<GraphExplanationPage />} />
+      <Route path="/begin-stocks" element={<QuizGraphPage />} />
     </Routes>
   );
 }

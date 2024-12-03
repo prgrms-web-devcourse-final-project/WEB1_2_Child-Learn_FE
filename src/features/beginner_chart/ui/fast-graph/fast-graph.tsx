@@ -1,8 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
 import ReactApexChart from 'react-apexcharts';
-import { useNavigate } from 'react-router-dom';
-
 
 interface GraphData {
   value: number;
@@ -11,15 +9,66 @@ interface GraphData {
 
 interface FastGraphProps {
   data: GraphData[];
+  onChartClick: () => void;
 }
 
-export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
-  const navigate = useNavigate();
+const GraphContainer = styled.div`
+  width: 355px;
+  background: white;
+  padding: 5px;
+  margin-bottom: 20px;
+`;
+
+const GraphHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
+const GraphTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+`;
+
+const StaminaIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+  font-size: 14px;
+
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background-color: #f4a261;
+    border-radius: 50%;
+  }
+`;
+
+const Select = styled.select`
+  padding: 6px 12px;
+  margin-right: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: white;
+  color: #666;
+  outline: none;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #ccc;
+  }
+`;
+
+export const FastGraph: React.FC<FastGraphProps> = ({ data, onChartClick }) => {
+  const [selectedDay, setSelectedDay] = React.useState('Last 7 days');
   const days = ['월', '화', '수', '목', '금', '토', '일'];
   const today = new Date().getDay();
   const adjustedToday = today === 0 ? 6 : today - 1;
-
-  const [selectedDay, setSelectedDay] = React.useState('Last 7 days');
   const selectedDayIndex = days.indexOf(selectedDay);
 
   const handleDaySelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -48,10 +97,18 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
   const options: ApexCharts.ApexOptions = {
     chart: {
       type: 'bar',
-      height: 350,
+      height: 330,
       toolbar: {
         show: false,
       },
+      events: {
+        click: function() {
+          onChartClick();
+        },
+        dataPointSelection: function() {
+          onChartClick();
+        }
+      }
     },
     plotOptions: {
       bar: {
@@ -81,8 +138,8 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
       },
     },
     yaxis: {
-      min: 0,
-      max: 600,
+      min: 100,
+      max: 1000,
       tickAmount: 6,
       labels: {
         style: {
@@ -130,99 +187,8 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data }) => {
     },
   };
 
-  const GraphContainer = styled.div`
-  width: 355px;
-  background: white;
-  padding: 5;
-  margin-bottom: 20px;
-`;
-
-const GraphHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-`;
-
-const GraphTitle = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 20px;
-`;
-
-const StaminaIndicator = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #666;
-  font-size: 14px;
-
-  &::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background-color: #f4a261;
-    border-radius: 50%;
-  }
-`;
-
-const Select = styled.select`
-  padding: 6px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  background: white;
-  color: #666;
-  outline: none;
-  font-size: 14px;
-  cursor: pointer;
-
-  &:hover {
-    border-color: #ccc;
-  }
-`;
-
-// 새로운 Header 컨테이너 추가
-const HeaderWrapper = styled.div`
- display: flex;
- justify-content: space-between;
- align-items: center;
- margin-bottom: 10px;
-`;
-
-const OutButton = styled.button`
- background: none;
- border: none;
- cursor: pointer;
- padding: 0;
- z-index: 10;
- 
- img {
-   width: 22px;
-   height: 22px;
- }
-`;
-
-const StyledPointBadge = styled.div<{ points: number }>`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  background: white;
-  color: #666;
-  font-size: 14px;
-`;
-
   return (
     <GraphContainer>
-      <HeaderWrapper>
-        
-   <OutButton onClick={() => navigate('/main')}>
-     <img src="/img/out.png" alt="나가기" />
-   </OutButton>
-   <StyledPointBadge points={2000} />
- </HeaderWrapper>
       <GraphHeader>
         <GraphTitle>
           <StaminaIndicator>
@@ -242,12 +208,9 @@ const StyledPointBadge = styled.div<{ points: number }>`
         options={options}
         series={series}
         type="bar"
-        height={350}
-        width={350}
+        height={330}
+        width={300}
       />
     </GraphContainer>
   );
-
-
-  
 };
