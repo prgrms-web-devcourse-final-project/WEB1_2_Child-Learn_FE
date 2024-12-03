@@ -37,25 +37,10 @@ export const useStockStore = create<StockStore>((set) => ({
 
   fetchStocks: async () => {
     try {
-      set({ isLoading: true, error: null });
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        
-        const response = await fetch('/api/token', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = await response.json();
-        if (response.ok) {
-          localStorage.setItem('accessToken', data.accessToken);
-        } else {
-          throw new Error(data.message || 'Failed to fetch access token');
-        }
+        throw new Error('인증 토큰이 없습니다');
       }
-
-      
       const response = await baseApi.get<MidStock[]>('/mid-stocks/list', {
         headers: {
           Authorization: `Bearer ${token}`,

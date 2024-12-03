@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { baseApi } from '@/shared/api/base';
-import { BeginStockResponse } from '../types/stock';
-import { FastGraphData } from '../types/graph';
+import { BeginStockResponse } from '@/features/beginner_chart/model/types/stock';
+import { FastGraphData } from '@/features/beginner_chart/model/types/graph';
 
 interface GraphStore {
   stockData: FastGraphData[];
