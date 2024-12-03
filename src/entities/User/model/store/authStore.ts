@@ -45,6 +45,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        accessToken: state.accessToken,
       }), // accessToken과 민감한 정보는 저장하지 않음
     }
   )
