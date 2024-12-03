@@ -175,7 +175,7 @@ const MiniGamePage = () => {
           <StyledLink to="/exchange">환전하러 가기</StyledLink>
         </TopSection>
 
-        <GameGrid>
+        <GameGrid> 
           {/* 낱말 퀴즈 */}
           <GameCard onClick={() => openModal('낱말 퀴즈')}>
             <CardTitle>낱말 퀴즈</CardTitle>
