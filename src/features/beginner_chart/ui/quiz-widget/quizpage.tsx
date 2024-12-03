@@ -4,7 +4,7 @@ import QuizCard from '@/features/beginner_chart/ui/quiz-widget/quizcard';
 import { FastGraph } from '@/features/beginner_chart/ui/fast-graph/fast-graph';
 import { useGraphStore } from '@/features/beginner_chart/model/store/graph.store';
 import { useQuizStore } from '@/features/beginner_chart/model/store/quiz.store';
-
+import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
 
 const PageContainer = styled.div`
   padding: 16px;
@@ -104,7 +104,7 @@ const QuizPage: React.FC = () => {
       <DateDisplay>{new Date().toLocaleDateString()}</DateDisplay>
       {currentQuiz && (
         <QuizCard 
-          quiz={currentQuiz}
+          quiz={currentQuiz as unknown as BeginQuiz}
           onAnswer={handleAnswer}
           selectedAnswer={selectedAnswer}
         />
@@ -115,7 +115,9 @@ const QuizPage: React.FC = () => {
           <ModalOverlay onClick={() => setShowModal(false)} />
           <Modal>
             <ModalText>
-              {selectedAnswer === currentQuiz?.answer ? '정답입니다!' : '틀렸습니다.'}
+              {selectedAnswer === (currentQuiz as unknown as BeginQuiz)?.answer 
+                ? '정답입니다!' 
+                : '틀렸습니다. 정답은 ' + (currentQuiz as unknown as BeginQuiz)?.answer + '입니다.'}
             </ModalText>
             <ConfirmButton onClick={() => setShowModal(false)}>
               확인
