@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import { baseApi } from '@/shared/api/base';
-import { MidStock, StockPrice, TradeDetail, StockWithDetails, TradeAvailability } from './types/stock';
+import { MidStock, StockPrice, TradeDetail, StockWithDetails, TradeAvailability } from '@/features/Intermediate_chart/model/types/stock';
 
 interface StockStore {
  stocks: MidStock[];

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { stockApi } from '@/shared/api/stock';
 import ArticleComponent from '@/features/article/article';
 import { TrendPrediction, Relevance } from '@/features/article/type/article';
-import { MidStock, StockPrice, TradeAvailability } from '../model/types/stock';
+import { MidStock, StockPrice, TradeAvailability } from '@/features/Intermediate_chart/model/types/stock';
 import StockChart from '@/shared/ui/Intermediate/StockChat';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { useNavigate } from 'react-router-dom';
