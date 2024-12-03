@@ -16,7 +16,7 @@ const QuizGraphPage: React.FC = () => {
   const [earnedPoints, setEarnedPoints] = useState<number>(0);
   
   const { stockData, fetchStockData, isLoading } = useGraphStore();
-  const { currentQuiz, submitAnswer } = useQuizStore();
+  const { currentQuiz, submitAnswer, fetchQuizzes } = useQuizStore();
 
   type SubmitAnswerResponse = {
     points: number;
@@ -24,6 +24,7 @@ const QuizGraphPage: React.FC = () => {
 
   useEffect(() => {
     fetchStockData();
+    fetchQuizzes();
   }, []);
 
   const handleChartClick = () => {
