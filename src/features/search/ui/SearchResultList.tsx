@@ -30,12 +30,12 @@ export const SearchResultList = ({
 
   const renderFriendButton = (user: SearchedUser) => {
     if (user.isFriend) {
-      return <FriendLabel>친구</FriendLabel>;
+      return null; // 친구인 경우 버튼 표시하지 않음
     }
 
     switch (user.requestStatus) {
       case 'PENDING':
-        return <PendingButton disabled>친구 요청중</PendingButton>;
+        return <PendingButton disabled>요청중...</PendingButton>;
       case 'REJECTED':
       case undefined:
         return (
@@ -148,7 +148,12 @@ export const SearchResultList = ({
                   alt="프로필"
                 />
                 <UserInfo>
-                  <UserName>{user.username}</UserName>
+                  <NameWrapper>
+                    <UserName>{user.username}</UserName>
+                    {user.isFriend && (
+                      <FriendIcon src="/img/friend-mark.png" alt="친구" />
+                    )}
+                  </NameWrapper>
                   <UserLoginId>{user.loginId}</UserLoginId>
                 </UserInfo>
               </UserInfoWrapper>
@@ -231,11 +236,11 @@ const UserLoginId = styled.span`
 
 const AddFriendButton = styled.button`
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: 30px;
   border: none;
   background-color: #6cc2a1;
   color: white;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -258,20 +263,11 @@ const NoResultText = styled.p`
   font-weight: 500;
 `;
 
-const FriendLabel = styled.span`
-  padding: 8px 16px;
-  border-radius: 20px;
-  background-color: #e8e8e8;
-  color: #666;
-  font-size: 14px;
-  font-weight: 500;
-`;
-
 const PendingButton = styled(AddFriendButton)`
-  background-color: #ffb74d;
+  background-color: #666;
 
   &:disabled {
-    background-color: #ffb74d;
+    background-color: #666;
     opacity: 0.7;
     cursor: not-allowed;
   }
@@ -325,6 +321,17 @@ const NavigationButton = styled(PageButton)`
   font-size: 11px;
   padding: 4px 8px;
   min-width: 40px;
+`;
+
+const NameWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const FriendIcon = styled.img`
+  width: 20px;
+  height: 20px;
 `;
 
 export default SearchResultList;
