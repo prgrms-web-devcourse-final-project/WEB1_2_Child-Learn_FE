@@ -4,6 +4,8 @@ import { Timer }  from '../../../features/minigame/flipcardgame/ui/Timer'
 import { Modal } from '../../../features/minigame/flipcardgame/ui/Modal'
 import { Cards } from '../../../features/minigame/flipcardgame/ui/Cards';
 import { useFlipCardLogic } from '../../../features/minigame/flipcardgame/lib/useFlipCardLogic';
+import { walletApi } from '@/shared/api/wallets';
+import { MiniGameTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const FlipCardGamePage = () => {
@@ -23,6 +25,7 @@ const FlipCardGamePage = () => {
   const [gamePhase, setGamePhase] = useState<'memorize' | 'play' | 'end'>('memorize');
   const [showSuccessModal, setShowSuccessModal] = useState(false); // 성공 모달 상태
   const [showFailureModal, setShowFailureModal] = useState(false); // 실패 모달 상태
+  const [earnedPoints, setEarnedPoints] = useState<number | null>(null);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -58,8 +61,30 @@ const FlipCardGamePage = () => {
     if (matchedCards.length === shuffledCards.length && gamePhase === 'play') {
       setShowSuccessModal(true);
       setGamePhase('end');
+
+      // API 호출로 포인트 업데이트
+      const updatePoints = async () => {
+        try {
+          const transaction: MiniGameTransaction = {
+            memberId: 1, // 실제 사용자 ID로 교체 필요
+            transactionType: 'EARNED',
+            gameType: 'CARD_FLIP',
+            points: 100, // 성공 시 부여할 포인트
+            isWin: true,
+            createdAt: new Date().toISOString(),
+          };
+          const updatedWallet = await walletApi.processMiniGamePoints(transaction);
+          console.log('Updated wallet:', updatedWallet);
+          setEarnedPoints(transaction.points);
+        } catch (error) {
+          console.error('Failed to update points after game success:', error);
+        }
+      };
+
+      updatePoints();
     }
   }, [matchedCards, shuffledCards, gamePhase]);
+
 
   const handleCardClick = (index: number) => {
     if (
@@ -119,6 +144,7 @@ const FlipCardGamePage = () => {
           emoji="😊"
           buttonText="미니게임 페이지로 돌아가기"
           isSuccess={true} 
+          points={earnedPoints || 0} 
           onButtonClick={() => navigate('/minigame')}
         />
       )}
