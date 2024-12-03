@@ -1,16 +1,6 @@
 export interface BeginQuiz {
-    content: string;
-    oContent: string;
-    xContent: string;
-    answer: 'O' | 'X';
-}
-
-export interface StockData {
-    tradeDay: string;
-    price: number;
-}
-
-export interface BeginStockResponse {
-    stockData: StockData[];
-    quiz: BeginQuiz[];
+  content: string;    // 퀴즈 내용
+  oContent: string;   // O 답변 내용
+  xContent: string;   // X 답변 내용
+  answer: string;     // 정답 ("O" 또는 "X")
 }

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { stockApi } from '@/shared/api/stock';
 import ArticleComponent from '@/features/article/article';
 import { TrendPrediction, Relevance } from '@/features/article/type/article';
-import { MidStock, StockPrice, TradeAvailability } from '../model/types/stock';
+import { MidStock, StockPrice, TradeAvailability } from '@/features/Intermediate_chart/model/types/stock';
 import StockChart from '@/shared/ui/Intermediate/StockChat';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { useNavigate } from 'react-router-dom';
@@ -123,8 +123,8 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
         : stockApi.sellStock(currentStock.midStockId, tradePoint));
 
       setTradeResult({
-        success: !result.warning,
-        message: result.warning ? `${tradeType === 'buy' ? '매수' : '매도'} 실패` : `${tradeType === 'buy' ? '매수' : '매도'} 완료`,
+        success: result.success,
+        message: result.success ? `${tradeType === 'buy' ? '매수' : '매도'} 완료` : `${tradeType === 'buy' ? '매수' : '매도'} 실패`,
         tradeType: tradeType,
         stockName: currentStock.midName,
         price: parseInt(price.replace(/,/g, '')),
@@ -132,7 +132,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
         totalPrice: tradePoint
       });
 
-      if (!result.warning) {
+      if (result.success) {
         setShowTradeModal(false);
         setShowResultModal(true);
         setHasTradedToday(true);
