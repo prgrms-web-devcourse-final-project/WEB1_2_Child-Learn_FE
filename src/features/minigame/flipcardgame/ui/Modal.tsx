@@ -6,10 +6,11 @@ interface ModalProps {
   emoji: string;
   buttonText: string;
   isSuccess?: boolean;
+  points?: number;
   onButtonClick: () => void;
 }
 
-export function Modal({ title, message, emoji, buttonText, isSuccess, onButtonClick }: ModalProps) {
+export function Modal({ title, message, emoji, buttonText, isSuccess, points,onButtonClick }: ModalProps) {
   return (
     <StyledModal>
       <p>
@@ -17,7 +18,7 @@ export function Modal({ title, message, emoji, buttonText, isSuccess, onButtonCl
       </p>
       {isSuccess && (
         <PointMessage>
-          <span className="points">100 Point</span>
+          <span className="points">{points || 0} Points</span> 
           <span className="description">{message}</span>
         </PointMessage>
       )}

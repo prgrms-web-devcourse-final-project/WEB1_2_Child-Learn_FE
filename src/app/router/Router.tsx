@@ -22,6 +22,7 @@ import MyPage from '@/pages/myPage/MyPage';
 import QuizGraphPage from '@/pages/TradePages/BeginnerTradePage/QuizGraphPage';
 
 
+import SearchPage from '@/pages/searchPage/SearchPage';
 // 인증이 필요하지 않은 페이지 경로들
 const PUBLIC_PATHS = ['/auth/login', '/auth/signup', '/', '/auth/find-id'];
 
@@ -66,6 +67,7 @@ export default function Router() {
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignUpPage />} />
       <Route path="/auth/find-id" element={<AccountRecoveryPage />} />
+      <Route path="/search" element={<SearchPage />} />
 
       {/* 차트 페이지 */}
       <Route path="/advanced" element={<AdvancedTradePage />} />
