@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
+import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
 
 const WordQuizResultPage = () => {
   const navigate = useNavigate();

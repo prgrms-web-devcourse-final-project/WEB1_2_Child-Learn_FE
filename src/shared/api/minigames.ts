@@ -82,7 +82,7 @@ export const wordQuizApi = {
     isNormalPlay: boolean;
     isHardPlay: boolean;
   }> => {
-    const response = await baseApi.get('/api/v1/word-quiz/availability', {
+    const response = await baseApi.get('/word-quiz/availability', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
       },
@@ -92,7 +92,7 @@ export const wordQuizApi = {
 
   // 난이도별 퀴즈 조회
   getQuizByDifficulty: async (difficulty: 'EASY' | 'NORMAL' | 'HARD'): Promise<WordQuizQuestion> => {
-    const response = await baseApi.get(`/api/v1/word-quiz/difficulty?difficulty=${difficulty}`, {
+    const response = await baseApi.get(`/word-quiz/difficulty?difficulty=${difficulty}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
       },
@@ -106,7 +106,7 @@ export const wordQuizApi = {
     isCorrect: boolean
   ): Promise<WordQuizQuestion> => {
     const response = await baseApi.post(
-      `/api/v1/word-quiz/${quizId}/submissions`,
+      `/word-quiz/${quizId}/submissions`,
       { isCorrect },
       {
         headers: {
