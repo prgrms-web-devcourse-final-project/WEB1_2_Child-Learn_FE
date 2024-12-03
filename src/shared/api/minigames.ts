@@ -11,6 +11,15 @@ interface LastPlayTimeResponse {
   lastPlayTime: string;
 }
 
+export interface WordQuizQuestion {
+  word: string;
+  explanation: string;
+  hint: string;
+  currentPhase: number;
+  remainLife: number;
+  difficulty: 'EASY' | 'NORMAL' | 'HARD';
+}
+
 export const flipCardApi = {
   // 카드 목록 조회
   getCardList: async (difficulty: string): Promise<Card[]> => {
@@ -63,5 +72,49 @@ export const flipCardApi = {
       console.error("Failed to update last play time:", error);
       throw error;
     }
+  },
+};
+
+export const wordQuizApi = {
+  // 난이도별 플레이 가능 여부 확인
+  checkAvailability: async (): Promise<{
+    isEasyPlay: boolean;
+    isNormalPlay: boolean;
+    isHardPlay: boolean;
+  }> => {
+    const response = await baseApi.get('/api/v1/word-quiz/availability', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
+      },
+    });
+    return response.data;
+  },
+
+  // 난이도별 퀴즈 조회
+  getQuizByDifficulty: async (difficulty: 'EASY' | 'NORMAL' | 'HARD'): Promise<WordQuizQuestion> => {
+    const response = await baseApi.get(`/api/v1/word-quiz/difficulty?difficulty=${difficulty}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
+      },
+    });
+    return response.data;
+  },
+
+  // 답안 제출
+  submitAnswer: async (
+    quizId: string,
+    isCorrect: boolean
+  ): Promise<WordQuizQuestion> => {
+    const response = await baseApi.post(
+      `/api/v1/word-quiz/${quizId}/submissions`,
+      { isCorrect },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data;
   },
 };
