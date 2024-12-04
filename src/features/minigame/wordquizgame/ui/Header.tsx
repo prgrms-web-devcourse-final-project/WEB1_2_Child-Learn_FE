@@ -58,8 +58,8 @@ const Heart = styled.div<HeartProps>`
   height: 15px;
   background: ${(props) =>
     props.filled
-      ? "url('/public/img/heart-icon.png')"
-      : "url('/public/img/heart-icon-empty.png')"};
+      ? "url('/img/heart-icon.png')"
+      : "url('/img/heart-icon-empty.png')"};
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
