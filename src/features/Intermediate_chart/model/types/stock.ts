@@ -33,3 +33,4 @@ export interface TradeResponse {
   success: boolean;
   message?: string;
 }
+
