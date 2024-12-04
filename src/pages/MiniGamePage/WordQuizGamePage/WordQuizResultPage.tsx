@@ -1,13 +1,45 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useUserInfo } from '@/entities/User/lib/queries';
 import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
+import { walletApi } from '@/shared/api/wallets';
+import { MiniGameTransaction } from '@/features/minigame/points/types/pointTypes';
 
 const WordQuizResultPage = () => {
   const navigate = useNavigate();
+  const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
   const { correctAnswers, resetQuiz } = useWordQuizStore();
 
   // 별의 개수 계산 (최대 별 3개)
   const stars = Math.min(correctAnswers, 3); // 최대 별 3개
+  const earnedPoints = correctAnswers * 100;
+
+  useEffect(() => {
+    const processPoints = async () => {
+      if (!userInfo || !userInfo.id) {
+        console.error('User ID is not available');
+        return;
+      }
+      try {
+        const transaction: MiniGameTransaction = {
+          memberId: userInfo.id,
+          points: earnedPoints,
+          pointType: 'GAME', // 고정 값
+          gameType: 'WORD_QUIZ', // 고정 값
+          isWin: earnedPoints > 0, // 포인트가 0보다 크면 승리
+        };
+
+        // API 호출
+        const updatedWallet = await walletApi.processMiniGamePoints(transaction);
+        console.log("Wallet updated successfully:", updatedWallet);
+      } catch (error) {
+        console.error("Failed to process mini-game points:", error);
+      }
+    };
+
+    processPoints();
+  }, [earnedPoints]);
 
   const handleNavigate = () => {
     resetQuiz(); // 퀴즈 상태 초기화
@@ -22,7 +54,7 @@ const WordQuizResultPage = () => {
           <Star key={index} src="/img/star.png" alt="Star" />
         ))}
       </StarsContainer>
-      <PointsText>총 {correctAnswers * 100} Points를 획득하셨습니다!</PointsText>
+      <PointsText>총 {earnedPoints} Points를 획득하셨습니다!</PointsText>
       <NavigateButton onClick={handleNavigate}>
         미니게임 페이지로 이동하기
       </NavigateButton>
