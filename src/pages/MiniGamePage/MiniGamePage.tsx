@@ -31,11 +31,15 @@ const MiniGamePage = () => {
     adv: false,
   });
 
-  const [wordQuizAvailability, setWordQuizAvailability] = useState({
-    isEasyPlay: false,
-    isNormalPlay: false,
-    isHardPlay: false,
-  });
+  const [wordQuizAvailability, setWordQuizAvailability] = useState<{
+    isEasyPlay: boolean | null;
+    isNormalPlay: boolean | null;
+    isHardPlay: boolean | null;
+  }>({
+    isEasyPlay: null,
+    isNormalPlay: null,
+    isHardPlay: null,
+  });  
   
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
@@ -300,21 +304,21 @@ const MiniGamePage = () => {
                 <ModalButton
                   difficulty="begin"
                   onClick={() => handleWordQuizPlay('begin')}
-                  disabled={!wordQuizAvailability.isEasyPlay}
+                  disabled={wordQuizAvailability.isEasyPlay === false}
                 >
                   쉬움
                 </ModalButton>
                 <ModalButton
                   difficulty="mid"
                   onClick={() => handleWordQuizPlay('mid')}
-                  disabled={!wordQuizAvailability.isNormalPlay}
+                  disabled={wordQuizAvailability.isNormalPlay === false}
                 >
                   보통
                 </ModalButton>
                 <ModalButton
                   difficulty="adv"
                   onClick={() => handleWordQuizPlay('adv')}
-                  disabled={!wordQuizAvailability.isHardPlay}
+                  disabled={wordQuizAvailability.isHardPlay === false}
                 >
                   어려움
                 </ModalButton>
