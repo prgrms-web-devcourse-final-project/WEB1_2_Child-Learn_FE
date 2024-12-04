@@ -47,11 +47,7 @@ export const useQuizStore = create<QuizStore>((set) => ({
   fetchQuizzes: async () => {
     try {
       set({ isLoading: true });
-      const token = localStorage.getItem('accessToken');
       const response = await baseApi.get('/api/v1/begin-stocks', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
       });
       
       if (response.data.quiz?.[0]) {
@@ -72,13 +68,9 @@ export const useQuizStore = create<QuizStore>((set) => ({
       const userId = localStorage.getItem('userId');
 
       const quizResponse = await baseApi.post<QuizResponse>(
-        '/api/v1/begin-stocks/submissions', 
+        '/begin-stocks/submissions', 
         { answer },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        
       );
 
       set({ selectedAnswer: answer });
@@ -94,13 +86,9 @@ export const useQuizStore = create<QuizStore>((set) => ({
         };
 
         await baseApi.post<PointResponse>(
-          '/api/v1/wallet/invest', 
+          '/wallet/invest', 
           pointRequest,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
+          
         );
 
         return {
