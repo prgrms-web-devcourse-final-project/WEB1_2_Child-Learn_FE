@@ -17,8 +17,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
   fetchStockData: async () => {
     try {
       set({ isLoading: true });
-      const token = localStorage.getItem('accessToken');
-      const response = await baseApi.get<BeginStockResponse>('/api/v1/begin-stocks', {
+      const response = await baseApi.get<BeginStockResponse>('/begin-stocks', {
 
       });
       
