@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Timer } from '../../../../features/minigame/flipcardgame/ui/Timer';
+import { Timer } from '@/features/minigame/flipcardgame/ui/Timer';
 
 interface HeartProps {
   filled: boolean;

@@ -1,21 +1,19 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { useWordQuizStore } from '../../../features/minigame/wordquizgame/model/wordQuizStore';
-import { Header } from '../../../features/minigame/wordquizgame/ui/Header';
-import { Question } from '../../../features/minigame/wordquizgame/ui/Question';
-import { Answer } from '../../../features/minigame/wordquizgame/ui/Answer';
-import { Keyboard } from '../../../features/minigame/wordquizgame/ui/KeyBoard';
-import { Popup } from '../../../features/minigame/wordquizgame/ui/Popup';
-import { Word } from '../../../features/minigame/wordquizgame/types/wordTypes';
+import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
+import { Header } from '@/features/minigame/wordquizgame/ui/Header';
+import { Question } from '@/features/minigame/wordquizgame/ui/Question';
+import { Answer } from '@/features/minigame/wordquizgame/ui/Answer';
+import { Keyboard } from '@/features/minigame/wordquizgame/ui/KeyBoard';
+import { Popup } from '@/features/minigame/wordquizgame/ui/Popup';
+import { wordQuizApi, WordQuizQuestion } from '@/shared/api/minigames';
 
 const WordQuizGamePage = () => {
   const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
   const {
     incrementCorrectAnswers,
     decrementLives,
-    resetQuiz,
-    setDifficulty,
     setWords,
     lives,
     words,
@@ -46,32 +44,36 @@ const WordQuizGamePage = () => {
     return Array.from(uniqueLetters).sort(() => Math.random() - 0.5); // 랜덤 섞음
   }, [correctWord]);
 
-  // 전체 단어 리스트
-  const wordList: Word[] = [
-    { word_id: 1, word: '시장', explanation: '기업의 주식 발행 가격 총액을 뜻하는 단어', hint: '첫 글자는 "시"입니다.' },
-    { word_id: 2, word: '경제', explanation: '사람들의 재화와 서비스 교환에 대한 활동을 뜻하는 단어', hint: '첫 글자는 "경"입니다.' },
-    { word_id: 3, word: '투자', explanation: '미래의 이익을 기대하며 자산을 구매하는 활동', hint: '첫 글자는 "투"입니다.' },
-    { word_id: 4, word: '관리자', explanation: '시스템을 운영하고 관리하는 역할을 맡은 사람', hint: '첫 글자는 "관"입니다.' },
-    { word_id: 5, word: '소프트웨어', explanation: '컴퓨터 프로그램과 관련된 모든 것', hint: '첫 글자는 "소"입니다.' },
-    { word_id: 6, word: '데이터베이스', explanation: '데이터를 체계적으로 저장하는 시스템', hint: '첫 글자는 "데"입니다.' },
-    { word_id: 7, word: '알고리즘', explanation: '문제를 해결하는 절차나 방법', hint: '첫 글자는 "알"입니다.' },
-    { word_id: 8, word: '컴퓨터', explanation: '정보를 처리하는 기계', hint: '첫 글자는 "컴"입니다.' },
-  ];
-
-  // 랜덤으로 3개의 단어 선택
-  const selectRandomWords = (list: Word[], count: number): Word[] => {
-    const shuffled = [...list].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, count);
-  };
-
-  // 초기화: 난이도 설정 및 문제 리스트
-  useEffect(() => {
-    resetQuiz(); // 퀴즈 초기화
-    setDifficulty(difficulty || 'begin'); // 난이도 설정
-    const randomWords = selectRandomWords(wordList, 3); // 랜덤 단어 3개 선택
-    setWords(randomWords); // 문제 리스트 설정
-  }, [difficulty, resetQuiz, setDifficulty, setWords]);
-
+    // API 연동: 난이도별 퀴즈 데이터 가져오기
+    useEffect(() => {
+      const fetchQuizData = async () => {
+        if (!difficulty) return;
+    
+        // "begin" | "mid" | "adv" → "EASY" | "NORMAL" | "HARD"로 변환
+        const difficultyMapping: Record<'begin' | 'mid' | 'adv', 'EASY' | 'NORMAL' | 'HARD'> = {
+          begin: 'EASY',
+          mid: 'NORMAL',
+          adv: 'HARD',
+        };
+    
+        const mappedDifficulty = difficultyMapping[difficulty];
+    
+        try {
+          const quizzes: WordQuizQuestion[] = await wordQuizApi.getQuizByDifficulty(mappedDifficulty);
+          const formattedWords = quizzes.map((quiz) => ({
+            word: quiz.word,
+            explanation: quiz.explanation,
+            hint: quiz.hint,
+          }));
+          setWords(formattedWords);
+        } catch (error) {
+          console.error('Failed to fetch quiz data:', error);
+        }
+      };
+    
+      fetchQuizData();
+    }, [difficulty, setWords]);
+    
   // 타이머 초기화
   useEffect(() => {
     let initialTime = 60;
@@ -95,7 +97,7 @@ const WordQuizGamePage = () => {
   }, [navigate, difficulty]);
 
   // 키보드 클릭 핸들러
-  const handleSelectLetter = (letter: string) => {
+  const handleSelectLetter = async (letter: string) => {
     if (!correctWord || userAnswer.length >= correctWord.length) return;
 
     const updatedAnswer = [...userAnswer, letter];
@@ -104,9 +106,23 @@ const WordQuizGamePage = () => {
     if (updatedAnswer.join('') === correctWord) {
       incrementCorrectAnswers(); // 맞춘 문제 증가
       setShowCorrectPopup(true);
+
+      // 정답 제출 API 호출
+      try {
+        await wordQuizApi.submitAnswer(true);
+      } catch (error) {
+        console.error('Failed to submit correct answer:', error);
+      }
     } else if (updatedAnswer.length === correctWord.length) {
       decrementLives(); // 목숨 감소
       setShowIncorrectPopup(true);
+
+      // 오답 제출 API 호출
+      try {
+        await wordQuizApi.submitAnswer(false);
+      } catch (error) {
+        console.error('Failed to submit incorrect answer:', error);
+      }
     }
   };
 

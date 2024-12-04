@@ -114,6 +114,7 @@ export const walletHandlers = [
     console.log('MSW: Mini-game processed. Updated wallet:', mockWallet);
   
     return HttpResponse.json({
+      memberId: mockWallet.memberId,
       currentPoints: mockWallet.currentPoints,
       currentCoins: mockWallet.currentCoins,
     });

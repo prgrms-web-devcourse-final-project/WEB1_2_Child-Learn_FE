@@ -11,7 +11,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 const FlipCardGamePage = () => {
   const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
-  console.log('Difficulty from URL:', difficulty);
+  console.log('Difficulty from URL:', difficulty); 
   const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
   const {
     flippedCards,
