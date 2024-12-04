@@ -62,6 +62,7 @@ export const useLogout = () => {
     onSuccess: () => {
       logout(); // 기존 authStore의 logout 함수 사용
       queryClient.removeQueries({ queryKey: ['userInfo'] }); // 유저 정보 캐시 제거
+      localStorage.removeItem('user-info'); // localStorage의 user-info도 제거
       navigate('/'); // 홈으로 리다이렉트
     },
     onError: (error) => {
