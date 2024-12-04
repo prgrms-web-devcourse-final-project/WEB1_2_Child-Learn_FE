@@ -59,13 +59,12 @@ const WordQuizGamePage = () => {
         const mappedDifficulty = difficultyMapping[difficulty];
     
         try {
-          const quizzes: WordQuizQuestion[] = await wordQuizApi.getQuizByDifficulty(mappedDifficulty);
-          const formattedWords = quizzes.map((quiz) => ({
+          const quiz: WordQuizQuestion = await wordQuizApi.getQuizByDifficulty(mappedDifficulty);
+          setWords([{
             word: quiz.word,
             explanation: quiz.explanation,
             hint: quiz.hint,
-          }));
-          setWords(formattedWords);
+          }]);
         } catch (error) {
           console.error('Failed to fetch quiz data:', error);
         }
