@@ -9,24 +9,29 @@ import { useEffect, useState } from 'react';
 
 export const useMypageInfo = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const [isTokenValidated, setIsTokenValidated] = useState(false);
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     const initializeAuth = async () => {
+      // 이미 토큰이 있다면 리프레시 불필요
+      if (accessToken) {
+        setIsTokenValidated(true);
+        return;
+      }
+
+      // 토큰이 없을 때만 리프레시 시도
       try {
         await silentRefresh();
-        setIsTokenValidated(true);
-        // 토큰 갱신 성공 후 my-info 쿼리 강제 재실행
-        queryClient.invalidateQueries({ queryKey: ['userInfo'] });
       } catch (error) {
         console.error('Token refresh failed:', error);
+      } finally {
         setIsTokenValidated(true);
       }
     };
 
     initializeAuth();
-  }, [queryClient]);
+  }, [accessToken]); // accessToken이 변경될 때만 실행
 
   const query = useQuery<UserInfo, Error>({
     queryKey: ['userInfo'],
