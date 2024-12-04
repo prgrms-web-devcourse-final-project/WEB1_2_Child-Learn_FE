@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import axios from 'axios';
 import { baseApi } from '@/shared/api/base';
-import { MidStock, StockPrice, TradeDetail, StockWithDetails, TradeAvailability } from '@/features/Intermediate_chart/model/types/stock';
+import { MidStock, StockPrice, TradeDetail, StockWithDetails, TradeAvailability, TradeResponse } from '@/features/Intermediate_chart/model/types/stock';
 
 interface StockStore {
  stocks: MidStock[];
@@ -15,8 +15,12 @@ interface StockStore {
  fetchStockDetails: (stockId: number) => Promise<void>;
  fetchAllStockDetails: () => Promise<void>;
  checkTradeAvailability: (stockId: number) => Promise<void>;
- executeTrade: (stockId: number, tradePoint: number, type: 'buy' | 'sell') => Promise<any>;
+ fetchStockHoldings: (stockId: number) => Promise<TradeDetail[]>;
+ executeTrade: (stockId: number, tradePoint: number, type: 'buy' | 'sell') => Promise<TradeResponse>;
+ getStockDetails: (stockId: number) => Promise<TradeDetail[]>;
 }
+
+
 
 export const useStockStore = create<StockStore>((set) => ({
  stocks: [],
@@ -29,17 +33,16 @@ export const useStockStore = create<StockStore>((set) => ({
  isLoading: false,
  error: null,
 
- fetchStocks: async () => {
-   try {
-     set({ isLoading: true, error: null });
-     const response = await baseApi.get<MidStock[]>('/mid-stocks/list');
-     set({ stocks: response.data, isLoading: false });
-   } catch (error) {
-     set({ error: '주식 데이터 로딩 실패', isLoading: false });
-     console.error('Stock fetch error:', error);
-   }
- },
-
+ fetchStockHoldings: async (stockId: number) => {
+  try {
+    // 특정 종목의 매수 내역만 조회
+    const response = await baseApi.get<TradeDetail[]>(`/mid-stocks/${stockId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Stock holdings fetch error:', error);
+    return [];
+  }
+},
  fetchStockPrices: async (stockId: number) => {
    try {
      set({ isLoading: true, error: null });
@@ -57,12 +60,22 @@ export const useStockStore = create<StockStore>((set) => ({
    }
  },
 
+ getStockDetails: async (stockId: number) => {
+  try {
+    const response = await baseApi.get<TradeDetail[]>(`/mid-stocks/${stockId}`);
+    return response.data;
+  } catch (error) {
+    console.error('주식 상세 정보 조회 실패:', error);
+    return [];
+  }
+},
+
  fetchStockDetails: async (stockId: number) => {
    try {
      set({ isLoading: true, error: null });
-     const [detailsResponse, stocksResponse] = await Promise.all([
-       baseApi.get<TradeDetail[]>(`/mid-stocks/${stockId}`),
-       baseApi.get<MidStock[]>('/mid-stocks/list')
+     const [stocksResponse, detailsResponse] = await Promise.all([
+       baseApi.get<MidStock[]>('/mid-stocks'),
+       baseApi.get<TradeDetail[]>(`/mid-stocks/${stockId}`)
      ]);
      
      const currentStock = stocksResponse.data.find(stock => stock.midStockId === stockId);
@@ -107,26 +120,32 @@ export const useStockStore = create<StockStore>((set) => ({
  },
 
  executeTrade: async (stockId: number, tradePoint: number, type: 'buy' | 'sell') => {
-   try {
-     const endpoint = type === 'buy' ? 'buy' : 'sell';
-     const response = await baseApi.post(
-       `/mid-stocks/${stockId}/${endpoint}`,
-       { tradePoint }
-     );
-     
-     // 거래 후 상세 정보 갱신
-     await Promise.all([
-       useStockStore.getState().fetchStockDetails(stockId),
-       useStockStore.getState().checkTradeAvailability(stockId)
-     ]);
-     
-     return response.data;
-   } catch (error) {
-     if (axios.isAxiosError(error) && error.response?.status === 400) {
-       throw new Error(error.response.data.message);
-     }
-     console.error('Trade execution error:', error);
-     throw error;
-   }
- }
+    try {
+      if (type === 'sell') {
+        const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
+        return response.data;
+      } else {
+        const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
+          tradePoint
+        });
+        return response.data;
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        throw new Error(error.response.data.message);
+      }
+      throw error;
+    }
+  },
+
+  fetchStocks: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await baseApi.get<MidStock[]>('/mid-stocks');
+      set({ stocks: response.data, isLoading: false });
+    } catch (error) {
+      set({ error: '주식 목록 로딩 실패', isLoading: false });
+      console.error('Stocks fetch error:', error);
+    }
+  }
 }));
