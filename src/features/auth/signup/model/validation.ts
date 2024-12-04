@@ -2,22 +2,23 @@ export const joinValidation = {
   loginId: {
     required: '아이디를 입력해주세요.',
     pattern: {
-      value: /^[a-zA-Z0-9]{4,12}$/,
-      message: '4-12자의 영문, 숫자만 사용 가능합니다.',
+      value: /^[a-zA-Z0-9]{5,20}$/,
+      message: '5-20자의 영문, 숫자만 사용 가능합니다.',
     },
   },
   pw: {
     required: '비밀번호를 입력해주세요.',
     pattern: {
-      value: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
-      message: '8자 이상의 영문, 숫자, 특수기호를 포함해야 합니다.',
+      value: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,30}$/,
+      message:
+        '비밀번호는 8-30자의 영문, 숫자, 특수문자(@$!%*#?&)를 포함해야 합니다.',
     },
   },
   username: {
     required: '닉네임을 입력해주세요.',
     pattern: {
-      value: /^[가-힣a-zA-Z0-9]{1,8}$/,
-      message: '최대 8자까지의 한글, 영문, 숫자만 입력 가능합니다.',
+      value: /^[가-힣a-zA-Z0-9]{2,8}$/,
+      message: '2-8자의 한글, 영문, 숫자만 입력 가능합니다.',
     },
   },
   email: {
@@ -25,6 +26,10 @@ export const joinValidation = {
     pattern: {
       value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
       message: '올바른 이메일 형식이 아닙니다.',
+    },
+    maxLength: {
+      value: 50,
+      message: '이메일은 최대 50자까지 가능합니다.',
     },
   },
   birth: {

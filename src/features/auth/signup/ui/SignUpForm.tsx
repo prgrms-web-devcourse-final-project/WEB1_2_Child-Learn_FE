@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthInput } from '@/shared/ui/AuthInput/AuthInput';
 import { AuthButton } from '@/shared/ui/AuthButton/AuthButton';
 import { Link, useNavigate } from 'react-router-dom';
@@ -7,9 +7,18 @@ import { useJoin } from '../lib/useJoin';
 import { joinValidation } from '../model/validation';
 import { SuccessModal } from './SuccessModal';
 
+const formatBirth = (birth: string) => {
+  if (birth.length !== 8) return birth;
+  const year = birth.substring(0, 4);
+  const month = birth.substring(4, 6);
+  const day = birth.substring(6, 8);
+  return `${year}-${month}-${day}`;
+};
+
 export const SignUpForm = () => {
   const navigate = useNavigate();
-  const { handleJoin, isLoading, error } = useJoin();
+  // fieldErrors 추가
+  const { handleJoin, isLoading, error, fieldErrors } = useJoin();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formData, setFormData] = useState({
     loginId: '',
@@ -20,9 +29,19 @@ export const SignUpForm = () => {
     pwConfirm: '',
     terms: false,
   });
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>(
-    {},
-  );
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
+
+  // useEffect 추가: fieldErrors가 변경되면 validationErrors에 반영
+  useEffect(() => {
+    if (Object.keys(fieldErrors).length > 0) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        ...fieldErrors,
+      }));
+    }
+  }, [fieldErrors]);
 
   const validateField = (name: string, value: string) => {
     if (name === 'pwConfirm') {
@@ -34,6 +53,11 @@ export const SignUpForm = () => {
 
     if (!value && validation.required) {
       return validation.required;
+    }
+
+    // 이메일 최대 길이 체크 추가
+    if (name === 'email' && value.length > 50) {
+      return '이메일은 최대 50자까지 가능합니다.';
     }
 
     if (validation.pattern && !validation.pattern.value.test(value)) {
@@ -90,14 +114,6 @@ export const SignUpForm = () => {
       }
     });
 
-    const formatBirth = (birth: string) => {
-      if (birth.length !== 8) return birth;
-      const year = birth.substring(0, 4);
-      const month = birth.substring(4, 6);
-      const day = birth.substring(6, 8);
-      return `${year}-${month}-${day}`;
-    };
-
     if (formData.pw !== formData.pwConfirm) {
       errors.pwConfirm = '비밀번호가 일치하지 않습니다.';
     }
@@ -119,7 +135,7 @@ export const SignUpForm = () => {
       await handleJoin(submitData);
       setShowSuccessModal(true);
     } catch (error) {
-      // 에러는 useJoin에서 처리됨
+      // fieldErrors와 일반 error는 useJoin에서 처리됨
     }
   };
 
@@ -211,7 +227,8 @@ export const SignUpForm = () => {
               onChange={handleChange}
             />
             <label htmlFor="terms">
-              <TermsLink to="/terms">약관 및 정책</TermsLink>에 대해 이해했습니다.
+              <TermsLink to="/terms">약관 및 정책</TermsLink>에 대해
+              이해했습니다.
             </label>
           </CheckboxContainer>
           {validationErrors.terms && (
