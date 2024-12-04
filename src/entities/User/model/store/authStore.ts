@@ -3,17 +3,39 @@ import { persist } from 'zustand/middleware';
 import { TokenService } from '@/shared/lib/token';
 import { User } from '@/entities/User/model/types';
 import { logoutApi } from '@/features/mypage/api/logoutApi';
+import { isTokenExpiringSoon, silentRefresh } from '@/entities/User/lib/tokenUtils';
+
+let refreshTimer: NodeJS.Timeout | null = null;
+
+const startTokenRefreshTimer = () => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+  }
+
+  refreshTimer = setInterval(() => {
+    const { accessToken } = useAuthStore.getState();
+    if (accessToken && isTokenExpiringSoon(accessToken)) {
+      silentRefresh();
+    }
+  }, 60 * 1000); // 1분마다 체크
+};
+
+const stopTokenRefreshTimer = () => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+};
 
 interface AuthState {
   isAuthenticated: boolean;
   accessToken: string | null;
   user: User | null;
-
   setAuth: (
     tokens: { accessToken: string; refreshToken: string },
     user: User
   ) => void;
-  logout: () => Promise<void>; // Promise<void>로 변경
+  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -30,16 +52,16 @@ export const useAuthStore = create<AuthState>()(
           accessToken: tokens.accessToken,
           user,
         });
+        startTokenRefreshTimer();
       },
 
       logout: async () => {
         try {
-          // 서버에 로그아웃 요청
           await logoutApi.logout();
         } catch (error) {
           console.error('Logout failed:', error);
         } finally {
-          // 로컬 상태 초기화
+          stopTokenRefreshTimer();
           TokenService.clearTokens();
           set({
             isAuthenticated: false,

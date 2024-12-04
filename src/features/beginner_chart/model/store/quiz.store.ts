@@ -47,7 +47,7 @@ export const useQuizStore = create<QuizStore>((set) => ({
   fetchQuizzes: async () => {
     try {
       set({ isLoading: true });
-      const response = await baseApi.get('/api/v1/begin-stocks', {
+      const response = await baseApi.get('/begin-stocks', {
       });
       
       if (response.data.quiz?.[0]) {
@@ -64,7 +64,6 @@ export const useQuizStore = create<QuizStore>((set) => ({
 
   submitAnswer: async (answer: string) => {
     try {
-      const token = localStorage.getItem('accessToken');
       const userId = localStorage.getItem('userId');
 
       const quizResponse = await baseApi.post<QuizResponse>(
