@@ -24,7 +24,7 @@ const mockQuestions: Record<string, WordQuizQuestion[]> = {
         word: '시장',
         explanation: '상품과 서비스가 거래되는 장소나 공간을 뜻합니다.',
         hint: '한 글자: 시',
-        currentPhase: 1,
+        currentPhase: 2,
         remainLife: 3,
         difficulty: 'EASY',
       },
@@ -32,7 +32,7 @@ const mockQuestions: Record<string, WordQuizQuestion[]> = {
         word: '저축',
         explanation: '소득의 일부를 소비하지 않고 미래를 위해 모아두는 것을 뜻합니다.',
         hint: '한 글자: 저',
-        currentPhase: 1,
+        currentPhase: 3,
         remainLife: 3,
         difficulty: 'EASY',
       },
@@ -42,7 +42,7 @@ const mockQuestions: Record<string, WordQuizQuestion[]> = {
         word: '자산',
         explanation: '기업이 소유한 모든 경제적 가치의 총합으로, 현금, 부동산, 상품 등이 이에 해당됩니다.',
         hint: '두 글자: 자산',
-        currentPhase: 2,
+        currentPhase: 1,
         remainLife: 3,
         difficulty: 'NORMAL',
       },
@@ -58,7 +58,7 @@ const mockQuestions: Record<string, WordQuizQuestion[]> = {
         word: '주식',
         explanation: '기업의 지분을 나타내며, 투자자가 소유권을 가지게 되는 금융 상품입니다.',
         hint: '두 글자: 주식',
-        currentPhase: 2,
+        currentPhase: 3,
         remainLife: 3,
         difficulty: 'NORMAL',
       },
@@ -68,7 +68,7 @@ const mockQuestions: Record<string, WordQuizQuestion[]> = {
         word: '유동자산',
         explanation: '1년 이내에 현금화가 가능한 자산으로, 재고, 현금 등이 포함됩니다.',
         hint: '세 글자: 유동',
-        currentPhase: 3,
+        currentPhase: 1,
         remainLife: 3,
         difficulty: 'HARD',
       },
@@ -76,7 +76,7 @@ const mockQuestions: Record<string, WordQuizQuestion[]> = {
         word: '재무제표',
         explanation: '기업의 재무 상태와 성과를 보여주는 문서로, 손익계산서와 대차대조표가 포함됩니다.',
         hint: '세 글자: 재무',
-        currentPhase: 3,
+        currentPhase: 2,
         remainLife: 3,
         difficulty: 'HARD',
       },
@@ -118,7 +118,7 @@ export const wordQuizGameHandlers = [
       );
     }
 
-    const questions = mockQuestions[difficulty]; 
+    const questions = mockQuestions[difficulty][0]; 
     return HttpResponse.json(questions);
   }),
 
