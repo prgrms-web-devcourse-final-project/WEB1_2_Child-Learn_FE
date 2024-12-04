@@ -104,9 +104,8 @@ export const wordQuizGameHandlers = [
   }),
 
   // 난이도별 퀴즈 조회
-  http.get('/api/v1/word-quiz/difficulty', async ({ request }) => {
-    const url = new URL(request.url);
-    const difficulty = new URL(url).searchParams.get('difficulty')?.toUpperCase();
+  http.get('/api/v1/word-quiz/:difficulty', async ({ params }) => {
+    const difficulty = params.difficulty as string;
 
     console.log(`MSW: Fetching word quiz for difficulty: ${difficulty}`);
 
