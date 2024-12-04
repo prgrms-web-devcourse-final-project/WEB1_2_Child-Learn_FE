@@ -2,6 +2,7 @@ import { baseApi } from '@/shared/api/base';
 import { create } from 'zustand';
 import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
 
+
 interface QuizStore {
  quizzes: BeginQuiz[];
  currentQuiz: BeginQuiz | null;
@@ -67,7 +68,7 @@ export const useQuizStore = create<QuizStore>((set) => ({
 
      if (quizResponse.data.isCorrect) {
        const pointRequest: PointRequest = {
-         memberId: 1, // TODO: 실제 memberId로 교체 필요
+         memberId: 1,
          transactionType: 'BEGIN',
          points: 200,
          pointType: 'STOCK',
