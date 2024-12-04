@@ -91,7 +91,7 @@ export const wordQuizApi = {
   },
 
   // 난이도별 퀴즈 조회
-  getQuizByDifficulty: async (difficulty: 'EASY' | 'NORMAL' | 'HARD'): Promise<WordQuizQuestion> => {
+  getQuizByDifficulty: async (difficulty: 'EASY' | 'NORMAL' | 'HARD'): Promise<WordQuizQuestion[]> => {
     const response = await baseApi.get(`/word-quiz/difficulty?difficulty=${difficulty}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증

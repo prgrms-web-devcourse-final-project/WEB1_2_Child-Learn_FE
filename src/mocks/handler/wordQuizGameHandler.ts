@@ -119,8 +119,8 @@ export const wordQuizGameHandlers = [
       );
     }
 
-    const question = mockQuestions[difficulty][0]; // 항상 첫 번째 질문 반환
-    return HttpResponse.json(question);
+    const questions = mockQuestions[difficulty]; 
+    return HttpResponse.json(questions);
   }),
 
   // 답안 제출
