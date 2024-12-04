@@ -115,7 +115,11 @@ const MiniGamePage = () => {
     const fetchWordQuizAvailability = async () => {
       try {
         const availability = await wordQuizApi.checkAvailability();
-        setWordQuizAvailability(availability);
+        setWordQuizAvailability({
+          isEasyPlay: availability.isEasyPlay,
+          isNormalPlay: availability.isNormalPlay,
+          isHardPlay: availability.isHardPlay,
+        });
         console.log('Word Quiz Availability:', availability);
       } catch (error) {
         console.error('Failed to fetch word quiz availability:', error);
