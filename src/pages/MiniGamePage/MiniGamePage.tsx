@@ -31,14 +31,10 @@ const MiniGamePage = () => {
     adv: false,
   });
 
-  const [wordQuizAvailability, setWordQuizAvailability] = useState<{
-    isEasyPlay: boolean | null;
-    isNormalPlay: boolean | null;
-    isHardPlay: boolean | null;
-  }>({
-    isEasyPlay: null,
-    isNormalPlay: null,
-    isHardPlay: null,
+  const [wordQuizAvailability, setWordQuizAvailability] = useState({
+    isEasyPlayAvailable: false,
+    isNormalPlayAvailable: false,
+    isHardPlayAvailable: false,
   });  
   
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
@@ -120,9 +116,9 @@ const MiniGamePage = () => {
       try {
         const availability = await wordQuizApi.checkAvailability();
         setWordQuizAvailability({
-          isEasyPlay: availability.isEasyPlay,
-          isNormalPlay: availability.isNormalPlay,
-          isHardPlay: availability.isHardPlay,
+          isEasyPlayAvailable: availability.isEasyPlayAvailable,
+          isNormalPlayAvailable: availability.isNormalPlayAvailable,
+          isHardPlayAvailable: availability.isHardPlayAvailable,
         });
         console.log('Word Quiz Availability:', availability);
       } catch (error) {
@@ -304,21 +300,21 @@ const MiniGamePage = () => {
                 <ModalButton
                   difficulty="begin"
                   onClick={() => handleWordQuizPlay('begin')}
-                  disabled={wordQuizAvailability.isEasyPlay === false}
+                  disabled={!wordQuizAvailability.isEasyPlayAvailable}
                 >
                   쉬움
                 </ModalButton>
                 <ModalButton
                   difficulty="mid"
                   onClick={() => handleWordQuizPlay('mid')}
-                  disabled={wordQuizAvailability.isNormalPlay === false}
+                  disabled={!wordQuizAvailability.isNormalPlayAvailable}
                 >
                   보통
                 </ModalButton>
                 <ModalButton
                   difficulty="adv"
                   onClick={() => handleWordQuizPlay('adv')}
-                  disabled={wordQuizAvailability.isHardPlay === false}
+                  disabled={!wordQuizAvailability.isHardPlayAvailable}
                 >
                   어려움
                 </ModalButton>
