@@ -1,17 +1,14 @@
-// src/features/Advanced_game/model/stockWebSocket.ts
-
-export interface WebSocketMessage {
-  type: 'START_GAME' | 'PAUSE_GAME' | 'END_GAME' | 'REFERENCE_DATA' | 'LIVE_DATA';
-  data?: any;
-}
-
 class StockWebSocket {
   private ws: WebSocket | null = null;
   private messageHandler: ((message: WebSocketMessage) => void) | null = null;
 
   connect(onMessage: (message: WebSocketMessage) => void) {
     this.messageHandler = onMessage;
-    this.ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080');
+
+    // Vite 환경 변수 사용
+    const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8080';
+
+    this.ws = new WebSocket(wsUrl);
 
     this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
