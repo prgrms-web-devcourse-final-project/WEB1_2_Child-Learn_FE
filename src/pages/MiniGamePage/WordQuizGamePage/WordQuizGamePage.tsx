@@ -60,7 +60,7 @@ const WordQuizGamePage = () => {
     
         try {
           const quiz: WordQuizQuestion = await wordQuizApi.getQuizByDifficulty(mappedDifficulty);
-          setWords([{ word_id: 1, word: quiz.word, explanation: quiz.explanation, hint: quiz.hint }]);
+          setWords([{ word: quiz.word, explanation: quiz.explanation, hint: quiz.hint }]);
         } catch (error) {
           console.error('Failed to fetch quiz data:', error);
         }
@@ -104,7 +104,7 @@ const WordQuizGamePage = () => {
 
       // 정답 제출 API 호출
       try {
-        await wordQuizApi.submitAnswer(currentWord.word_id.toString(), true);
+        await wordQuizApi.submitAnswer(true);
       } catch (error) {
         console.error('Failed to submit correct answer:', error);
       }
@@ -114,7 +114,7 @@ const WordQuizGamePage = () => {
 
       // 오답 제출 API 호출
       try {
-        await wordQuizApi.submitAnswer(currentWord.word_id.toString(), false);
+        await wordQuizApi.submitAnswer(false);
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
       }

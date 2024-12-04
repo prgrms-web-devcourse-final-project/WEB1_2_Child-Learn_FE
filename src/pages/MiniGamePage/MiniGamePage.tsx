@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';;
 import { useUserInfo } from '@/entities/User/lib/queries';
 import { flipCardApi } from '@/shared/api/minigames';
+import { wordQuizApi } from '@/shared/api/minigames';
 import { walletApi } from '@/shared/api/wallets';
 import { MiniGameTransaction, PointTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
@@ -28,6 +29,12 @@ const MiniGamePage = () => {
     begin: false,
     mid: false,
     adv: false,
+  });
+
+  const [wordQuizAvailability, setWordQuizAvailability] = useState({
+    isEasyPlay: false,
+    isNormalPlay: false,
+    isHardPlay: false,
   });
   
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
@@ -105,7 +112,18 @@ const MiniGamePage = () => {
       }
     };
 
+    const fetchWordQuizAvailability = async () => {
+      try {
+        const availability = await wordQuizApi.checkAvailability();
+        setWordQuizAvailability(availability);
+        console.log('Word Quiz Availability:', availability);
+      } catch (error) {
+        console.error('Failed to fetch word quiz availability:', error);
+      }
+    };
+
     fetchAvailability();
+    fetchWordQuizAvailability();
   }, [isLoading, isError, userInfo, setLotteries]);
 
   const handleFlipCardPlay = async (difficulty: 'begin' | 'mid' | 'adv') => {
@@ -278,21 +296,21 @@ const MiniGamePage = () => {
                 <ModalButton
                   difficulty="begin"
                   onClick={() => handleWordQuizPlay('begin')}
-                  disabled={!isWordQuizPlayable('begin')}
+                  disabled={!wordQuizAvailability.isEasyPlay}
                 >
                   쉬움
                 </ModalButton>
                 <ModalButton
                   difficulty="mid"
                   onClick={() => handleWordQuizPlay('mid')}
-                  disabled={!isWordQuizPlayable('mid')}
+                  disabled={!wordQuizAvailability.isNormalPlay}
                 >
                   보통
                 </ModalButton>
                 <ModalButton
                   difficulty="adv"
                   onClick={() => handleWordQuizPlay('adv')}
-                  disabled={!isWordQuizPlayable('adv')}
+                  disabled={!wordQuizAvailability.isHardPlay}
                 >
                   어려움
                 </ModalButton>

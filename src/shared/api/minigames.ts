@@ -102,11 +102,10 @@ export const wordQuizApi = {
 
   // 답안 제출
   submitAnswer: async (
-    quizId: string,
     isCorrect: boolean
   ): Promise<WordQuizQuestion> => {
     const response = await baseApi.post(
-      `/word-quiz/${quizId}/submissions`,
+      `/word-quiz/submissions`,
       { isCorrect },
       {
         headers: {

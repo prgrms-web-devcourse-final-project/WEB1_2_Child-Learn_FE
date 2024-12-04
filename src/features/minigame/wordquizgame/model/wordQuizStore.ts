@@ -17,7 +17,7 @@ interface WordQuizState {
   resetQuiz: () => void; // 퀴즈 초기화
   initializeQuiz: (memberId: number) => void; // 퀴즈 상태 초기화
   isPlayable: (difficulty: 'begin' | 'mid' | 'adv') => boolean; // 플레이 가능 여부 확인
-  setLastPlayedDate: (level: 'begin' | 'mid' | 'adv', date: string) => void; // 마지막 플레이 날짜 설정
+  setLastPlayedDate: (difficulty: 'begin' | 'mid' | 'adv', date: string) => void; // 마지막 플레이 날짜 설정
 }
 
 export const useWordQuizStore = create<WordQuizState>((set, get) => ({
