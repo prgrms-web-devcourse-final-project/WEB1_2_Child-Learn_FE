@@ -97,9 +97,9 @@ export const wordQuizGameHandlers = [
   http.get('/api/v1/word-quiz/availability', () => {
     console.log('MSW: Checking word quiz availability');
     return HttpResponse.json({
-      isEasyPlay: true,
-      isNormalPlay: false,
-      isHardPlay: false,
+      isEasyPlayAvailable: true,
+      isNormalPlayAvailable: false,
+      isHardPlayAvailable: false,
     });
   }),
 

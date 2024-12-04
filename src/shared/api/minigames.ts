@@ -78,9 +78,9 @@ export const flipCardApi = {
 export const wordQuizApi = {
   // 난이도별 플레이 가능 여부 확인
   checkAvailability: async (): Promise<{
-    isEasyPlay: boolean;
-    isNormalPlay: boolean;
-    isHardPlay: boolean;
+    isEasyPlayAvailable: boolean;
+    isNormalPlayAvailable: boolean;
+    isHardPlayAvailable: boolean;
   }> => {
     const response = await baseApi.get('/word-quiz/availability', {
       headers: {
