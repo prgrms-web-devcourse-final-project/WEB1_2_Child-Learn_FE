@@ -17,14 +17,19 @@ export const useGraphStore = create<GraphStore>((set) => ({
   fetchStockData: async () => {
     try {
       set({ isLoading: true });
-      const response = await baseApi.get<BeginStockResponse>('/begin-stocks');
-
+      const token = localStorage.getItem('accessToken');
+      const response = await baseApi.get<BeginStockResponse>('/api/v1/begin-stocks', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
       if (response.data.stockData) {
-        const formattedData: FastGraphData[] = response.data.stockData.map(stock => ({
+        const mappedData: FastGraphData[] = response.data.stockData.map(stock => ({
           value: stock.price,
-          date: stock.tradeDay
+          date: stock.tradeDay,
         }));
-        set({ stockData: formattedData, isLoading: false });
+        set({ stockData: mappedData, isLoading: false });
       }
     } catch (error) {
       set({ error: '데이터 로딩 실패', isLoading: false });
