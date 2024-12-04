@@ -74,10 +74,10 @@ export const SignUpForm = () => {
     setFormData((prev) => ({ ...prev, [name]: newValue }));
 
     if (type !== 'checkbox') {
-      const error = validateField(name, value);
+      // 입력 값이 변경되면 해당 필드의 서버 에러 메시지를 초기화
       setValidationErrors((prev) => ({
         ...prev,
-        [name]: error,
+        [name]: validateField(name, value),
       }));
 
       if (name === 'pw' && formData.pwConfirm) {
