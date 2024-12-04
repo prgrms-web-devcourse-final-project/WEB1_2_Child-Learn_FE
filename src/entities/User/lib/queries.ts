@@ -7,17 +7,29 @@ import { silentRefresh } from '@/features/auth/login/lib/setupInterceptors';
 
 export const useUserInfo = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const [isTokenValidated, setIsTokenValidated] = useState(false);
 
   useEffect(() => {
-    silentRefresh()
-      .then(() => {
+    const initializeAuth = async () => {
+      // 이미 토큰이 있다면 리프레시 불필요
+      if (accessToken) {
         setIsTokenValidated(true);
-      })
-      .catch(() => {
+        return;
+      }
+
+      // 토큰이 없을 때만 리프레시 시도
+      try {
+        await silentRefresh();
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+      } finally {
         setIsTokenValidated(true);
-      });
-  }, []);
+      }
+    };
+
+    initializeAuth();
+  }, [accessToken]); // accessToken이 변경될 때만 실행
 
   const query = useQuery<UserInfo, Error>({
     queryKey: ['userInfo'],
