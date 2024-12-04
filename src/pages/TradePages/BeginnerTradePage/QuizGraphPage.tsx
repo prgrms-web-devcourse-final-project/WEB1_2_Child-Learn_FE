@@ -184,14 +184,9 @@ const QuizGraphPage: React.FC = () => {
  const { currentQuiz, submitAnswer, fetchQuizzes } = useQuizStore();
 
  useEffect(() => {
-   const fetchData = async () => {
-     const token = localStorage.getItem('accessToken');
-     if (token) {
-       await Promise.all([fetchStockData(), fetchQuizzes()]);
-     }
-   };
-   fetchData();
- }, []);
+    fetchStockData();
+    fetchQuizzes();
+  }, []);
 
  const handleChartClick = () => {
    setShowArticle(true);
