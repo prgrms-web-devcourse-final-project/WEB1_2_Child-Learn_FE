@@ -18,11 +18,12 @@ interface StockStore {
  fetchStockHoldings: (stockId: number) => Promise<TradeDetail[]>;
  executeTrade: (stockId: number, tradePoint: number, type: 'buy' | 'sell') => Promise<TradeResponse>;
  getStockDetails: (stockId: number) => Promise<TradeDetail[]>;
+ getTradeDetails: (stockId: number) => Promise<TradeDetail[]>;
 }
 
 
 
-export const useStockStore = create<StockStore>((set) => ({
+export const useStockStore = create<StockStore>((set, get) => ({
  stocks: [],
  currentStockPrices: [],
  tradeAvailability: {
@@ -146,6 +147,16 @@ export const useStockStore = create<StockStore>((set) => ({
     } catch (error) {
       set({ error: '주식 목록 로딩 실패', isLoading: false });
       console.error('Stocks fetch error:', error);
+    }
+  },
+
+  getTradeDetails: async (stockId: number) => {
+    try {
+      const response = await baseApi.get(`/trades/${stockId}`);
+      return response.data;
+    } catch (error) {
+      console.error('거래 내역 조회 실패:', error);
+      return [];
     }
   }
 }));

@@ -146,33 +146,30 @@ const handleSellConfirm = async () => {
     if (!currentStock || !currentStockPrices.length) return;
     
     try {
-      // 보유 주식 조회
-      const holdings = await useStockStore.getState().getStockDetails(currentStock.midStockId);
+      const holdings = await useStockStore.getState().getTradeDetails(currentStock.midStockId); // 함수명 수정
       const holdingQuantity = holdings.filter(trade => trade.tradeType === 'BUY').length;
-  
+
       const result = await useStockStore.getState().executeTrade(
         currentStock.midStockId,
         0,
         'sell'
       );
-  
+      
       if (result.success) {
-        const earnedPoints = result.earnedPoints || 0;
-  
         setTradeResult({
           success: true,
           message: '매도 완료',
           tradeType: 'sell',
           stockName: currentStock.midName,
           price: currentStockPrices[0].avgPrice,
-          quantity: holdingQuantity, // 실제 보유 수량
-          totalPrice: earnedPoints  // 획득한 포인트
+          quantity: holdingQuantity,
+          totalPrice: result.earnedPoints || 0
         });
-  
+
         setShowResultModal(true);
         setHasSoldToday(true);
-        setUserPoints(prev => prev + earnedPoints);
-  
+        setUserPoints(prev => prev + (result.earnedPoints || 0));
+
         setTimeout(() => {
           setShowResultModal(false);
           setShowCompletionModal(true);
@@ -181,7 +178,7 @@ const handleSellConfirm = async () => {
     } catch (error) {
       console.error('매도 에러:', error);
     }
-  };
+};
 
 
   const handleOutButtonClick = () => {
