@@ -54,7 +54,7 @@ export class StockWebSocket {
 
   private getToken(): string | null {
     const store = (window as any).store;
-    const token = store?.getState?.()?.accessToken;
+    const token = store?.getState?.()?.state?.accessToken;
     
     if (!token) {
       console.error('JWT 토큰이 없습니다. 인증이 필요합니다.');
