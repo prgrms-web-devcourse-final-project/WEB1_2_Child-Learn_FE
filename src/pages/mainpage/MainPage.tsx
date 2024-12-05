@@ -8,18 +8,10 @@ import { MenuCard } from '@/shared/ui/MenuCard/MenuCard';
 import { AttendanceCard } from '@/features/mainpage/ui/AttendanceCard';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { DifficultyModal } from '@/features/mainpage/ui/DifficultyModal';
-import { useAttendance } from '@/features/mainpage/lib/queries';
 
 const MainPage = () => {
   const navigate = useNavigate();
   const { data: userInfo, isLoading } = useUserInfo();
-  const { attendanceMutation } = useAttendance(); // 구조분해할당으로 가져오기
-
-  const handleAttendance = () => {
-    if (userInfo?.id) {
-      attendanceMutation.mutate(userInfo.id);
-    }
-  };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -80,9 +72,8 @@ const MainPage = () => {
 
           {/* 출석체크 카드 */}
           <AttendanceCard
-            title={'매일 출석하고\n10 Point 받기'}
+            title={'매일 출석하고\n100 Point 받기'}
             userId={userInfo?.id}
-            onClick={handleAttendance}
           />
 
           {/* 메뉴 그리드 */}

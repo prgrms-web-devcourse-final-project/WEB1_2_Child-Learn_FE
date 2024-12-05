@@ -1,20 +1,15 @@
-export enum GameWebSocketActions {
+import { generateUUID } from '@/features/Advanced_chat/utils/uuid';
+
+export enum WebSocketActions {
   START_GAME = 'START_GAME',
   PAUSE_GAME = 'PAUSE_GAME',
-  RESUME_GAME = 'RESUME_GAME',
   END_GAME = 'END_GAME',
-  GET_REMAINING_TIME = 'GET_REMAINING_TIME'
-}
-
-export enum DataWebSocketActions {
   REFERENCE_DATA = 'REFERENCE_DATA',
   LIVE_DATA = 'LIVE_DATA'
 }
 
-export type WebSocketActions = GameWebSocketActions | DataWebSocketActions;
-
 export interface WebSocketMessage {
-  type: DataWebSocketActions;
+  type: WebSocketActions;
   data?: {
     symbol: string;
     timestamp: number;
@@ -24,7 +19,10 @@ export interface WebSocketMessage {
     lowPrice: string;
     change?: number;
     volume?: number;
+    stocks?: any[];
   };
+  action?: WebSocketActions;
+  connectionId?: string;
 }
 
 export class StockWebSocket {
@@ -34,10 +32,14 @@ export class StockWebSocket {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private connectionTimeout: NodeJS.Timeout | null = null;
-  private static readonly BASE_URL = 'wss://3.35.242.1:8080';
-  private static readonly WS_PATH = '/ws/advanced-invest';
+  private connectionId: string;
+  private static readonly BASE_URL = 'wss://3.35.242.1';
+  private static readonly WS_PATH = '/api/v1/advanced-invest';
 
-  private constructor() {}
+  private constructor() {
+    this.connectionId = generateUUID();
+    console.log('New WebSocket connection created with ID:', this.connectionId);
+  }
 
   public static getInstance(): StockWebSocket {
     if (!StockWebSocket.instance) {
@@ -107,6 +109,60 @@ export class StockWebSocket {
     }
   }
 
+  private setupMessageHandler() {
+    if (!this.ws) return;
+
+    this.ws.onmessage = (event: MessageEvent) => {
+      try {
+        const message = JSON.parse(event.data);
+        console.log(`Received message (${this.connectionId}):`, message);
+        this.messageHandler?.(message);
+      } catch (error) {
+        console.error(`Failed to parse message (${this.connectionId}):`, error);
+      }
+    };
+  }
+
+  public sendMessage(action: WebSocketActions, payload = {}) {
+    if (!StockWebSocket.shouldInitialize()) {
+      return;
+    }
+
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        action,
+        ...payload,
+        connectionId: this.connectionId
+      });
+      console.log(`Sending message (${this.connectionId}):`, message);
+      this.ws.send(message);
+    } else {
+      console.warn(`Cannot send message, WebSocket state: ${this.ws?.readyState}`);
+    }
+  }
+
+  private handleClose() {
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+    this.handleReconnect();
+  }
+
+  private handleReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts && StockWebSocket.shouldInitialize()) {
+      const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+      console.log(`Attempting to reconnect (${this.connectionId}) in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+      
+      setTimeout(() => {
+        this.reconnectAttempts++;
+        this.connect();
+      }, timeout);
+    } else {
+      console.error(`Maximum reconnection attempts reached for connection ${this.connectionId}`);
+    }
+  }
+
   private getCloseReason(code: number): string {
     const reasons: Record<number, string> = {
       1000: "정상 종료",
@@ -125,58 +181,8 @@ export class StockWebSocket {
     return reasons[code] || "알 수 없는 오류";
   }
 
-  private setupMessageHandler() {
-    if (!this.ws) return;
-
-    this.ws.onmessage = (event: MessageEvent) => {
-      try {
-        const message = JSON.parse(event.data);
-        console.log('Received message:', message);
-        this.messageHandler?.(message);
-      } catch (error) {
-        console.error('Failed to parse message:', error);
-      }
-    };
-  }
-
-  private handleClose() {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
-    this.handleReconnect();
-  }
-
-  private handleReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts && StockWebSocket.shouldInitialize()) {
-      const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
-      console.log(`Attempting to reconnect in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
-      
-      setTimeout(() => {
-        this.reconnectAttempts++;
-        this.connect();
-      }, timeout);
-    } else {
-      console.error('Maximum reconnection attempts reached');
-    }
-  }
-
   public onMessage(handler: (message: WebSocketMessage) => void) {
     this.messageHandler = handler;
-  }
-
-  public sendMessage(action: WebSocketActions, payload = {}) {
-    if (!StockWebSocket.shouldInitialize()) {
-      return;
-    }
-
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({ action, ...payload });
-      console.log('Sending message:', message);
-      this.ws.send(message);
-    } else {
-      console.warn(`Cannot send message, WebSocket state: ${this.ws?.readyState}`);
-    }
   }
 
   public disconnect() {

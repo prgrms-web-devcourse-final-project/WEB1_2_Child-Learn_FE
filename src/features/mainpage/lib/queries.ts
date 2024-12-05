@@ -11,21 +11,31 @@ export const useAttendance = () => {
 
   return {
     attendanceMutation: useMutation<AttendanceResponse, Error, number>({
-      mutationFn: (userId: number) => checkAttendance(userId),
-      onSuccess: (data) => {
+      mutationFn: (userId: number) => {
+        if (isAttendanceChecked) {
+          return Promise.reject(new Error('ALREADY_CHECKED'));
+        }
+        return checkAttendance(userId);
+      },
+      onSuccess: async (data) => {
         setIsAttendanceChecked(true);
         showToast.success(
           `출석체크 완료! ${data.currentPoints} 포인트가 적립되었습니다.`
         );
-        queryClient.invalidateQueries({ queryKey: ['userInfo'] });
+        // userInfo만 갱신하고 다른 쿼리는 건들지 않음
+        await queryClient.invalidateQueries({
+          queryKey: ['userInfo'],
+          exact: true,
+        });
       },
       onError: (error) => {
+        if (error.message === 'ALREADY_CHECKED') {
+          return; // 이미 체크된 상태에서의 호출은 무시
+        }
         if (axios.isAxiosError(error)) {
-          // 출석체크에 대한 특정 에러 처리
           if (error.response?.data?.code === 'ATTENDANCE_001') {
             showToast.error('오늘은 이미 출석체크를 하셨습니다.');
           } else {
-            // 다른 모든 에러는 일반적인 출석체크 실패 메시지로
             showToast.error('출석체크에 실패했습니다.');
           }
         } else {
