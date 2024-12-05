@@ -114,12 +114,14 @@ const WordQuizGamePage = () => {
         } else {
           // 다음 문제로 진행
           setWords([response]);
+          useWordQuizStore.getState().setLives(response.remainLife);
           nextQuestion();
         }
       } catch (error) {
         console.error('Failed to submit correct answer:', error);
       }
     } else if (updatedAnswer.length === correctWord.length) {
+      decrementLives();
       setShowIncorrectPopup(true);
   
       try {
@@ -130,6 +132,7 @@ const WordQuizGamePage = () => {
         } else {
           // 남은 목숨 업데이트
           setWords([response]);
+          useWordQuizStore.getState().setLives(response.remainLife);
         }
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
@@ -167,7 +170,6 @@ const WordQuizGamePage = () => {
       <BackgroundContainer />
       <Header
         timeLeft={timeLeft}
-        lives={lives}
         progress={words.map((_, i) => i <= currentQuestionIndex)}
       />
       <Question question={currentWord?.explanation || ''} />
