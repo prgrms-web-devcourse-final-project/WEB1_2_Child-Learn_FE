@@ -12,10 +12,6 @@ import styled from 'styled-components';
 const MiniGamePage = () => {
   const { data: userInfo, isLoading, isError } = useUserInfo();
   const {
-    isPlayable: isWordQuizPlayable,
-    setLastPlayedDate: setWordQuizLastPlayedDate,
-  } = useWordQuizStore();
-  const {
     setLotteries,
     isPlayable: isLotteryPlayable,
     setLastPlayedDate: setLotteryLastPlayedDate,
@@ -156,16 +152,12 @@ const MiniGamePage = () => {
     }
   };  
 
-  // 낱말 퀴즈 플레이 핸들러
-  const handleWordQuizPlay = async (
-    difficulty: 'begin' | 'mid' | 'adv'
-  ) => {
-    if (isWordQuizPlayable(difficulty)) {
-      const today = new Date().toISOString().split('T')[0];
-      setWordQuizLastPlayedDate(difficulty, today); // 마지막 플레이 날짜 업데이트
-      navigate(`/word-quiz/${difficulty}`);
-    }
-  };
+    // 낱말 퀴즈 플레이 핸들러
+    const handleWordQuizPlay = async (
+      difficulty: 'begin' | 'mid' | 'adv'
+    ) => {
+        navigate(`/word-quiz/${difficulty}`);
+    };  
 
   // 로또(숫자를 맞혀라) 플레이 핸들러
   const handleLotteryPlay = () => {
