@@ -1,4 +1,3 @@
-// features/Advanced_chat/ui/StockSlider/StockSlider.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart'; 
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
