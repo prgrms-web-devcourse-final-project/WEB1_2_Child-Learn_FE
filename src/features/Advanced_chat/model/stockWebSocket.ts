@@ -34,7 +34,7 @@ export class StockWebSocket {
   private connectionTimeout: NodeJS.Timeout | null = null;
   private connectionId: string;
   private static readonly BASE_URL = 'wss://3.35.242.1';
-  private static readonly WS_PATH = '/api/v1/advanced-invest';
+  private static readonly WS_PATH = '/advanced-invest';
 
   private constructor() {
     this.connectionId = generateUUID();
@@ -187,7 +187,7 @@ export class StockWebSocket {
       1010: "필수 확장 기능 누락",
       1011: "내부 서버 오류",
       1015: "TLS 보안 연결 실패"
-      
+
     };
     return reasons[code] || "알 수 없는 오류";
   }
