@@ -1,5 +1,3 @@
-import SockJS from 'sockjs-client';
-
 export enum GameWebSocketActions {
   START_GAME = 'START_GAME',
   PAUSE_GAME = 'PAUSE_GAME',
@@ -13,48 +11,109 @@ export enum DataWebSocketActions {
   LIVE_DATA = 'LIVE_DATA'
 }
 
-type WebSocketActions = GameWebSocketActions | DataWebSocketActions;
+export type WebSocketActions = GameWebSocketActions | DataWebSocketActions;
 
-interface WebSocketRequest {
-  action: WebSocketActions;
-  advId?: number;
-  memberId?: number;
-}
-
-interface WebSocketMessage {
-  type: string;
-  data: any;
+export interface WebSocketMessage {
+  type: DataWebSocketActions;
+  data?: {
+    symbol: string;
+    timestamp: number;
+    closePrice: string;
+    openPrice: string;
+    highPrice: string;
+    lowPrice: string;
+    change?: number;
+    volume?: number;
+  };
 }
 
 export class StockWebSocket {
-  private sockjs: any;
+  private ws: WebSocket | null = null;
   private messageHandler?: (message: WebSocketMessage) => void;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
 
   constructor() {
-    const baseUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8080';
-    this.sockjs = new SockJS(`${baseUrl}/ws/advanced-invest`);
-    this.setupMessageHandler();
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = '3.35.242.1:8080';
+    this.connect(`${protocol}//${host}/api/v1/advanced-invest`);
+  }
+
+  private connect(url: string) {
+    try {
+      console.log('Connecting to WebSocket:', url);
+      this.ws = new WebSocket(url);
+      
+      this.ws.onopen = () => {
+        console.log('WebSocket Connected successfully');
+        this.reconnectAttempts = 0;
+      };
+
+      this.ws.onclose = (event) => {
+        console.log('WebSocket closed:', event.code, event.reason);
+        this.handleClose();
+      };
+
+      this.ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+      this.setupMessageHandler();
+    } catch (error) {
+      console.error('WebSocket connection failed:', error);
+      this.handleReconnect();
+    }
   }
 
   private setupMessageHandler() {
-    this.sockjs.onmessage = (event: MessageEvent) => {
-      const message = JSON.parse(event.data) as WebSocketMessage;
-      this.messageHandler?.(message);
+    if (!this.ws) return;
+
+    this.ws.onmessage = (event: MessageEvent) => {
+      try {
+        const message = JSON.parse(event.data);
+        this.messageHandler?.(message);
+      } catch (error) {
+        console.error('Failed to parse message:', error);
+      }
     };
+  }
+
+  private handleClose() {
+    console.log('WebSocket connection closed');
+    this.handleReconnect();
+  }
+
+  private handleReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+      setTimeout(() => {
+        this.reconnectAttempts++;
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = '3.35.242.1:8080';
+        this.connect(`${protocol}//${host}/api/v1/advanced-invest`);
+      }, timeout);
+    } else {
+      console.error('Max reconnection attempts reached');
+    }
   }
 
   onMessage(handler: (message: WebSocketMessage) => void) {
     this.messageHandler = handler;
   }
 
-  sendMessage(action: WebSocketActions, payload: Partial<WebSocketMessage> = {}) {
-    if (this.sockjs.readyState === SockJS.OPEN) {
-      this.sockjs.send(JSON.stringify({ action, ...payload }));
+  sendMessage(action: WebSocketActions, payload = {}) {
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ action, ...payload }));
+    } else {
+      console.warn('WebSocket is not open, current state:', this.ws?.readyState);
     }
   }
 
   disconnect() {
-    this.sockjs?.close();
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
   }
 }
 
