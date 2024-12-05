@@ -1,33 +1,71 @@
-interface WebSocketMessage {
-  action: string;
-  [key: string]: any;
+export enum GameWebSocketActions {
+  START_GAME = 'START_GAME',
+  PAUSE_GAME = 'PAUSE_GAME',
+  RESUME_GAME = 'RESUME_GAME',
+  END_GAME = 'END_GAME',
+  GET_REMAINING_TIME = 'GET_REMAINING_TIME'
 }
 
-type WebSocketActions = 'subscribe' | 'unsubscribe' | 'message';
+export enum DataWebSocketActions {
+  REFERENCE_DATA = 'REFERENCE_DATA',
+  LIVE_DATA = 'LIVE_DATA'
+}
+
+export type WebSocketActions = GameWebSocketActions | DataWebSocketActions;
+
+export interface WebSocketMessage {
+  type: DataWebSocketActions;
+  data?: {
+    symbol: string;
+    timestamp: number;
+    closePrice: string;
+    openPrice: string;
+    highPrice: string;
+    lowPrice: string;
+    change?: number;
+    volume?: number;
+  };
+}
 
 export class StockWebSocket {
-  // 배포된 서버의 wss URL로 변경
-  private static readonly BASE_URL = 'wss://3.35.242.1:8080';
-  private static readonly WS_PATH = '/ws/advanced-invest';
-  
+  private static instance: StockWebSocket | null = null;
   private ws: WebSocket | null = null;
   private messageHandler?: (message: WebSocketMessage) => void;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private connectionTimeout: NodeJS.Timeout | null = null;
+  private static readonly BASE_URL = 'wss://3.35.242.1:8080';
+  private static readonly WS_PATH = '/ws/advanced-invest';
 
-  constructor() {
-    this.connect();
+  private constructor() {}
+
+  public static getInstance(): StockWebSocket {
+    if (!StockWebSocket.instance) {
+      StockWebSocket.instance = new StockWebSocket();
+    }
+    return StockWebSocket.instance;
   }
 
-  private connect() {
+  public static shouldInitialize(): boolean {
+    return window.location.pathname.includes('/advanced');
+  }
+
+  public connect() {
+    if (!StockWebSocket.shouldInitialize()) {
+      return;
+    }
+
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      console.log('WebSocket already connected');
+      return;
+    }
+
     try {
       const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`;
       console.log('Attempting secure WebSocket connection:', url);
       
       this.ws = new WebSocket(url);
       
-      // Connection timeout handler
       this.connectionTimeout = setTimeout(() => {
         if (this.ws?.readyState !== WebSocket.OPEN) {
           console.error('WebSocket connection timeout');
@@ -48,9 +86,11 @@ export class StockWebSocket {
         if (this.connectionTimeout) {
           clearTimeout(this.connectionTimeout);
         }
-        const reason = this.getCloseReason(event.code);
-        console.log(`WebSocket closed: ${event.code} (${reason})`);
-        this.handleClose();
+        if (StockWebSocket.shouldInitialize()) {
+          const reason = this.getCloseReason(event.code);
+          console.log(`WebSocket closed: ${event.code} (${reason})`);
+          this.handleClose();
+        }
       };
 
       this.ws.onerror = (error) => {
@@ -64,7 +104,6 @@ export class StockWebSocket {
       this.setupMessageHandler();
     } catch (error) {
       console.error('WebSocket connection failed:', error);
-      this.handleReconnect();
     }
   }
 
@@ -83,7 +122,7 @@ export class StockWebSocket {
       1011: "내부 서버 오류",
       1015: "TLS 보안 연결 실패"
     };
-    return reasons[code] || "Unknown";
+    return reasons[code] || "알 수 없는 오류";
   }
 
   private setupMessageHandler() {
@@ -109,7 +148,7 @@ export class StockWebSocket {
   }
 
   private handleReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+    if (this.reconnectAttempts < this.maxReconnectAttempts && StockWebSocket.shouldInitialize()) {
       const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
       console.log(`Attempting to reconnect in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
       
@@ -122,7 +161,15 @@ export class StockWebSocket {
     }
   }
 
-  sendMessage(action: WebSocketActions, payload = {}) {
+  public onMessage(handler: (message: WebSocketMessage) => void) {
+    this.messageHandler = handler;
+  }
+
+  public sendMessage(action: WebSocketActions, payload = {}) {
+    if (!StockWebSocket.shouldInitialize()) {
+      return;
+    }
+
     if (this.ws?.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({ action, ...payload });
       console.log('Sending message:', message);
@@ -132,19 +179,20 @@ export class StockWebSocket {
     }
   }
 
-  onMessage(handler: (message: WebSocketMessage) => void) {
-    this.messageHandler = handler;
-  }
-
-  disconnect() {
+  public disconnect() {
     if (this.connectionTimeout) {
       clearTimeout(this.connectionTimeout);
     }
     if (this.ws) {
-      this.ws.close(1000, 'Client disconnecting');
+      this.ws.close(1000, '정상 종료');
       this.ws = null;
     }
+    StockWebSocket.instance = null;
+  }
+
+  static create() {
+    return new StockWebSocket();
   }
 }
 
-export const webSocket = new StockWebSocket();
+export const webSocket = StockWebSocket.getInstance();
