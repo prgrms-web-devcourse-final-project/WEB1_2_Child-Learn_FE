@@ -7,8 +7,8 @@ import axios from 'axios';
 export const useAttendance = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<AttendanceResponse, Error>({
-    mutationFn: checkAttendance,
+  return useMutation<AttendanceResponse, Error, number>({
+    mutationFn: (userId: number) => checkAttendance(userId),
     onSuccess: (data) => {
       showToast.success(
         `출석체크 완료! ${data.currentPoints} 포인트가 적립되었습니다.`
