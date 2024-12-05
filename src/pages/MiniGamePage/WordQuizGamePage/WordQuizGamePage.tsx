@@ -67,13 +67,15 @@ const WordQuizGamePage = () => {
             explanation: quiz.explanation,
             hint: quiz.hint,
           }]);
+          setLives(quiz.remainLife || 3); // 백엔드에서 남은 목숨을 반환하지 않으면 기본값 3 설정
+          setCurrentQuestionIndex(quiz.currentPhase - 1 || 0); // 첫 번째 문제로 초기화
         } catch (error) {
           console.error('Failed to fetch quiz data:', error);
         }
       };
     
       fetchQuizData();
-    }, [difficulty, setWords]);
+    }, [difficulty, setWords, setLives, setCurrentQuestionIndex]);
     
   // 타이머 초기화
   useEffect(() => {

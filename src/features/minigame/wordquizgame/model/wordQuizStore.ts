@@ -21,7 +21,7 @@ interface WordQuizState {
 }
 
 export const useWordQuizStore = create<WordQuizState>((set, get) => ({
-  difficulty: 'begin', // 기본 난이도
+  difficulty: 'begin',
   lives: 3, // 기본 목숨
   lastPlayedDates: {
     begin: null,
