@@ -131,7 +131,9 @@ const WordQuizGamePage = () => {
   const handleNextQuestion = async () => {
     setShowCorrectPopup(false);
     setUserAnswer([]);
-
+    if (currentPhase === 3) {
+      navigate(`/word-quiz/result/${difficulty}`);
+    } else {
     try {
       const response = await wordQuizApi.submitAnswer(true);
       if ('message' in response) {
@@ -148,6 +150,7 @@ const WordQuizGamePage = () => {
     } catch (error) {
       console.error('Failed to fetch next question:', error);
     }
+  }
   };
 
   // 목숨이 0이 되면 결과 페이지로 이동
