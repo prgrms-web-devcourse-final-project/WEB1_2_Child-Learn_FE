@@ -15,6 +15,7 @@ interface WordQuizState {
   nextQuestion: () => void; // 다음 문제로 이동
   resetQuiz: () => void; // 퀴즈 초기화
   setLives: (lives: number) => void;
+  setCurrentQuestionIndex: (index: number) => void;
   isPlayable: (difficulty: 'begin' | 'mid' | 'adv') => boolean; // 플레이 가능 여부 확인
   setLastPlayedDate: (difficulty: 'begin' | 'mid' | 'adv', date: string) => void; // 마지막 플레이 날짜 설정
 }
@@ -50,6 +51,8 @@ export const useWordQuizStore = create<WordQuizState>((set, get) => ({
       words: [],
     }),
   setLives: (lives) => set({ lives }), 
+  setCurrentQuestionIndex: (index) =>
+    set({ currentQuestionIndex: index }), // currentPhase와 동기화
   isPlayable: (difficulty) => {
     const lastPlayed = get().lastPlayedDates[difficulty];
     if (!lastPlayed) return true; // 이전에 플레이한 기록이 없으면 플레이 가능

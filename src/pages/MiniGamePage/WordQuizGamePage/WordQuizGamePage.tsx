@@ -15,6 +15,8 @@ const WordQuizGamePage = () => {
     incrementCorrectAnswers,
     decrementLives,
     setWords,
+    setLives,
+    setCurrentQuestionIndex,
     lives,
     words,
     currentQuestionIndex,
@@ -98,24 +100,23 @@ const WordQuizGamePage = () => {
   // 키보드 클릭 핸들러
   const handleSelectLetter = async (letter: string) => {
     if (!correctWord || userAnswer.length >= correctWord.length) return;
-  
+
     const updatedAnswer = [...userAnswer, letter];
     setUserAnswer(updatedAnswer);
-  
+
     if (updatedAnswer.join('') === correctWord) {
       incrementCorrectAnswers(); // 맞춘 문제 증가
       setShowCorrectPopup(true);
-  
+
       try {
         const response = await wordQuizApi.submitAnswer(true);
         if ('message' in response) {
           // 게임 종료 시
           navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
         } else {
-          // 다음 문제로 진행
-          setWords([response]);
-          useWordQuizStore.getState().setLives(response.remainLife);
-          nextQuestion();
+          setWords([response]); // 다음 문제 업데이트
+          setLives(response.remainLife);
+          setCurrentQuestionIndex(response.currentPhase - 1);
         }
       } catch (error) {
         console.error('Failed to submit correct answer:', error);
@@ -123,16 +124,15 @@ const WordQuizGamePage = () => {
     } else if (updatedAnswer.length === correctWord.length) {
       decrementLives();
       setShowIncorrectPopup(true);
-  
+
       try {
         const response = await wordQuizApi.submitAnswer(false);
         if ('message' in response) {
           // 게임 종료 시
           navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
         } else {
-          // 남은 목숨 업데이트
           setWords([response]);
-          useWordQuizStore.getState().setLives(response.remainLife);
+          setLives(response.remainLife);
         }
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
