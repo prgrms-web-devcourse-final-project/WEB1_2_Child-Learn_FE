@@ -98,33 +98,48 @@ const WordQuizGamePage = () => {
   // 키보드 클릭 핸들러
   const handleSelectLetter = async (letter: string) => {
     if (!correctWord || userAnswer.length >= correctWord.length) return;
-
+  
     const updatedAnswer = [...userAnswer, letter];
     setUserAnswer(updatedAnswer);
-
+  
     if (updatedAnswer.join('') === correctWord) {
       incrementCorrectAnswers(); // 맞춘 문제 증가
       setShowCorrectPopup(true);
-
-      // 정답 제출 API 호출
+  
       try {
-        await wordQuizApi.submitAnswer(true);
+        // 정답 제출 후 서버에서 갱신된 데이터 받아옴
+        const updatedQuiz = await wordQuizApi.submitAnswer(true);
+        setWords([
+          {
+            word: updatedQuiz.word,
+            explanation: updatedQuiz.explanation,
+            hint: updatedQuiz.hint,
+          },
+        ]);
+        nextQuestion(); // 상태를 통해 다음 문제로 이동
       } catch (error) {
         console.error('Failed to submit correct answer:', error);
       }
     } else if (updatedAnswer.length === correctWord.length) {
       decrementLives(); // 목숨 감소
       setShowIncorrectPopup(true);
-
-      // 오답 제출 API 호출
+  
       try {
-        await wordQuizApi.submitAnswer(false);
+        // 오답 제출 후 남은 생명 갱신
+        const updatedQuiz = await wordQuizApi.submitAnswer(false);
+        setWords([
+          {
+            word: updatedQuiz.word,
+            explanation: updatedQuiz.explanation,
+            hint: updatedQuiz.hint,
+          },
+        ]);
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
       }
     }
   };
-
+  
   // 다음 문제로 이동
   const handleNextQuestion = () => {
     setShowCorrectPopup(false);
