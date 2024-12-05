@@ -52,19 +52,14 @@ const mockQuestions = [
       },
 ];
 
-// 난이도별 플레이 가능 여부
-const playAvailability = {
-  isEasyPlayAvailable: true,
-  isNormalPlayAvailable: true,
-  isHardPlayAvailable: false,
-};
-
 // Handlers
 export const wordQuizGameHandlers = [
   // 난이도별 플레이 가능 여부 확인
   http.get('/api/v1/word-quiz/availability', () => {
     console.log('MSW: Checking word quiz availability');
-    return HttpResponse.json(playAvailability);
+    return HttpResponse.json({isEasyPlayAvailable: true,
+        isNormalPlayAvailable: true,
+        isHardPlayAvailable: true});
   }),
 
   // 게임 시작
@@ -79,21 +74,15 @@ export const wordQuizGameHandlers = [
       );
     }
 
-    // 플레이 가능 여부 확인
-    if (!playAvailability[`is${difficulty}PlayAvailable` as keyof typeof playAvailability]) {
-      return new HttpResponse(
-        JSON.stringify({ error: `Daily play limit exceeded for ${difficulty} difficulty` }),
-        { status: 403 }
-      );
-    }
-
     // 세션 초기화 또는 기존 세션 반환
     if (!sessionGameState) {
       const randomIndex = Math.floor(Math.random() * mockQuestions.length);
       const question = mockQuestions[randomIndex];
 
       sessionGameState = {
-        ...question,
+        word: question.word,
+        explanation: question.explanation,
+        hint: question.hint,
         currentPhase: 1,
         remainLife: 3,
         difficulty,
