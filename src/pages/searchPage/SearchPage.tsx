@@ -25,9 +25,8 @@ const SearchPage = () => {
   useEffect(() => {
     if (error) {
       const axiosError = error as any;
-      if (axiosError.response?.status === 404) {
-        showToast.info('검색 결과가 없습니다.');
-      } else {
+      // 500 에러(검색 결과 없음)일 때는 토스트를 표시하지 않음
+      if (axiosError.response?.status !== 500) {
         showToast.error('검색 중 오류가 발생했습니다.');
       }
     }
