@@ -52,6 +52,10 @@ export class StockWebSocket {
     return window.location.pathname.includes('/advanced');
   }
 
+  private getToken(): string | null {
+    return localStorage.getItem('jwtToken');
+  }
+
   public connect() {
     if (!StockWebSocket.shouldInitialize()) {
       return;
@@ -63,7 +67,13 @@ export class StockWebSocket {
     }
 
     try {
-      const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`;
+      const token = this.getToken();
+      if (!token) {
+        console.error('JWT 토큰이 없습니다.');
+        return;
+      }
+
+      const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
       console.log('Attempting secure WebSocket connection:', url);
       
       this.ws = new WebSocket(url);
@@ -177,6 +187,7 @@ export class StockWebSocket {
       1010: "필수 확장 기능 누락",
       1011: "내부 서버 오류",
       1015: "TLS 보안 연결 실패"
+      
     };
     return reasons[code] || "알 수 없는 오류";
   }
