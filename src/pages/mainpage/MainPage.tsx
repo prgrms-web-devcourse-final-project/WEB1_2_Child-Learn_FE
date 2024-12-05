@@ -15,7 +15,9 @@ const MainPage = () => {
   const { data: userInfo, isLoading } = useUserInfo();
   const attendanceMutation = useAttendance();
   const handleAttendance = () => {
-    attendanceMutation.mutate();
+    if (userInfo?.id) {
+      attendanceMutation.mutate(userInfo.id);
+    }
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -72,12 +74,13 @@ const MainPage = () => {
             <WelcomeText>
               반가워요, {userInfo?.username || '사용자'} 님! 😊
             </WelcomeText>
-            <PointBadge />
+            <PointBadge points={userInfo?.points ?? 0} />
           </WelcomeSection>
 
           {/* 출석체크 카드 */}
           <AttendanceCard
             title={'매일 출석하고\n10 Point 받기'}
+            userId={userInfo?.id}
             onClick={handleAttendance}
           />
 

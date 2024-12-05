@@ -4,16 +4,17 @@ import { useAttendance } from '@/features/mainpage/lib/queries';
 
 interface AttendanceCardProps {
   title: string;
+  userId: number;
   onClick?: () => void;
 }
 
-export const AttendanceCard = ({ onClick }: AttendanceCardProps) => {
+export const AttendanceCard = ({ onClick, userId }: AttendanceCardProps) => {
   const [isChecked, setIsChecked] = useState(false);
   const attendanceMutation = useAttendance();
 
   const handleAttendance = () => {
-    if (!isChecked && !attendanceMutation.isPending) {
-      attendanceMutation.mutate(undefined, {
+    if (!isChecked && !attendanceMutation.isPending && userId) {
+      attendanceMutation.mutate(userId, {
         onSuccess: () => {
           setIsChecked(true);
           onClick?.();
@@ -33,7 +34,7 @@ export const AttendanceCard = ({ onClick }: AttendanceCardProps) => {
           ) : (
             <>
               <div className="main-text">매일 출석하고</div>
-              <div className="sub-text">10 Point 받기</div>
+              <div className="sub-text">100 Point 받기</div>
             </>
           )}
         </Title>
