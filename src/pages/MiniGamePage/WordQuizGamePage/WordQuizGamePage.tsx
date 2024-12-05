@@ -103,40 +103,20 @@ const WordQuizGamePage = () => {
   // 키보드 클릭 핸들러
   const handleSelectLetter = async (letter: string) => {
     if (!correctWord || userAnswer.length >= correctWord.length) return;
-
+  
     const updatedAnswer = [...userAnswer, letter];
     setUserAnswer(updatedAnswer);
-
+  
     if (updatedAnswer.join('') === correctWord) {
-      incrementCorrectAnswers(); // 맞춘 문제 증가
-      setShowCorrectPopup(true);
-
-      try {
-        const response = await wordQuizApi.submitAnswer(true);
-        if ('message' in response) {
-          // 게임 종료 시
-          navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
-        } else {
-          const transformedResponse = {
-            word: response.word,
-            explanation: response.explanation,
-            hint: response.hint,
-          };
-          setWords([transformedResponse]);
-          setLives(response.remainLife || 3);
-          setCurrentQuestionIndex(response.currentPhase - 1 || 0);
-        }
-      } catch (error) {
-        console.error('Failed to submit correct answer:', error);
-      }
+      incrementCorrectAnswers();
+      setShowCorrectPopup(true); // 정답 팝업 표시
     } else if (updatedAnswer.length === correctWord.length) {
       decrementLives();
       setShowIncorrectPopup(true);
-
+  
       try {
-        const response = await wordQuizApi.submitAnswer(false);
+        const response = await wordQuizApi.submitAnswer(false); // 오답 API 호출
         if ('message' in response) {
-          // 게임 종료 시
           navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
         } else {
           const transformedResponse = {
@@ -151,20 +131,31 @@ const WordQuizGamePage = () => {
         console.error('Failed to submit incorrect answer:', error);
       }
     }
-  };
+  };  
   
-  // 다음 문제로 이동
-  const handleNextQuestion = () => {
-    setShowCorrectPopup(false);
-    setShowIncorrectPopup(false);
-    setUserAnswer([]);
-
-    if (currentQuestionIndex + 1 < words.length) {
-      nextQuestion(); // 다음 문제로 이동
-    } else {
-      navigate(`/word-quiz/result/${difficulty}`); // 모든 문제를 다 풀었을 때 결과 페이지로 이동
+  // 다음 문제로 이동 
+  const handleNextQuestion = async () => {
+    setShowCorrectPopup(false); // 정답 팝업 닫기
+    setUserAnswer([]); // 사용자 답 초기화
+  
+    try {
+      const response = await wordQuizApi.submitAnswer(true); // 정답 API 호출
+      if ('message' in response) {
+        navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
+      } else {
+        const transformedResponse = {
+          word: response.word,
+          explanation: response.explanation,
+          hint: response.hint,
+        };
+        setWords([transformedResponse]);
+        setLives(response.remainLife || 3);
+        setCurrentQuestionIndex(response.currentPhase - 1 || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch next question:', error);
     }
-  };
+  };  
 
   // 목숨이 0이 되면 결과 페이지로 이동
   useEffect(() => {
