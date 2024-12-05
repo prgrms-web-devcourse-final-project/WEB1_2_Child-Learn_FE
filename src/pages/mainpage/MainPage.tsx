@@ -8,13 +8,14 @@ import { MenuCard } from '@/shared/ui/MenuCard/MenuCard';
 import { AttendanceCard } from '@/features/mainpage/ui/AttendanceCard';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { DifficultyModal } from '@/features/mainpage/ui/DifficultyModal';
+import { useAttendance } from '@/features/mainpage/lib/queries';
 
 const MainPage = () => {
   const navigate = useNavigate();
   const { data: userInfo, isLoading } = useUserInfo();
-
+  const attendanceMutation = useAttendance();
   const handleAttendance = () => {
-    // 출석 처리 로직 (API 호출 등)
+    attendanceMutation.mutate();
   };
 
   const [isModalOpen, setIsModalOpen] = useState(false);

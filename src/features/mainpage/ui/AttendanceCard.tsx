@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { useAttendance } from '@/features/mainpage/lib/queries';
 
 interface AttendanceCardProps {
   title: string;
@@ -8,10 +9,17 @@ interface AttendanceCardProps {
 
 export const AttendanceCard = ({ onClick }: AttendanceCardProps) => {
   const [isChecked, setIsChecked] = useState(false);
+  const attendanceMutation = useAttendance();
 
   const handleAttendance = () => {
-    setIsChecked(true);
-    onClick?.();
+    if (!isChecked) {
+      attendanceMutation.mutate(undefined, {
+        onSuccess: (data) => {
+          setIsChecked(data.isCheckin);
+          onClick?.();
+        },
+      });
+    }
   };
 
   return (
