@@ -107,33 +107,30 @@ const WordQuizGamePage = () => {
       setShowCorrectPopup(true);
   
       try {
-        // 정답 제출 후 서버에서 갱신된 데이터 받아옴
-        const updatedQuiz = await wordQuizApi.submitAnswer(true);
-        setWords([
-          {
-            word: updatedQuiz.word,
-            explanation: updatedQuiz.explanation,
-            hint: updatedQuiz.hint,
-          },
-        ]);
-        nextQuestion(); // 상태를 통해 다음 문제로 이동
+        const response = await wordQuizApi.submitAnswer(true);
+        if ('message' in response) {
+          // 게임 종료 시
+          navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
+        } else {
+          // 다음 문제로 진행
+          setWords([response]);
+          nextQuestion();
+        }
       } catch (error) {
         console.error('Failed to submit correct answer:', error);
       }
     } else if (updatedAnswer.length === correctWord.length) {
-      decrementLives(); // 목숨 감소
       setShowIncorrectPopup(true);
   
       try {
-        // 오답 제출 후 남은 생명 갱신
-        const updatedQuiz = await wordQuizApi.submitAnswer(false);
-        setWords([
-          {
-            word: updatedQuiz.word,
-            explanation: updatedQuiz.explanation,
-            hint: updatedQuiz.hint,
-          },
-        ]);
+        const response = await wordQuizApi.submitAnswer(false);
+        if ('message' in response) {
+          // 게임 종료 시
+          navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
+        } else {
+          // 남은 목숨 업데이트
+          setWords([response]);
+        }
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
       }
