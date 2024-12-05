@@ -2,10 +2,16 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { AuthInput } from '@/shared/ui/AuthInput/AuthInput';
 import { AuthButton } from '@/shared/ui/AuthButton/AuthButton';
-import { RecoveryTab, RecoveryFormData } from '../model/types';
-import { useFindId, useResetPassword } from '../lib/queries';
-import { MaskedIdModal } from './MaskedIdModal';
-import { ResetPasswordModal } from './ResetPasswordModal';
+import {
+  RecoveryTab,
+  RecoveryFormData,
+} from '@/features/auth/find_id_password/model/types';
+import {
+  useFindId,
+  useResetPassword,
+} from '@/features/auth/find_id_password/lib/queries';
+import { MaskedIdModal } from '@/features/auth/find_id_password/ui/MaskedIdModal';
+import { ResetPasswordModal } from '@/features/auth/find_id_password/ui/ResetPasswordModal';
 
 interface AccountRecoveryFormProps {
   activeTab: RecoveryTab;
@@ -45,10 +51,8 @@ export const AccountRecoveryForm = ({
         { email: formData.email, birth },
         {
           onSuccess: (data) => {
-            if (data.loginId) {
-              setMaskedId(data.loginId);
-              setIsIdModalOpen(true);
-            }
+            setMaskedId(data);
+            setIsIdModalOpen(true);
           },
         }
       );
