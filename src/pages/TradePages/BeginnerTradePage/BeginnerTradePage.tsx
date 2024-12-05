@@ -30,7 +30,7 @@ const BeginnerTradePage = () => {
         <ExitButton onClick={() => navigate('/main')}>
           <img src="/img/out.png" alt="exit" />
         </ExitButton>
-        <StyledPointBadge points={2000} />
+        <PointBadge/>
       </TopBar>
 
       <ContentCard>
