@@ -28,15 +28,21 @@ export interface WebSocketMessage {
 }
 
 export class StockWebSocket {
+  // WebSocket 설정을 클래스 상수로 정의
+  private static readonly BASE_URL = 'ws://3.35.242.1:8080';
+  private static readonly WS_PATH = '/ws/advanced-invest';
+  
   private ws: WebSocket | null = null;
   private messageHandler?: (message: WebSocketMessage) => void;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
 
   constructor() {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = '3.35.242.1:8080';
-    this.connect(`${protocol}//${host}/api/v1/advanced-invest`);
+    this.connect(this.getWebSocketUrl());
+  }
+
+  private getWebSocketUrl(): string {
+    return `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`;
   }
 
   private connect(url: string) {
@@ -88,9 +94,7 @@ export class StockWebSocket {
       const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
       setTimeout(() => {
         this.reconnectAttempts++;
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = '3.35.242.1:8080';
-        this.connect(`${protocol}//${host}/api/v1/advanced-invest`);
+        this.connect(this.getWebSocketUrl()); // 동일한 URL 사용
       }, timeout);
     } else {
       console.error('Max reconnection attempts reached');
