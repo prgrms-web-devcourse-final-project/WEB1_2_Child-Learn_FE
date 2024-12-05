@@ -1,5 +1,6 @@
 import { baseApi } from "./base";
 import { Card } from "@/features/minigame/flipcardgame/types/cardTypes";
+import { WordQuizResponse, WordQuizRequest } from "@/features/minigame/wordquizgame/types/wordTypes";
 
 interface DifficultyAvailability {
   isBegin: boolean;
@@ -9,15 +10,6 @@ interface DifficultyAvailability {
 
 interface LastPlayTimeResponse {
   lastPlayTime: string;
-}
-
-export interface WordQuizQuestion {
-  word: string;
-  explanation: string;
-  hint: string;
-  currentPhase: number;
-  remainLife: number;
-  difficulty: 'EASY' | 'NORMAL' | 'HARD';
 }
 
 export const flipCardApi = {
@@ -91,7 +83,7 @@ export const wordQuizApi = {
   },
 
   // 난이도별 퀴즈 조회
-  getQuizByDifficulty: async (difficulty: 'EASY' | 'NORMAL' | 'HARD'): Promise<WordQuizQuestion> => {
+  getQuizByDifficulty: async (difficulty: 'EASY' | 'NORMAL' | 'HARD'): Promise<WordQuizResponse> => {
     const response = await baseApi.get(`/word-quiz/${difficulty}`,{
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
@@ -103,10 +95,12 @@ export const wordQuizApi = {
   // 답안 제출
   submitAnswer: async (
     isCorrect: boolean
-  ): Promise<WordQuizQuestion | { message: string }> => {
+  ): Promise<WordQuizResponse | { message: string }> => {
+    const body: WordQuizRequest = { isCorrect };
+
     const response = await baseApi.post(
       `/word-quiz/submissions`,
-      { isCorrect },
+      body,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
@@ -121,6 +115,6 @@ export const wordQuizApi = {
     }
 
     // 게임 상태 업데이트
-    return response.data as WordQuizQuestion;
+    return response.data as WordQuizResponse;
   },
 };
