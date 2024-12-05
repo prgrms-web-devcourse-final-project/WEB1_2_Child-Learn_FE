@@ -1,38 +1,61 @@
-// src/features/Advanced_game/model/stockWebSocket.ts
+import SockJS from 'sockjs-client';
 
-export interface WebSocketMessage {
-  type: 'START_GAME' | 'PAUSE_GAME' | 'END_GAME' | 'REFERENCE_DATA' | 'LIVE_DATA';
-  data?: any;
+export enum GameWebSocketActions {
+  START_GAME = 'START_GAME',
+  PAUSE_GAME = 'PAUSE_GAME',
+  RESUME_GAME = 'RESUME_GAME',
+  END_GAME = 'END_GAME',
+  GET_REMAINING_TIME = 'GET_REMAINING_TIME'
 }
 
-class StockWebSocket {
-  private ws: WebSocket | null = null;
-  private messageHandler: ((message: WebSocketMessage) => void) | null = null;
+export enum DataWebSocketActions {
+  REFERENCE_DATA = 'REFERENCE_DATA',
+  LIVE_DATA = 'LIVE_DATA'
+}
 
-  connect(onMessage: (message: WebSocketMessage) => void) {
-    this.messageHandler = onMessage;
-    this.ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080');
+type WebSocketActions = GameWebSocketActions | DataWebSocketActions;
 
-    this.ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
+interface WebSocketRequest {
+  action: WebSocketActions;
+  advId?: number;
+  memberId?: number;
+}
+
+interface WebSocketMessage {
+  type: string;
+  data: any;
+}
+
+export class StockWebSocket {
+  private sockjs: any;
+  private messageHandler?: (message: WebSocketMessage) => void;
+
+  constructor() {
+    const baseUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8080';
+    this.sockjs = new SockJS(`${baseUrl}/ws/advanced-invest`);
+    this.setupMessageHandler();
+  }
+
+  private setupMessageHandler() {
+    this.sockjs.onmessage = (event: MessageEvent) => {
+      const message = JSON.parse(event.data) as WebSocketMessage;
       this.messageHandler?.(message);
-    };
-
-    this.ws.onerror = (error) => {
-      console.error('WebSocket 오류:', error);
     };
   }
 
-  sendMessage(type: string, data?: any) {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type, data }));
+  onMessage(handler: (message: WebSocketMessage) => void) {
+    this.messageHandler = handler;
+  }
+
+  sendMessage(action: WebSocketActions, payload: Partial<WebSocketMessage> = {}) {
+    if (this.sockjs.readyState === SockJS.OPEN) {
+      this.sockjs.send(JSON.stringify({ action, ...payload }));
     }
   }
 
   disconnect() {
-    this.ws?.close();
-    this.ws = null;
+    this.sockjs?.close();
   }
 }
 
-export const createStockWebSocket = () => new StockWebSocket();
+export const webSocket = new StockWebSocket();
