@@ -3,7 +3,10 @@ import { persist } from 'zustand/middleware';
 import { TokenService } from '@/shared/lib/token';
 import { User } from '@/entities/User/model/types';
 import { logoutApi } from '@/features/mypage/api/logoutApi';
-import { isTokenExpiringSoon, silentRefresh } from '@/entities/User/lib/tokenUtils';
+import {
+  isTokenExpiringSoon,
+  silentRefresh,
+} from '@/entities/User/lib/tokenUtils';
 
 let refreshTimer: NodeJS.Timeout | null = null;
 
@@ -56,18 +59,21 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: async () => {
+        // 먼저 타이머와 로컬 상태를 초기화
+        stopTokenRefreshTimer();
+        TokenService.clearTokens();
+        set({
+          isAuthenticated: false,
+          accessToken: null,
+          user: null,
+        });
+
         try {
+          // 로컬 상태 초기화 후 서버에 로그아웃 요청
           await logoutApi.logout();
         } catch (error) {
+          // 서버 로그아웃 실패해도 이미 로컬은 로그아웃 된 상태
           console.error('Logout failed:', error);
-        } finally {
-          stopTokenRefreshTimer();
-          TokenService.clearTokens();
-          set({
-            isAuthenticated: false,
-            accessToken: null,
-            user: null,
-          });
         }
       },
     }),
