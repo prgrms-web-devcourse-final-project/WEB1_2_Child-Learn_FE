@@ -1,10 +1,15 @@
-// src/features/Advanced_game/ui/StockSlider/stockSlider.tsx
-
+// features/Advanced_chat/ui/StockSlider/StockSlider.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart'; 
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
 import { StockWebSocket } from '@/features/Advanced_chat/model/stockWebSocket';
-import { WebSocketActions } from '@/features/Advanced_chat/types/stock';
+import { WebSocketActions } from '@/features/Advanced_chat/model/stockWebSocket';
+import { 
+  WebSocketMessage, 
+  Stock,
+  StockPrice
+} from '@/features/Advanced_chat/types/stock';
+import { generateUUID } from '@/features/Advanced_chat/utils/uuid';
 import {  
   SlideContainer,
   TimeDisplay,
@@ -17,73 +22,10 @@ import {
   SlideIndicators,
   Indicator
 } from './styled';
-  
-interface StockMessage {
-  type: WebSocketActions;
-  data?: {
-    symbol: string;
-    timestamp: number;
-    closePrice: string;
-    openPrice: string;
-    highPrice: string;
-    lowPrice: string;
-    change?: number;
-    volume?: number;
-  };
-}
 
-interface Stock {
-  id: number;
-  symbol: string;
-  title: string;
-}
-
-interface StockPrice {
-  timestamp: string;
-  price: string;
-  open: string;
-  high: string;
-  low: string;
-  close: string;
-  change: number;
-  volume: number;
-}
-
-const INITIAL_STOCKS: Stock[] = [
-  { id: 1, symbol: 'SAMSUNG', title: '삼성전자' },
-  { id: 2, symbol: 'HYUNDAI', title: '현대차' },
-  { id: 3, symbol: 'KAKAO', title: '카카오' },
-  { id: 4, symbol: 'NAVER', title: '네이버' }
-];
-
-// 임시 데이터 생성 함수 수정
-const generateMockData = (symbol: string, prevPrice?: number) => {
-  const basePrice = prevPrice || (
-    symbol === 'SAMSUNG' ? 70000 : 
-    symbol === 'HYUNDAI' ? 180000 : 
-    symbol === 'KAKAO' ? 50000 : 250000
-  );
-  
-  const randomChange = (Math.random() - 0.5) * 1000;
-  const open = basePrice;
-  const close = basePrice + randomChange;
-  const high = Math.max(open, close) + Math.random() * 200;
-  const low = Math.min(open, close) - Math.random() * 200;
-
-  return {
-    timestamp: new Date().toISOString(),
-    price: close.toString(),
-    open: open.toString(),
-    high: high.toString(),
-    low: low.toString(),
-    close: close.toString(),
-    change: randomChange,
-    volume: Math.floor(Math.random() * 10000)
-  };
-};
 
 export const StockSlider: React.FC = () => {
-  const [gameId] = useState<string>(crypto.randomUUID());
+  const [gameId] = useState<string>(generateUUID());
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showActions, setShowActions] = useState(false);
   const [selectedStock, setSelectedStock] = useState<number | null>(null);
@@ -91,62 +33,71 @@ export const StockSlider: React.FC = () => {
   const [gameTime, setGameTime] = useState(0);
   const [stockData, setStockData] = useState<Record<string, StockPrice[]>>({});
   const [showTradeModal, setShowTradeModal] = useState(false);
-  const wsRef = useRef(new StockWebSocket());
-  const [availableStocks] = useState<Stock[]>(INITIAL_STOCKS);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [availableStocks, setAvailableStocks] = useState<Stock[]>([]);
+  const wsRef = useRef(StockWebSocket.getInstance());
 
   useEffect(() => {
     const ws = wsRef.current;
-    
-    const messageHandler = (message: StockMessage) => {
-      console.log('Received message:', message);
+    ws.connect();
+
+    const messageHandler = (message: WebSocketMessage) => {
+      if (!message.action) {
+        console.error("Invalid message: missing action");
+        return;
+      }
+      console.log(`Received message (GameID: ${gameId}):`, message);
       
       switch (message.type) {
-        case 'REFERENCE_DATA':
-        case 'LIVE_DATA':
+        case WebSocketActions.REFERENCE_DATA:
+          if (message.data?.stocks) {
+            setAvailableStocks(message.data.stocks);
+          }
           if (message.data) {
-            setStockData(prevData => {
-              const newData = { ...prevData };
-              const item = message.data!;
-              
-              console.log('Processing websocket data:', item);
-              
-              const newPrice = {
-                timestamp: new Date(item.timestamp * 1000).toISOString(),
-                price: item.closePrice,
-                open: item.openPrice,
-                high: item.highPrice,
-                low: item.lowPrice,
-                close: item.closePrice,
-                change: item.change || 0,
-                volume: item.volume || 0
-              };
-              
-              console.log('New price data:', newPrice);
-              console.log('Current data for symbol:', newData[item.symbol]);
-              
-              newData[item.symbol] = newData[item.symbol] 
-                ? [newPrice, ...newData[item.symbol]]
-                : [newPrice];
-              return newData;
-            });
+            handleStockData(message.data);
           }
           break;
 
-        case 'END_GAME':
+        case WebSocketActions.LIVE_DATA:
+          if (message.data) {
+            handleStockData(message.data);
+          }
+          break;
+
+        case WebSocketActions.END_GAME:
           setIsPlaying(false);
           break;
       }
     };
 
-    ws.onMessage((message) => {
-      messageHandler(message as unknown as StockMessage);
-    });
-
-    return () => {
-      ws.disconnect();
+    const handleStockData = (data: WebSocketMessage['data']) => {
+      if (!data) return;
+      
+      setStockData(prevData => {
+        const newData = { ...prevData };
+        const newPrice = {
+          timestamp: new Date(data.timestamp * 1000).toISOString(),
+          price: data.closePrice,
+          open: data.openPrice,
+          high: data.highPrice,
+          low: data.lowPrice,
+          close: data.closePrice,
+          change: data.change || 0,
+          volume: data.volume || 0
+        };
+        
+        newData[data.symbol] = newData[data.symbol] 
+          ? [newPrice, ...newData[data.symbol]]
+          : [newPrice];
+        
+        return newData;
+      });
     };
-  }, []); 
+
+    ws.onMessage(messageHandler);
+    ws.sendMessage(WebSocketActions.REFERENCE_DATA, { gameId });
+
+    return () => ws.disconnect();
+  }, [gameId]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -154,6 +105,7 @@ export const StockSlider: React.FC = () => {
       timer = setInterval(() => {
         setGameTime(prev => {
           if (prev >= 420) {
+            wsRef.current.sendMessage(WebSocketActions.END_GAME, { gameId });
             setIsPlaying(false);  
             return prev;
           }
@@ -163,26 +115,6 @@ export const StockSlider: React.FC = () => {
     }
     return () => clearInterval(timer);
   }, [isPlaying, gameId]);
-
-  useEffect(() => {
-    // 초기 데이터 설정
-    const initialData: Record<string, any> = {};
-    INITIAL_STOCKS.forEach(stock => {
-      initialData[stock.symbol] = Array(10).fill(null).map(() => 
-        generateMockData(stock.symbol)
-      );
-    });
-    setStockData(initialData);
-  }, []);
-
-  useEffect(() => {
-    // 컴포넌트 언마운트 시 정리
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -200,31 +132,17 @@ export const StockSlider: React.FC = () => {
 
   const handlePlayClick = () => {
     if (!isPlaying) {
-      // 게임 시작
-      const interval = setInterval(() => {
-        setStockData(prevData => {
-          const newData = { ...prevData };
-          INITIAL_STOCKS.forEach(stock => {
-            const lastPrice = newData[stock.symbol]?.[0];
-            const newPrice = generateMockData(
-              stock.symbol, 
-              lastPrice ? parseFloat(lastPrice.close) : undefined
-            );
-            newData[stock.symbol] = [newPrice, ...(newData[stock.symbol] || []).slice(0, 9)];
-          });
-          return newData;
-        });
-      }, 3000);
-
-      intervalRef.current = interval;
+      wsRef.current.sendMessage(WebSocketActions.START_GAME, { gameId });
+      setIsPlaying(true);
     } else {
-      // 게임 일시정지
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      wsRef.current.sendMessage(WebSocketActions.PAUSE_GAME, { gameId });
+      setIsPlaying(false);
     }
-    setIsPlaying(!isPlaying);
   };
+
+  if (availableStocks.length === 0) {
+    return <div>주식 데이터를 불러오는 중...</div>;
+  }
 
   return (
     <SlideContainer>

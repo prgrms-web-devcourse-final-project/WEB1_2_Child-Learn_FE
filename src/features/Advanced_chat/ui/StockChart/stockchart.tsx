@@ -50,7 +50,7 @@ export const StockChart: React.FC<StockChartProps> = ({
       type: 'candlestick',
       height: 350,
       animations: {
-        enabled: false
+        enabled: isPlaying
       },
       toolbar: {
         show: false
