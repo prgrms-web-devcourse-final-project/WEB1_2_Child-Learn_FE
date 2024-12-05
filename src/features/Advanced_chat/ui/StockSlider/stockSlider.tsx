@@ -5,6 +5,7 @@ import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart';
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
 import { StockWebSocket } from '@/features/Advanced_chat/model/stockWebSocket';
 import { WebSocketActions } from '@/features/Advanced_chat/types/stock';
+import { WebSocketMessage } from '@/features/Advanced_chat/types/stock';
 import {
   SlideContainer,
   TimeDisplay,
@@ -18,8 +19,8 @@ import {
   Indicator
 } from './styled';
   
-interface WebSocketMessage {
-  type: string;
+interface StockMessage {
+  type: WebSocketActions;
   data?: {
     symbol: string;
     timestamp: number;
@@ -98,12 +99,10 @@ export const StockSlider: React.FC = () => {
   useEffect(() => {
     const ws = wsRef.current;
     
-    ws.onMessage((message: WebSocketMessage) => {
+    const messageHandler = (message: StockMessage) => {
       console.log('Received message:', message);
       
-      const messageType = message.type as WebSocketActions;
-
-      switch (messageType) {
+      switch (message.type) {
         case 'REFERENCE_DATA':
         case 'LIVE_DATA':
           if (message.data) {
@@ -139,12 +138,16 @@ export const StockSlider: React.FC = () => {
           setIsPlaying(false);
           break;
       }
+    };
+
+    ws.onMessage((message) => {
+      messageHandler(message as unknown as StockMessage);
     });
 
     return () => {
       ws.disconnect();
     };
-  }, []);
+  }, []); 
 
   useEffect(() => {
     let timer: NodeJS.Timeout;

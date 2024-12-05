@@ -3,6 +3,8 @@ interface WebSocketMessage {
   [key: string]: any;
 }
 
+type WebSocketActions = 'subscribe' | 'unsubscribe' | 'message';
+
 export class StockWebSocket {
   // 배포된 서버의 wss URL로 변경
   private static readonly BASE_URL = 'wss://3.35.242.1:8080';
@@ -68,18 +70,18 @@ export class StockWebSocket {
 
   private getCloseReason(code: number): string {
     const reasons: Record<number, string> = {
-      1000: "Normal closure",
-      1001: "Going away",
-      1002: "Protocol error",
-      1003: "Unsupported data",
-      1005: "No status received",
-      1006: "Abnormal closure",
-      1007: "Invalid frame payload data",
-      1008: "Policy violation",
-      1009: "Message too big",
-      1010: "Mandatory extension",
-      1011: "Internal error",
-      1015: "TLS handshake failure"
+      1000: "정상 종료",
+      1001: "연결 종료 중",
+      1002: "프로토콜 오류",
+      1003: "지원하지 않는 데이터 형식",
+      1005: "상태 코드 없음",
+      1006: "비정상 종료",
+      1007: "잘못된 데이터 형식",
+      1008: "정책 위반",
+      1009: "메시지 크기 초과",
+      1010: "필수 확장 기능 누락",
+      1011: "내부 서버 오류",
+      1015: "TLS 보안 연결 실패"
     };
     return reasons[code] || "Unknown";
   }
