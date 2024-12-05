@@ -2,12 +2,13 @@ import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
+import { WordQuizResponse } from '@/features/minigame/wordquizgame/types/wordTypes';
 import { Header } from '@/features/minigame/wordquizgame/ui/Header';
 import { Question } from '@/features/minigame/wordquizgame/ui/Question';
 import { Answer } from '@/features/minigame/wordquizgame/ui/Answer';
 import { Keyboard } from '@/features/minigame/wordquizgame/ui/KeyBoard';
 import { Popup } from '@/features/minigame/wordquizgame/ui/Popup';
-import { wordQuizApi, WordQuizQuestion } from '@/shared/api/minigames';
+import { wordQuizApi } from '@/shared/api/minigames';
 
 const WordQuizGamePage = () => {
   const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
@@ -61,7 +62,7 @@ const WordQuizGamePage = () => {
         const mappedDifficulty = difficultyMapping[difficulty];
     
         try {
-          const quiz: WordQuizQuestion = await wordQuizApi.getQuizByDifficulty(mappedDifficulty);
+          const quiz: WordQuizResponse = await wordQuizApi.getQuizByDifficulty(mappedDifficulty);
           setWords([{
             word: quiz.word,
             explanation: quiz.explanation,
@@ -180,10 +181,7 @@ const WordQuizGamePage = () => {
   return (
     <PageContainer>
       <BackgroundContainer />
-      <Header
-        timeLeft={timeLeft}
-        progress={words.map((_, i) => i <= currentQuestionIndex)}
-      />
+      <Header timeLeft={timeLeft} currentPhase={currentQuestionIndex + 1} />
       <Question question={currentWord?.explanation || ''} />
       <Answer answerLength={correctWord.length} userAnswer={userAnswer} />
       <HintIcon onClick={() => setShowHint(true)}>💡</HintIcon>
