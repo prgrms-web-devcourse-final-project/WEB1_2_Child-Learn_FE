@@ -202,7 +202,7 @@ const MiniGamePage = () => {
         </GreetingContainer>
         <PointsContainer>
           <img src="/icons/coins 1.png" alt="Coin Icon" />
-          {userInfo?.points} P
+          {userInfo?.currentPoints} P
         </PointsContainer>
       </Header>
 
