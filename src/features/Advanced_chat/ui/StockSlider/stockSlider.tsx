@@ -5,8 +5,7 @@ import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart';
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
 import { StockWebSocket } from '@/features/Advanced_chat/model/stockWebSocket';
 import { WebSocketActions } from '@/features/Advanced_chat/types/stock';
-import { WebSocketMessage } from '@/features/Advanced_chat/types/stock';
-import {
+import {  
   SlideContainer,
   TimeDisplay,
   ChartGrid, 
