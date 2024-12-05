@@ -67,4 +67,3 @@ export const walletApi = {
     return response.data; // LIST of point history records
   },
 };
-

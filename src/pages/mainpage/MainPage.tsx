@@ -13,10 +13,6 @@ const MainPage = () => {
   const navigate = useNavigate();
   const { data: userInfo, isLoading } = useUserInfo();
 
-  const handleAttendance = () => {
-    // 출석 처리 로직 (API 호출 등)
-  };
-
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleGraphClick = () => {
@@ -76,8 +72,8 @@ const MainPage = () => {
 
           {/* 출석체크 카드 */}
           <AttendanceCard
-            title={'매일 출석하고\n10 Point 받기'}
-            onClick={handleAttendance}
+            title={'매일 출석하고\n100 Point 받기'}
+            userId={userInfo?.id}
           />
 
           {/* 메뉴 그리드 */}

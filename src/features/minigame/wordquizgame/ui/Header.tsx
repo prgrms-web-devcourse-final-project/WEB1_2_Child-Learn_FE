@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { Timer } from '@/features/minigame/flipcardgame/ui/Timer';
+import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
 
 interface HeartProps {
   filled: boolean;
@@ -7,27 +8,30 @@ interface HeartProps {
 
 interface HeaderProps {
   timeLeft: number;
-  lives: number;
   progress: boolean[];
 }
 
-export const Header = ({ timeLeft, lives, progress }: HeaderProps) => (
-  <HeaderContainer>
-    <LivesContainer>
-      {Array.from({ length: 3 }).map((_, index) => (
-        <Heart key={index} filled={index < lives} />
-      ))}
-    </LivesContainer>
-    <ProgressContainer>
-      {progress.map((isActive, index) => (
-        <ProgressBar key={index} active={isActive} />
-      ))}
-    </ProgressContainer>
-    <TimerContainer>
-      <Timer time={timeLeft} phase="play" />
-    </TimerContainer>
-  </HeaderContainer>
-);
+export const Header = ({ timeLeft, progress }: HeaderProps) => {
+  const lives = useWordQuizStore((state) => state.lives); // lives 상태 가져오기
+
+  return (
+    <HeaderContainer>
+      <LivesContainer>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Heart key={index} filled={index < lives} />
+        ))}
+      </LivesContainer>
+      <ProgressContainer>
+        {progress.map((isActive, index) => (
+          <ProgressBar key={index} active={isActive} />
+        ))}
+      </ProgressContainer>
+      <TimerContainer>
+        <Timer time={timeLeft} phase="play" />
+      </TimerContainer>
+    </HeaderContainer>
+  );
+};
 
 const HeaderContainer = styled.div`
   display: flex;

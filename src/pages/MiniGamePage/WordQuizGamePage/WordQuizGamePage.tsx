@@ -15,6 +15,8 @@ const WordQuizGamePage = () => {
     incrementCorrectAnswers,
     decrementLives,
     setWords,
+    setLives,
+    setCurrentQuestionIndex,
     lives,
     words,
     currentQuestionIndex,
@@ -65,13 +67,15 @@ const WordQuizGamePage = () => {
             explanation: quiz.explanation,
             hint: quiz.hint,
           }]);
+          setLives(quiz.remainLife || 3); // 백엔드에서 남은 목숨을 반환하지 않으면 기본값 3 설정
+          setCurrentQuestionIndex(quiz.currentPhase - 1 || 0); // 첫 번째 문제로 초기화
         } catch (error) {
           console.error('Failed to fetch quiz data:', error);
         }
       };
     
       fetchQuizData();
-    }, [difficulty, setWords]);
+    }, [difficulty, setWords, setLives, setCurrentQuestionIndex]);
     
   // 타이머 초기화
   useEffect(() => {
@@ -106,25 +110,48 @@ const WordQuizGamePage = () => {
       incrementCorrectAnswers(); // 맞춘 문제 증가
       setShowCorrectPopup(true);
 
-      // 정답 제출 API 호출
       try {
-        await wordQuizApi.submitAnswer(true);
+        const response = await wordQuizApi.submitAnswer(true);
+        if ('message' in response) {
+          // 게임 종료 시
+          navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
+        } else {
+          const transformedResponse = {
+            word: response.word,
+            explanation: response.explanation,
+            hint: response.hint,
+          };
+          setWords([transformedResponse]);
+          setLives(response.remainLife || 3);
+          setCurrentQuestionIndex(response.currentPhase - 1 || 0);
+        }
       } catch (error) {
         console.error('Failed to submit correct answer:', error);
       }
     } else if (updatedAnswer.length === correctWord.length) {
-      decrementLives(); // 목숨 감소
+      decrementLives();
       setShowIncorrectPopup(true);
 
-      // 오답 제출 API 호출
       try {
-        await wordQuizApi.submitAnswer(false);
+        const response = await wordQuizApi.submitAnswer(false);
+        if ('message' in response) {
+          // 게임 종료 시
+          navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
+        } else {
+          const transformedResponse = {
+            word: response.word,
+            explanation: response.explanation,
+            hint: response.hint,
+          };
+          setWords([transformedResponse]);
+          setLives(response.remainLife || 3);
+        }
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
       }
     }
   };
-
+  
   // 다음 문제로 이동
   const handleNextQuestion = () => {
     setShowCorrectPopup(false);
@@ -155,7 +182,6 @@ const WordQuizGamePage = () => {
       <BackgroundContainer />
       <Header
         timeLeft={timeLeft}
-        lives={lives}
         progress={words.map((_, i) => i <= currentQuestionIndex)}
       />
       <Question question={currentWord?.explanation || ''} />

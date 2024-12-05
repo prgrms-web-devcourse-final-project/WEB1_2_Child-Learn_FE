@@ -13,7 +13,7 @@ export const MaskedIdModal = ({ maskedId, onClose }: MaskedIdModalProps) => {
         <ModalHeader>아이디 찾기 결과</ModalHeader>
         <ModalBody>
           <IdText>
-            아이디: <IdValue>{maskedId}</IdValue>
+            <IdValue>{maskedId}</IdValue>
           </IdText>
         </ModalBody>
         <ModalFooter>

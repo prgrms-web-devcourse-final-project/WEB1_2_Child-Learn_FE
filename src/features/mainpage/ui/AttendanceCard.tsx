@@ -1,35 +1,43 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { useAttendance } from '@/features/mainpage/lib/queries';
 
 interface AttendanceCardProps {
   title: string;
-  onClick?: () => void;
+  userId: number;
 }
 
-export const AttendanceCard = ({ onClick }: AttendanceCardProps) => {
+export const AttendanceCard = ({ userId }: AttendanceCardProps) => {
   const [isChecked, setIsChecked] = useState(false);
+  const { attendanceMutation, isAttendanceChecked } = useAttendance();
 
   const handleAttendance = () => {
-    setIsChecked(true);
-    onClick?.();
+    if (
+      !isChecked &&
+      !attendanceMutation.isPending &&
+      userId &&
+      !isAttendanceChecked
+    ) {
+      attendanceMutation.mutate(userId, {
+        onSuccess: () => {
+          setIsChecked(true);
+        },
+      });
+    }
   };
 
   return (
     <CardContainer>
       <CardContent>
         <Title $isChecked={isChecked}>
-          {' '}
-          {/* isChecked prop 추가 */}
           {isChecked ? (
             <div className="complete-text">
-              출석 완료!
-              <br />
-              내일도 잊지 말아요!
+              출석 완료! <br /> 내일도 잊지 말아요!
             </div>
           ) : (
             <>
               <div className="main-text">매일 출석하고</div>
-              <div className="sub-text">10 Point 받기</div>
+              <div className="sub-text">100 Point 받기</div>
             </>
           )}
         </Title>
@@ -37,8 +45,7 @@ export const AttendanceCard = ({ onClick }: AttendanceCardProps) => {
           <ActionButton onClick={handleAttendance}>출석하기</ActionButton>
         )}
       </CardContent>
-      {!isChecked && <IconImage src="/img/calendar.png" alt="calendar" />}{' '}
-      {/* isChecked일 때 숨김 */}
+      {!isChecked && <IconImage src="/img/calendar.png" alt="calendar" />}
       {isChecked && <Overlay />}
     </CardContainer>
   );

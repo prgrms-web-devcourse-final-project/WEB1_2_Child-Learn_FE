@@ -3,7 +3,6 @@ import { Word } from '../types/wordTypes';
 
 interface WordQuizState {
   difficulty: 'begin' | 'mid' | 'adv'; // 난이도
-  memberId: number; // 회원 ID
   lives: number; // 남은 목숨
   lastPlayedDates: Record<'begin' | 'mid' | 'adv', string | null>; // 난이도별 마지막 플레이 날짜
   correctAnswers: number; // 맞춘 문제 수
@@ -15,14 +14,14 @@ interface WordQuizState {
   setWords: (words: Word[]) => void; // 퀴즈 문제 설정
   nextQuestion: () => void; // 다음 문제로 이동
   resetQuiz: () => void; // 퀴즈 초기화
-  initializeQuiz: (memberId: number) => void; // 퀴즈 상태 초기화
+  setLives: (lives: number) => void;
+  setCurrentQuestionIndex: (index: number) => void;
   isPlayable: (difficulty: 'begin' | 'mid' | 'adv') => boolean; // 플레이 가능 여부 확인
   setLastPlayedDate: (difficulty: 'begin' | 'mid' | 'adv', date: string) => void; // 마지막 플레이 날짜 설정
 }
 
 export const useWordQuizStore = create<WordQuizState>((set, get) => ({
-  difficulty: 'begin', // 기본 난이도
-  memberId: 0, // 기본 회원 ID
+  difficulty: 'begin',
   lives: 3, // 기본 목숨
   lastPlayedDates: {
     begin: null,
@@ -51,10 +50,9 @@ export const useWordQuizStore = create<WordQuizState>((set, get) => ({
       currentQuestionIndex: 0,
       words: [],
     }),
-  initializeQuiz: (memberId) =>
-    set({
-      memberId,
-    }),
+  setLives: (lives) => set({ lives }), 
+  setCurrentQuestionIndex: (index) =>
+    set({ currentQuestionIndex: index }), // currentPhase와 동기화
   isPlayable: (difficulty) => {
     const lastPlayed = get().lastPlayedDates[difficulty];
     if (!lastPlayed) return true; // 이전에 플레이한 기록이 없으면 플레이 가능
