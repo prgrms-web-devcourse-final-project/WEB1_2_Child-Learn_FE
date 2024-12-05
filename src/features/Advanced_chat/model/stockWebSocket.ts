@@ -53,7 +53,14 @@ export class StockWebSocket {
   }
 
   private getToken(): string | null {
-    return localStorage.getItem('jwtToken');
+    const store = (window as any).store;
+    const token = store?.getState?.()?.accessToken;
+    
+    if (!token) {
+      console.error('JWT 토큰이 없습니다. 인증이 필요합니다.');
+      return null;
+    }
+    return token;
   }
 
   public connect() {
@@ -68,6 +75,7 @@ export class StockWebSocket {
 
     try {
       const token = this.getToken();
+      console.log('Retrieved JWT token:', token);
       if (!token) {
         console.error('JWT 토큰이 없습니다.');
         return;
