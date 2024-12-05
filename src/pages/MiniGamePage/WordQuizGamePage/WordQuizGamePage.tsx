@@ -33,6 +33,18 @@ const WordQuizGamePage = () => {
   const navigate = useNavigate();
   const correctWord = currentWord?.word || '';
 
+    // 키보드 글자 생성
+    const alphabet = '가나다라마바사아자차카타파하';
+    const keyboardLetters = useMemo(() => {
+      if (!correctWord) return [];
+      const uniqueLetters = new Set<string>(correctWord.split('')); // 정답 단어의 모든 글자를 추가
+      while (uniqueLetters.size < 12) {
+        const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+        uniqueLetters.add(randomLetter);
+      }
+      return Array.from(uniqueLetters).sort(() => Math.random() - 0.5); // 랜덤 섞음
+    }, [correctWord]);  
+
   // 초기 데이터 로드
   useEffect(() => {
     const fetchQuizData = async () => {
@@ -148,6 +160,7 @@ const WordQuizGamePage = () => {
 
   return (
     <PageContainer>
+       <BackgroundContainer />
       <Header timeLeft={timeLeft} currentPhase={currentPhase} />
       <Question question={currentWord?.explanation || ''} />
       <Answer answerLength={correctWord.length} userAnswer={userAnswer} />
@@ -155,7 +168,7 @@ const WordQuizGamePage = () => {
       {showHint && <Popup message={currentWord?.hint || ''} buttonText="알 것 같아요!" onClose={() => setShowHint(false)} />}
       {showCorrectPopup && <Popup message="😃 정답!" buttonText="다음 문제" onClose={handleNextQuestion} />}
       {showIncorrectPopup && <Popup message="😢 오답!" buttonText="다시 도전해봐요!" onClose={() => setShowIncorrectPopup(false)} />}
-      <Keyboard letters={[]} onSelect={handleSelectLetter} />
+      <Keyboard letters={keyboardLetters} onSelect={handleSelectLetter} />
     </PageContainer>
   );
 };
