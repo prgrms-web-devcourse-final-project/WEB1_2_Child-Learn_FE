@@ -1,12 +1,11 @@
-export type RequestStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+export type FriendshipStatus = 'FRIEND' | 'PENDING' | 'NOT_FRIEND';
 
 export interface SearchedUser {
   id: number;
   loginId: string;
   username: string;
   profileImage?: string;
-  requestStatus?: RequestStatus;
-  isFriend?: boolean;
+  friendshipStatus: FriendshipStatus;
 }
 
 export interface UserSearchResponse {

@@ -17,7 +17,8 @@ export const userApi = {
     return data;
   },
 
-  sendFriendRequest: async (receiverId: string) => {
+  sendFriendRequest: async (receiverId: number) => {
+    // string -> number로 변경
     const { data } = await baseApi.post('/friends/request', {
       receiverId,
     });
