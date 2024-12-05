@@ -17,8 +17,8 @@ export interface UserInfo {
   email: string;
   username: string;
   birth: string;
-  points: number;
-  coins: number;
+  currentPoints: number;
+  currentCoins: number;
   createdAt: string;
   updatedAt: string;
   profileImage?: string;
