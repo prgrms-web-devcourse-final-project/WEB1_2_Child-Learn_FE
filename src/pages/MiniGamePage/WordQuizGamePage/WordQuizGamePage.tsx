@@ -149,8 +149,8 @@ const WordQuizGamePage = () => {
           hint: response.hint,
         };
         setWords([transformedResponse]);
-        setLives(response.remainLife || 3);
-        setCurrentQuestionIndex(response.currentPhase - 1 || 0);
+        setLives(response.remainLife);
+        setCurrentQuestionIndex(response.currentPhase - 1);
       }
     } catch (error) {
       console.error('Failed to fetch next question:', error);

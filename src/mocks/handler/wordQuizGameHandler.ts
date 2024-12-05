@@ -105,6 +105,15 @@ export const wordQuizGameHandlers = [
     if (body.isCorrect) {
       if (sessionGameState.currentPhase < 3) {
         sessionGameState.currentPhase += 1;
+
+      // 새로운 문제 가져오기
+      const randomIndex = Math.floor(Math.random() * mockQuestions.length);
+      const newQuestion = mockQuestions[randomIndex];
+
+      // sessionGameState 갱신
+      sessionGameState.word = newQuestion.word;
+      sessionGameState.explanation = newQuestion.explanation;
+      sessionGameState.hint = newQuestion.hint;
       } else {
         // 게임 완료 시 세션 초기화
         sessionGameState = null;
