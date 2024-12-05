@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react';
 import { AuthInput } from '@/shared/ui/AuthInput/AuthInput';
 import { AuthButton } from '@/shared/ui/AuthButton/AuthButton';
 import { Link, useNavigate } from 'react-router-dom';
-import { useJoin } from '../lib/useJoin';
-import { joinValidation } from '../model/validation';
-import { SuccessModal } from './SuccessModal';
+import { useJoin } from '@/features/auth/signup/lib/useJoin';
+import { joinValidation } from '@/features/auth/signup/model/validation';
+import { SuccessModal } from '@/features/auth/signup/ui/SuccessModal';
 
 const formatBirth = (birth: string) => {
   if (birth.length !== 8) return birth;

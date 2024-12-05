@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { baseApi } from '@/shared/api/base';
-import { JoinRequest, JoinResponse } from '../model/types';
+import { JoinRequest, JoinResponse } from '@/features/auth/signup/model/types';
 
 export const signUpApi = {
   join: async (data: JoinRequest): Promise<JoinResponse> => {
