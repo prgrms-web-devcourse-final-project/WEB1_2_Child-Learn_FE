@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { signUpApi } from '../lib/signUpApi';
-import type { JoinRequest } from '../model/types';
+import { signUpApi } from '@/features/auth/signup/lib/signUpApi';
+import type { JoinRequest } from '@/features/auth/signup/model/types';
 
 export const useJoin = () => {
   const [isLoading, setIsLoading] = useState(false);
