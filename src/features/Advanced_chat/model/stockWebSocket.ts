@@ -54,7 +54,11 @@ export class StockWebSocket {
 
   private getToken(): string | null {
     const store = (window as any).store;
-    const token = store?.getState?.()?.state?.accessToken;
+    const state = store?.getState?.();
+    console.log('Redux State:', state);
+    
+    const token = state?.state?.accessToken;
+    console.log('Token value:', token);
     
     if (!token) {
       console.error('JWT 토큰이 없습니다. 인증이 필요합니다.');
@@ -63,7 +67,29 @@ export class StockWebSocket {
     return token;
   }
 
-  public connect() {
+  private async waitForStore(): Promise<boolean> {
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (attempts < maxAttempts) {
+      const store = (window as any).store;
+      const state = store?.getState?.();
+      
+      if (state?.state?.accessToken) {
+        return true;
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      attempts++;
+    }
+    return false;
+  }
+
+  public async connect() {
+    console.log('WebSocket connect called from:', new Error().stack);
+    
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
     if (!StockWebSocket.shouldInitialize()) {
       return;
     }
@@ -73,58 +99,58 @@ export class StockWebSocket {
       return;
     }
 
-    try {
-      const token = this.getToken();
-      console.log('Retrieved JWT token:', token);
-      if (!token) {
-        console.error('JWT 토큰이 없습니다.');
-        return;
-      }
-
-      const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
-      console.log('Attempting secure WebSocket connection:', url);
-      
-      this.ws = new WebSocket(url);
-      
-      this.connectionTimeout = setTimeout(() => {
-        if (this.ws?.readyState !== WebSocket.OPEN) {
-          console.error('WebSocket connection timeout');
-          this.ws?.close();
-          this.handleReconnect();
-        }
-      }, 5000);
-
-      this.ws.onopen = () => {
-        console.log('Secure WebSocket connection established');
-        if (this.connectionTimeout) {
-          clearTimeout(this.connectionTimeout);
-        }
-        this.reconnectAttempts = 0;
-      };
-
-      this.ws.onclose = (event) => {
-        if (this.connectionTimeout) {
-          clearTimeout(this.connectionTimeout);
-        }
-        if (StockWebSocket.shouldInitialize()) {
-          const reason = this.getCloseReason(event.code);
-          console.log(`WebSocket closed: ${event.code} (${reason})`);
-          this.handleClose();
-        }
-      };
-
-      this.ws.onerror = (error) => {
-        console.error('WebSocket error:', {
-          error,
-          readyState: this.ws?.readyState,
-          url: url
-        });
-      };
-      
-      this.setupMessageHandler();
-    } catch (error) {
-      console.error('WebSocket connection failed:', error);
+    // Redux store가 준비될 때까지 대기
+    const isStoreReady = await this.waitForStore();
+    if (!isStoreReady) {
+      console.error('Redux store 초기화 실패');
+      return;
     }
+
+    // 이후 연결 로직 실행
+    const token = this.getToken();
+    if (!token) return;
+    
+    const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
+    console.log('Attempting secure WebSocket connection:', url);
+    
+    this.ws = new WebSocket(url);
+    
+    this.connectionTimeout = setTimeout(() => {
+      if (this.ws?.readyState !== WebSocket.OPEN) {
+        console.error('WebSocket connection timeout');
+        this.ws?.close();
+        this.handleReconnect();
+      }
+    }, 5000);
+
+    this.ws.onopen = () => {
+      console.log('Secure WebSocket connection established');
+      if (this.connectionTimeout) {
+        clearTimeout(this.connectionTimeout);
+      }
+      this.reconnectAttempts = 0;
+    };
+
+    this.ws.onclose = (event) => {
+      if (this.connectionTimeout) {
+        clearTimeout(this.connectionTimeout);
+      }
+      if (StockWebSocket.shouldInitialize()) {
+        const reason = this.getCloseReason(event.code);
+        console.log(`WebSocket closed: ${event.code} (${reason})`);
+        this.handleClose();
+      }
+    };
+
+    this.ws.onerror = (error) => {
+      console.error('WebSocket error:', {
+        error,
+        readyState: this.ws?.readyState,
+        url: url
+      });
+    };
+    
+    this.setupMessageHandler();
   }
 
   private setupMessageHandler() {
@@ -190,14 +216,14 @@ export class StockWebSocket {
       1005: "상태 코드 없음",
       1006: "비정상 종료",
       1007: "잘못된 데이터 형식",
-      1008: "정책 위반",
+      1008: "책 위반",
       1009: "메시지 크기 초과",
       1010: "필수 확장 기능 누락",
       1011: "내부 서버 오류",
       1015: "TLS 보안 연결 실패"
 
     };
-    return reasons[code] || "알 수 없는 오류";
+    return reasons[code] || "알 수 ��는 오류";
   }
 
   public onMessage(handler: (message: WebSocketMessage) => void) {
