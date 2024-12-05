@@ -28,7 +28,10 @@ const Profile = ({ userInfo, onEditClick }: ProfileProps) => {
         </EditProfileButton>
       </ProfileContainer>
       <PointsWrapper>
-        <UserPoints coins={userInfo.coins ?? 0} points={userInfo.points ?? 0} />
+        <UserPoints
+          coins={userInfo.currentCoins ?? 0}
+          points={userInfo.currentPoints ?? 0}
+        />
       </PointsWrapper>
     </UserSection>
   );

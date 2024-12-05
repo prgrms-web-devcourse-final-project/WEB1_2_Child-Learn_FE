@@ -13,7 +13,8 @@ import { useAttendance } from '@/features/mainpage/lib/queries';
 const MainPage = () => {
   const navigate = useNavigate();
   const { data: userInfo, isLoading } = useUserInfo();
-  const attendanceMutation = useAttendance();
+  const { attendanceMutation } = useAttendance(); // 구조분해할당으로 가져오기
+
   const handleAttendance = () => {
     if (userInfo?.id) {
       attendanceMutation.mutate(userInfo.id);
@@ -74,7 +75,7 @@ const MainPage = () => {
             <WelcomeText>
               반가워요, {userInfo?.username || '사용자'} 님! 😊
             </WelcomeText>
-            <PointBadge points={userInfo?.points ?? 0} />
+            <PointBadge />
           </WelcomeSection>
 
           {/* 출석체크 카드 */}

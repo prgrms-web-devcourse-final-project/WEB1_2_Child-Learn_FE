@@ -10,10 +10,15 @@ interface AttendanceCardProps {
 
 export const AttendanceCard = ({ onClick, userId }: AttendanceCardProps) => {
   const [isChecked, setIsChecked] = useState(false);
-  const attendanceMutation = useAttendance();
+  const { attendanceMutation, isAttendanceChecked } = useAttendance();
 
   const handleAttendance = () => {
-    if (!isChecked && !attendanceMutation.isPending && userId) {
+    if (
+      !isChecked &&
+      !attendanceMutation.isPending &&
+      userId &&
+      !isAttendanceChecked
+    ) {
       attendanceMutation.mutate(userId, {
         onSuccess: () => {
           setIsChecked(true);
