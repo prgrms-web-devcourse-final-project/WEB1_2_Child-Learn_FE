@@ -187,7 +187,7 @@ export class StockWebSocket {
       1010: "필수 확장 기능 누락",
       1011: "내부 서버 오류",
       1015: "TLS 보안 연결 실패"
-      
+
     };
     return reasons[code] || "알 수 없는 오류";
   }
