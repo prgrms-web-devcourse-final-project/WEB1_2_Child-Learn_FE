@@ -74,8 +74,7 @@ export const wordQuizGameHandlers = [
       );
     }
 
-    // 세션 초기화 또는 기존 세션 반환
-    if (!sessionGameState) {
+    
       const randomIndex = Math.floor(Math.random() * mockQuestions.length);
       const question = mockQuestions[randomIndex];
 
@@ -87,7 +86,6 @@ export const wordQuizGameHandlers = [
         remainLife: 3,
         difficulty,
       };
-    }
 
     return HttpResponse.json(sessionGameState);
   }),
