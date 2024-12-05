@@ -1,23 +1,36 @@
-
 import { create } from 'zustand';
-import { GameState } from '../../types/game';
-import { Stock, StockPrice } from '../../types/stock';
+
+interface GameState {
+  phase: 'BEFORE' | 'TRADING' | 'AFTER';
+  isPlaying: boolean;
+  elapsedTime: number;
+  playedToday: boolean;
+  advId?: number;
+  memberId?: number;
+}
+
+interface StockPrice {
+  price: number;
+  timestamp: number;
+}
 
 interface AdvancedGameStore {
   gameState: GameState;
-  selectedStock: Stock | null;
   stockPrices: Record<string, StockPrice[]>;
-  isLoading: boolean;
-  error: string | null;
-
-  // actions
   setGameState: (state: Partial<GameState>) => void;
-  setSelectedStock: (stock: Stock | null) => void;
-  setStockPrices: (symbol: string, prices: StockPrice[]) => void;
   startGame: () => void;
   pauseGame: () => void;
-  resetGame: () => void;
+  resumeGame: () => void;
 }
+
+const WebSocketActions = {
+  START_GAME: 'START_GAME',
+  PAUSE_GAME: 'PAUSE_GAME',
+  RESUME_GAME: 'RESUME_GAME'
+} as const;
+
+// WebSocket 객체를 생성합니다.
+const webSocket = new WebSocket('ws://3.35.242.1:8080');
 
 export const useAdvancedGameStore = create<AdvancedGameStore>((set) => ({
   gameState: {
@@ -26,37 +39,30 @@ export const useAdvancedGameStore = create<AdvancedGameStore>((set) => ({
     elapsedTime: 0,
     playedToday: false
   },
-  selectedStock: null,
   stockPrices: {},
-  isLoading: false,
-  error: null,
 
-  setGameState: (state) => 
-    set((prev) => ({ 
-      gameState: { ...prev.gameState, ...state } 
-    })),
-
-  setSelectedStock: (stock) => set({ selectedStock: stock }),
-  
-  setStockPrices: (symbol, prices) =>
-    set((prev) => ({
-      stockPrices: { ...prev.stockPrices, [symbol]: prices }
-    })),
-
-  startGame: () => set((prev: AdvancedGameStore) => ({
-    gameState: { ...prev.gameState, isPlaying: true, phase: 'TRADING' }
+  setGameState: (state) => set(prev => ({
+    gameState: { ...prev.gameState, ...state }
   })),
 
-  pauseGame: () => set((prev) => ({
-    gameState: { ...prev.gameState, isPlaying: false }
-  })),
+  startGame: () => {
+    webSocket.send(WebSocketActions.START_GAME);
+    set(state => ({
+      gameState: { ...state.gameState, isPlaying: true, phase: 'TRADING' }
+    }));
+  },
 
-  resetGame: () => set(() => ({
-    gameState: {
-      phase: 'BEFORE',
-      isPlaying: false,
-      elapsedTime: 0,
-      playedToday: true
-    }
-  }))
+  pauseGame: () => {
+    webSocket.send(WebSocketActions.PAUSE_GAME);
+    set(state => ({
+      gameState: { ...state.gameState, isPlaying: false }
+    }));
+  },
+
+  resumeGame: () => {
+    webSocket.send(WebSocketActions.RESUME_GAME);
+    set(state => ({
+      gameState: { ...state.gameState, isPlaying: true }
+    }));
+  }
 }));

@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart'; 
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
-import { createStockWebSocket } from '../../model/stockWebSocket';
+import { StockWebSocket } from '@/features/Advanced_chat/model/stockWebSocket';
+import { WebSocketActions } from '@/features/Advanced_chat/types/stock';
 import {
   SlideContainer,
   TimeDisplay,
@@ -17,6 +18,20 @@ import {
   Indicator
 } from './styled';
   
+interface WebSocketMessage {
+  type: string;
+  data?: {
+    symbol: string;
+    timestamp: number;
+    closePrice: string;
+    openPrice: string;
+    highPrice: string;
+    lowPrice: string;
+    change?: number;
+    volume?: number;
+  };
+}
+
 interface Stock {
   id: number;
   symbol: string;
@@ -68,6 +83,7 @@ const generateMockData = (symbol: string, prevPrice?: number) => {
 };
 
 export const StockSlider: React.FC = () => {
+  const [gameId] = useState<string>(crypto.randomUUID());
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showActions, setShowActions] = useState(false);
   const [selectedStock, setSelectedStock] = useState<number | null>(null);
@@ -75,45 +91,45 @@ export const StockSlider: React.FC = () => {
   const [gameTime, setGameTime] = useState(0);
   const [stockData, setStockData] = useState<Record<string, StockPrice[]>>({});
   const [showTradeModal, setShowTradeModal] = useState(false);
-  const wsRef = useRef(createStockWebSocket());
+  const wsRef = useRef(new StockWebSocket());
   const [availableStocks] = useState<Stock[]>(INITIAL_STOCKS);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const ws = wsRef.current;
     
-    ws.connect((message) => {
+    ws.onMessage((message: WebSocketMessage) => {
       console.log('Received message:', message);
       
-      switch (message.type) {
+      const messageType = message.type as WebSocketActions;
+
+      switch (messageType) {
         case 'REFERENCE_DATA':
         case 'LIVE_DATA':
           if (message.data) {
             setStockData(prevData => {
               const newData = { ...prevData };
-              const item = message.data;
+              const item = message.data!;
               
               console.log('Processing websocket data:', item);
               
-              if (item.symbol) {
-                const newPrice = {
-                  timestamp: new Date(item.timestamp * 1000).toISOString(),
-                  price: item.closePrice,
-                  open: item.openPrice,
-                  high: item.highPrice,
-                  low: item.lowPrice,
-                  close: item.closePrice,
-                  change: item.change || 0,
-                  volume: item.volume || 0
-                };
-                
-                console.log('New price data:', newPrice);
-                console.log('Current data for symbol:', newData[item.symbol]);
-                
-                newData[item.symbol] = newData[item.symbol] 
-                  ? [newPrice, ...newData[item.symbol]]
-                  : [newPrice];
-              }
+              const newPrice = {
+                timestamp: new Date(item.timestamp * 1000).toISOString(),
+                price: item.closePrice,
+                open: item.openPrice,
+                high: item.highPrice,
+                low: item.lowPrice,
+                close: item.closePrice,
+                change: item.change || 0,
+                volume: item.volume || 0
+              };
+              
+              console.log('New price data:', newPrice);
+              console.log('Current data for symbol:', newData[item.symbol]);
+              
+              newData[item.symbol] = newData[item.symbol] 
+                ? [newPrice, ...newData[item.symbol]]
+                : [newPrice];
               return newData;
             });
           }
@@ -135,9 +151,8 @@ export const StockSlider: React.FC = () => {
     if (isPlaying) {
       timer = setInterval(() => {
         setGameTime(prev => {
-          if (prev >= 420) { // 7분 = 420초
-            setIsPlaying(false);
-            wsRef.current.sendMessage('END_GAME');
+          if (prev >= 420) {
+            setIsPlaying(false);  
             return prev;
           }
           return prev + 1;
@@ -145,7 +160,7 @@ export const StockSlider: React.FC = () => {
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [isPlaying]);
+  }, [isPlaying, gameId]);
 
   useEffect(() => {
     // 초기 데이터 설정
