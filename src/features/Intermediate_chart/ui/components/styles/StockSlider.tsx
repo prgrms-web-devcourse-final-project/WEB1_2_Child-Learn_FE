@@ -147,7 +147,7 @@ const handleSellConfirm = async () => {
     
     try {
       const holdings = await useStockStore.getState().getTradeDetails(currentStock.midStockId); // 함수명 수정
-      const holdingQuantity = holdings.filter(trade => trade.tradeType === 'BUY').length;
+      const holdingQuantity = holdings.filter((trade: TradeDetail) => trade.tradeType === 'BUY').length;
 
       const result = await useStockStore.getState().executeTrade(
         currentStock.midStockId,
@@ -195,7 +195,7 @@ const handleSellConfirm = async () => {
         <OutButton onClick={handleOutButtonClick}>
           <img src="/img/out.png" alt="나가기" />
         </OutButton>
-        <StyledPointBadge points={userPoints} />
+        <PointBadge/>
       </HeaderWrapper>
 
       <PrevButton onClick={handlePrevSlide} disabled={currentSlide === 0} $show={!showActions}>

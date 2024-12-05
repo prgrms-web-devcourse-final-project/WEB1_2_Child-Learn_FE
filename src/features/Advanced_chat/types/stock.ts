@@ -48,3 +48,7 @@ export interface WebSocketMessage {
   };
   message?: string;  // 서버 응답 메시지
 }
+
+export interface StockResponseDto {
+  // 필요한 속성들 정의
+}
