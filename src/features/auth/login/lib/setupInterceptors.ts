@@ -8,8 +8,9 @@ let isRefreshing = false;
 export const setupAuthInterceptors = () => {
   baseApi.interceptors.request.use(
     (config) => {
-      const { accessToken } = useAuthStore.getState();
-      if (accessToken) {
+      const { accessToken, isAuthenticated } = useAuthStore.getState();
+      // 인증된 상태일 때만 토큰을 헤더에 추가
+      if (isAuthenticated && accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
       return config;
@@ -23,7 +24,14 @@ export const setupAuthInterceptors = () => {
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      const { isAuthenticated } = useAuthStore.getState();
+
+      // 401 에러이고, 인증된 상태이고, 재시도하지 않은 요청일 때만 토큰 갱신 시도
+      if (
+        error.response?.status === 401 &&
+        isAuthenticated &&
+        !originalRequest._retry
+      ) {
         originalRequest._retry = true;
         try {
           await silentRefresh();
