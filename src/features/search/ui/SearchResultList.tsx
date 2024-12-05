@@ -4,7 +4,7 @@ import { SearchedUser } from '@/features/search/model/types';
 interface SearchResultListProps {
   users: SearchedUser[];
   isLoading: boolean;
-  onFriendRequest: (loginId: string) => void;
+  onFriendRequest: (receiverId: number) => void; // string -> number
   isSending: boolean;
   currentPage: number;
   totalPages: number;
@@ -29,18 +29,15 @@ export const SearchResultList = ({
   }
 
   const renderFriendButton = (user: SearchedUser) => {
-    if (user.isFriend) {
-      return null; // 친구인 경우 버튼 표시하지 않음
-    }
-
-    switch (user.requestStatus) {
+    switch (user.friendshipStatus) {
+      case 'FRIEND':
+        return null;
       case 'PENDING':
         return <PendingButton disabled>요청중...</PendingButton>;
-      case 'REJECTED':
-      case undefined:
+      case 'NOT_FRIEND':
         return (
           <AddFriendButton
-            onClick={() => onFriendRequest(user.loginId)}
+            onClick={() => onFriendRequest(user.id)} // loginId -> id로 변경
             disabled={isSending}
           >
             친구 추가
@@ -150,7 +147,7 @@ export const SearchResultList = ({
                 <UserInfo>
                   <NameWrapper>
                     <UserName>{user.username}</UserName>
-                    {user.isFriend && (
+                    {user.friendshipStatus === 'FRIEND' && ( // isFriend 대신 friendshipStatus 체크
                       <FriendIcon src="/img/friend-mark.png" alt="친구" />
                     )}
                   </NameWrapper>
