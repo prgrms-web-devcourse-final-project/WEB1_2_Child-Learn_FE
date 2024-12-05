@@ -88,6 +88,8 @@ export class StockWebSocket {
   public async connect() {
     console.log('WebSocket connect called from:', new Error().stack);
     
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
     if (!StockWebSocket.shouldInitialize()) {
       return;
     }
@@ -221,7 +223,7 @@ export class StockWebSocket {
       1015: "TLS 보안 연결 실패"
 
     };
-    return reasons[code] || "알 수 없는 오류";
+    return reasons[code] || "알 수 ��는 오류";
   }
 
   public onMessage(handler: (message: WebSocketMessage) => void) {
