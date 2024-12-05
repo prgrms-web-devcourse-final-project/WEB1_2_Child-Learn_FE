@@ -8,10 +8,10 @@ interface HeartProps {
 
 interface HeaderProps {
   timeLeft: number;
-  progress: boolean[];
+  currentPhase: number;
 }
 
-export const Header = ({ timeLeft, progress }: HeaderProps) => {
+export const Header = ({ timeLeft, currentPhase }: HeaderProps) => {
   const lives = useWordQuizStore((state) => state.lives); // lives 상태 가져오기
 
   return (
@@ -22,8 +22,8 @@ export const Header = ({ timeLeft, progress }: HeaderProps) => {
         ))}
       </LivesContainer>
       <ProgressContainer>
-        {progress.map((isActive, index) => (
-          <ProgressBar key={index} active={isActive} />
+      {Array.from({ length: 3 }).map((_, index) => (
+          <ProgressBar key={index} active={index < currentPhase} />
         ))}
       </ProgressContainer>
       <TimerContainer>
