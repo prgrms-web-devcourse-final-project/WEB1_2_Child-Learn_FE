@@ -4,21 +4,20 @@ import { UserSearchResponse } from '@/features/search/model/types';
 export const userApi = {
   searchUsers: async (
     username: string,
-    page: number = 0, // 페이지 번호 (기본값 0)
-    size: number = 10 // 페이지 크기 (기본값 10)
+    page: number = 0,
+    size: number = 8
   ): Promise<UserSearchResponse> => {
-    const { data } = await baseApi.get(`/member/search`, {
+    const { data } = await baseApi.get('/member/search', {
       params: {
-        username,
-        page, // 페이지 파라미터 추가
-        size, // 사이즈 파라미터 추가
+        username: username.trim(),
+        page,
+        size,
       },
     });
     return data;
   },
 
-  sendFriendRequest: async (receiverId: number) => {
-    // string -> number로 변경
+  sendFriendRequest: async (receiverId: number): Promise<string> => {
     const { data } = await baseApi.post('/friends/request', {
       receiverId,
     });
