@@ -32,23 +32,31 @@ export class StockWebSocket {
   private messageHandler?: (message: WebSocketMessage) => void;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
-  private readonly WS_URL = 'ws://3.35.242.1:8080/api/v1/advanced-invest';
 
   constructor() {
-    this.connect();
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = '3.35.242.1:8080';
+    this.connect(`${protocol}//${host}/api/v1/advanced-invest`);
   }
 
-  private connect() {
+  private connect(url: string) {
     try {
-      this.ws = new WebSocket(this.WS_URL);
+      console.log('Connecting to WebSocket:', url);
+      this.ws = new WebSocket(url);
       
       this.ws.onopen = () => {
-        console.log('WebSocket Connected');
+        console.log('WebSocket Connected successfully');
         this.reconnectAttempts = 0;
       };
 
-      this.ws.onclose = this.handleClose.bind(this);
-      this.ws.onerror = (error) => console.error('WebSocket error:', error);
+      this.ws.onclose = (event) => {
+        console.log('WebSocket closed:', event.code, event.reason);
+        this.handleClose();
+      };
+
+      this.ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
       
       this.setupMessageHandler();
     } catch (error) {
@@ -80,8 +88,12 @@ export class StockWebSocket {
       const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
       setTimeout(() => {
         this.reconnectAttempts++;
-        this.connect();
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = '3.35.242.1:8080';
+        this.connect(`${protocol}//${host}/api/v1/advanced-invest`);
       }, timeout);
+    } else {
+      console.error('Max reconnection attempts reached');
     }
   }
 
