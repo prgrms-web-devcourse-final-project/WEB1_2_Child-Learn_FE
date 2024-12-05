@@ -23,7 +23,8 @@ export const useSendFriendRequest = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (receiverId: string) => {
+    mutationFn: (receiverId: number) => {
+      // string -> number
       return userApi.sendFriendRequest(receiverId);
     },
     onSuccess: (_, variables) => {
@@ -42,8 +43,8 @@ export const useSendFriendRequest = () => {
           return {
             ...queryData,
             content: queryData.content.map((user: SearchedUser) =>
-              user.loginId === variables
-                ? { ...user, requestStatus: 'PENDING' }
+              user.id === variables // loginId -> id로 변경
+                ? { ...user, friendshipStatus: 'PENDING' } // requestStatus -> friendshipStatus
                 : user
             ),
           };
