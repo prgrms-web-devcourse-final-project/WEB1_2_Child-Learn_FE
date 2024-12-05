@@ -55,7 +55,10 @@ export class StockWebSocket {
   private getToken(): string | null {
     const store = (window as any).store;
     const state = store?.getState?.();
+    console.log('Redux State:', state);
+    
     const token = state?.state?.accessToken;
+    console.log('Token value:', token);
     
     if (!token) {
       console.error('JWT 토큰이 없습니다. 인증이 필요합니다.');
@@ -65,6 +68,7 @@ export class StockWebSocket {
   }
 
   public connect() {
+    console.log('WebSocket connect called from:', new Error().stack);
     if (!StockWebSocket.shouldInitialize()) {
       return;
     }
@@ -191,7 +195,7 @@ export class StockWebSocket {
       1005: "상태 코드 없음",
       1006: "비정상 종료",
       1007: "잘못된 데이터 형식",
-      1008: "정책 위반",
+      1008: "��책 위반",
       1009: "메시지 크기 초과",
       1010: "필수 확장 기능 누락",
       1011: "내부 서버 오류",
