@@ -116,9 +116,14 @@ const WordQuizGamePage = () => {
           // 게임 종료 시
           navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
         } else {
-          setWords([response]); // 다음 문제 업데이트
-          setLives(response.remainLife);
-          setCurrentQuestionIndex(response.currentPhase - 1);
+          const transformedResponse = {
+            word: response.word,
+            explanation: response.explanation,
+            hint: response.hint,
+          };
+          setWords([transformedResponse]);
+          setLives(response.remainLife || 3);
+          setCurrentQuestionIndex(response.currentPhase - 1 || 0);
         }
       } catch (error) {
         console.error('Failed to submit correct answer:', error);
@@ -133,8 +138,13 @@ const WordQuizGamePage = () => {
           // 게임 종료 시
           navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
         } else {
-          setWords([response]);
-          setLives(response.remainLife);
+          const transformedResponse = {
+            word: response.word,
+            explanation: response.explanation,
+            hint: response.hint,
+          };
+          setWords([transformedResponse]);
+          setLives(response.remainLife || 3);
         }
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
