@@ -1,5 +1,7 @@
 import { http, HttpResponse } from 'msw';
 
+let sessionGameState: WordQuizQuestion | null = null; // 세션 상태를 관리하는 변수
+
 interface WordQuizQuestion {
   word: string;
   explanation: string;
@@ -103,52 +105,62 @@ export const wordQuizGameHandlers = [
     });
   }),
 
-  // 난이도별 퀴즈 조회
-  http.get('/api/v1/word-quiz/:difficulty', async ({ params }) => {
-    const difficulty = params.difficulty as string;
+ // 난이도별 퀴즈 조회 및 게임 시작
+ http.get('/api/v1/word-quiz/:difficulty', async ({ params }) => {
+    const difficulty = params.difficulty as 'EASY' | 'NORMAL' | 'HARD';
 
-    console.log(`MSW: Fetching word quiz for difficulty: ${difficulty}`);
-
-    if (!difficulty || !['EASY', 'NORMAL', 'HARD'].includes(difficulty)) {
+    if (!['EASY', 'NORMAL', 'HARD'].includes(difficulty)) {
       return new HttpResponse(
-        JSON.stringify({
-          error: 'Invalid difficulty. Allowed values are EASY, NORMAL, HARD.',
-        }),
+        JSON.stringify({ error: 'Invalid difficulty' }),
         { status: 400 }
       );
     }
 
-    const questions = mockQuestions[difficulty][0]; 
-    return HttpResponse.json(questions);
+    // 세션 초기화
+    sessionGameState = {
+      ...mockQuestions[difficulty][0], // 첫 번째 문제
+      difficulty,
+    };
+    return HttpResponse.json(sessionGameState);
   }),
 
   // 답안 제출
   http.post('/api/v1/word-quiz/submissions', async ({ request }) => {
     const body = await request.json() as { isCorrect: boolean };
 
-    console.log(`MSW: Answer submission: isCorrect: ${body.isCorrect}`);
-
-    if (typeof body.isCorrect !== 'boolean') {
+    if (!sessionGameState) {
       return new HttpResponse(
-        JSON.stringify({ error: 'isCorrect field is required and must be a boolean.' }),
+        JSON.stringify({ error: 'Game state not initialized.' }),
         { status: 400 }
       );
     }
 
-    // Mock 응답 처리
-    const question = mockQuestions.EASY[0]; // 임의로 EASY 데이터 사용
-
     if (body.isCorrect) {
-      return HttpResponse.json({
-        ...question,
-        currentPhase: question.currentPhase + 1,
-        remainLife: question.remainLife,
-      });
+      if (sessionGameState.currentPhase < 3) {
+        // 다음 단계로 진행
+        const nextPhase = sessionGameState.currentPhase + 1;
+        sessionGameState = {
+          ...mockQuestions[sessionGameState.difficulty][nextPhase - 1],
+          remainLife: sessionGameState.remainLife,
+        };
+      } else {
+        // 마지막 문제 완료
+        sessionGameState = null;
+        return HttpResponse.json({ message: 'Game completed' });
+      }
     } else {
-      return HttpResponse.json({
-        ...question,
-        remainLife: question.remainLife - 1,
-      });
+      // 오답 처리
+      sessionGameState = {
+        ...sessionGameState,
+        remainLife: sessionGameState.remainLife - 1,
+      };
+
+      if (sessionGameState.remainLife <= 0) {
+        sessionGameState = null; // 게임 종료
+        return HttpResponse.json({ message: 'Game over' });
+      }
     }
+
+    return HttpResponse.json(sessionGameState);
   }),
 ];

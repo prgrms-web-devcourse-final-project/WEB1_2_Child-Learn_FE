@@ -15,6 +15,8 @@ const WordQuizGamePage = () => {
     incrementCorrectAnswers,
     decrementLives,
     setWords,
+    setLives,
+    setCurrentQuestionIndex,
     lives,
     words,
     currentQuestionIndex,
@@ -106,25 +108,38 @@ const WordQuizGamePage = () => {
       incrementCorrectAnswers(); // 맞춘 문제 증가
       setShowCorrectPopup(true);
 
-      // 정답 제출 API 호출
       try {
-        await wordQuizApi.submitAnswer(true);
+        const response = await wordQuizApi.submitAnswer(true);
+        if ('message' in response) {
+          // 게임 종료 시
+          navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
+        } else {
+          setWords([response]); // 다음 문제 업데이트
+          setLives(response.remainLife);
+          setCurrentQuestionIndex(response.currentPhase - 1);
+        }
       } catch (error) {
         console.error('Failed to submit correct answer:', error);
       }
     } else if (updatedAnswer.length === correctWord.length) {
-      decrementLives(); // 목숨 감소
+      decrementLives();
       setShowIncorrectPopup(true);
 
-      // 오답 제출 API 호출
       try {
-        await wordQuizApi.submitAnswer(false);
+        const response = await wordQuizApi.submitAnswer(false);
+        if ('message' in response) {
+          // 게임 종료 시
+          navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
+        } else {
+          setWords([response]);
+          setLives(response.remainLife);
+        }
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
       }
     }
   };
-
+  
   // 다음 문제로 이동
   const handleNextQuestion = () => {
     setShowCorrectPopup(false);
@@ -155,7 +170,6 @@ const WordQuizGamePage = () => {
       <BackgroundContainer />
       <Header
         timeLeft={timeLeft}
-        lives={lives}
         progress={words.map((_, i) => i <= currentQuestionIndex)}
       />
       <Question question={currentWord?.explanation || ''} />
