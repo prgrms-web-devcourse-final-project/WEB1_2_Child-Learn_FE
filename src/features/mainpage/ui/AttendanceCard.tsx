@@ -12,10 +12,10 @@ export const AttendanceCard = ({ onClick }: AttendanceCardProps) => {
   const attendanceMutation = useAttendance();
 
   const handleAttendance = () => {
-    if (!isChecked) {
+    if (!isChecked && !attendanceMutation.isPending) {
       attendanceMutation.mutate(undefined, {
-        onSuccess: (data) => {
-          setIsChecked(data.isCheckin);
+        onSuccess: () => {
+          setIsChecked(true);
           onClick?.();
         },
       });
@@ -26,13 +26,9 @@ export const AttendanceCard = ({ onClick }: AttendanceCardProps) => {
     <CardContainer>
       <CardContent>
         <Title $isChecked={isChecked}>
-          {' '}
-          {/* isChecked prop 추가 */}
           {isChecked ? (
             <div className="complete-text">
-              출석 완료!
-              <br />
-              내일도 잊지 말아요!
+              출석 완료! <br /> 내일도 잊지 말아요!
             </div>
           ) : (
             <>
@@ -45,8 +41,7 @@ export const AttendanceCard = ({ onClick }: AttendanceCardProps) => {
           <ActionButton onClick={handleAttendance}>출석하기</ActionButton>
         )}
       </CardContent>
-      {!isChecked && <IconImage src="/img/calendar.png" alt="calendar" />}{' '}
-      {/* isChecked일 때 숨김 */}
+      {!isChecked && <IconImage src="/img/calendar.png" alt="calendar" />}
       {isChecked && <Overlay />}
     </CardContainer>
   );
