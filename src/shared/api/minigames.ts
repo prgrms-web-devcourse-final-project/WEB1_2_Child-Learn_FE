@@ -103,7 +103,7 @@ export const wordQuizApi = {
   // 답안 제출
   submitAnswer: async (
     isCorrect: boolean
-  ): Promise<WordQuizQuestion> => {
+  ): Promise<WordQuizQuestion | { message: string }> => {
     const response = await baseApi.post(
       `/word-quiz/submissions`,
       { isCorrect },
@@ -114,6 +114,13 @@ export const wordQuizApi = {
         },
       }
     );
-    return response.data;
+
+    // API가 'message' 키를 반환하면 게임이 종료된 상태임
+    if (response.data.message) {
+      return { message: response.data.message }; // 게임 종료 또는 완료 메시지
+    }
+
+    // 게임 상태 업데이트
+    return response.data as WordQuizQuestion;
   },
 };
