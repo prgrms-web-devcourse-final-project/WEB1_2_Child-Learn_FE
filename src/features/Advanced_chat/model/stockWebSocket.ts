@@ -54,16 +54,23 @@ export class StockWebSocket {
 
   private getToken(): string | null {
     const store = (window as any).store;
-    const state = store?.getState?.();
-    console.log('Redux State:', state);
-    
-    const token = state?.state?.accessToken;
-    console.log('Token value:', token);
-    
+    if (!store) {
+      console.error('Redux store가 존재하지 않습니다.');
+      return null;
+    }
+
+    const state = store.getState?.();
+    if (!state) {
+      console.error('Redux 상태를 가져올 수 없습니다.');
+      return null;
+    }
+
+    const token = state.state?.accessToken;
     if (!token) {
       console.error('JWT 토큰이 없습니다. 인증이 필요합니다.');
       return null;
     }
+
     return token;
   }
 
@@ -86,35 +93,33 @@ export class StockWebSocket {
   }
 
   public async connect() {
-    console.log('WebSocket connect called from:', new Error().stack);
-    
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
     if (!StockWebSocket.shouldInitialize()) {
+      console.log('WebSocket 초기화가 필요하지 않음');
       return;
     }
 
     if (this.ws?.readyState === WebSocket.OPEN) {
-      console.log('WebSocket already connected');
+      console.log('WebSocket이 이미 연결됨');
       return;
     }
 
-    // Redux store가 준비될 때까지 대기
-    const isStoreReady = await this.waitForStore();
-    if (!isStoreReady) {
-      console.error('Redux store 초기화 실패');
+    const storeReady = await this.waitForStore();
+    if (!storeReady) {
+      console.log('스토어 초기화 실패');
       return;
     }
 
-    // 이후 연결 로직 실행
     const token = this.getToken();
-    if (!token) return;
-    
+    if (!token) {
+      console.log('토큰이 없어 WebSocket 연결 불가');
+      return;
+    }
+
     const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
     console.log('Attempting secure WebSocket connection:', url);
-    
+
     this.ws = new WebSocket(url);
-    
+
     this.connectionTimeout = setTimeout(() => {
       if (this.ws?.readyState !== WebSocket.OPEN) {
         console.error('WebSocket connection timeout');
@@ -149,7 +154,7 @@ export class StockWebSocket {
         url: url
       });
     };
-    
+
     this.setupMessageHandler();
   }
 
@@ -223,7 +228,7 @@ export class StockWebSocket {
       1015: "TLS 보안 연결 실패"
 
     };
-    return reasons[code] || "알 수 ��는 오류";
+    return reasons[code] || "알 수 는 오류";
   }
 
   public onMessage(handler: (message: WebSocketMessage) => void) {
