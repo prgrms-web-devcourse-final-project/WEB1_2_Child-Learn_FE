@@ -100,7 +100,7 @@ export const wordQuizGameHandlers = [
     console.log('MSW: Checking word quiz availability');
     return HttpResponse.json({
       isEasyPlayAvailable: true,
-      isNormalPlayAvailable: false,
+      isNormalPlayAvailable: true,
       isHardPlayAvailable: false,
     });
   }),
