@@ -1,11 +1,11 @@
 import styled from 'styled-components';
 
 interface Props {
-  points: number;
-  coins: number;
+  points: number | undefined;
+  coins: number | undefined;
 }
 
-const CurrentStatus = ({ points, coins }: Props) => (
+const CurrentStatus = ({ points = 0, coins = 0}: Props) => (
   <StatusContainer>
     <PointBadge>
       <BadgeIconWrapper>

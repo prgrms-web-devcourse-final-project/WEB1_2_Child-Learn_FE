@@ -1,3 +1,5 @@
+import { LargeNumberLike } from "crypto";
+
 // TransactionType Enum
 export type TransactionType = 'EARNED' | 'USED' | 'MAINTAINED' | 'EXCHANGED';
 
@@ -18,6 +20,7 @@ export interface MiniGameTransaction {
 
 // ExchangeRequest Interface
 export interface ExchangeRequest {
+    memberId: number;
     pointsExchanged: number;
   }
 
