@@ -1,7 +1,12 @@
 import React from 'react';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
-import { TradeResult } from '@/features/Intermediate_chart/model/types/stock';
 
+interface TradeResult {
+  tradeType: 'buy' | 'sell';
+  stockName: string;
+  quantity: number;
+  totalPrice: number;
+}
 interface CompletionModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -24,13 +29,16 @@ interface CompletionModalProps {
           </S.ModalTitle>
           <S.CompletionModalContent>
             <S.CompletionMessage>
-              {tradeResult.tradeType === 'buy' 
-                ? `${tradeResult.stockName} ${tradeResult.quantity}주를 
-                   ${tradeResult.totalPrice.toLocaleString()}포인트에 매수하였습니다.`
-                : `${tradeResult.totalPrice.toLocaleString()}포인트를 획득하였습니다.`}
+              {`${tradeResult.stockName}
+              ${tradeResult.quantity}주를 
+              ${tradeResult.totalPrice.toLocaleString()}포인트에 
+              매수하였습니다.`}
             </S.CompletionMessage>
             <S.CompletionButtonGroup>
-              <S.SingleButton color="#1B63AB" onClick={onClose}>
+              <S.SingleButton 
+                color="#1B63AB"
+                onClick={onClose}
+              >
                 확인
               </S.SingleButton>
             </S.CompletionButtonGroup>
