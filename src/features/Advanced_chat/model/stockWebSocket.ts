@@ -81,7 +81,7 @@ export class StockWebSocket {
     // 1. localStorage 확인
     const localToken = localStorage.getItem('accessToken');
     if (localToken) {
-      console.log('Token found in localStorage');
+      console.log('Access Token retrieved from localStorage:', localToken);
       return localToken;
     }
 
@@ -152,13 +152,13 @@ export class StockWebSocket {
     this.connectionStatus = 'connecting';
 
     try {
-      const token = await this.waitForToken();
+      const token = await this.getToken();
       if (!token) {
         this.connectionStatus = 'disconnected';
         console.error('Failed to obtain token for WebSocket connection');
         return;
       }
-
+      
       const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
       console.log('Initiating WebSocket connection to:', url);
 
