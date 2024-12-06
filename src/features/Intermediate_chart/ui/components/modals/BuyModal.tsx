@@ -1,4 +1,3 @@
-// BuyModal.tsx
 import React, { useState, useEffect } from 'react';
 import { useStockStore } from '@/features/Intermediate_chart/model/stock';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
@@ -6,8 +5,8 @@ import * as S from '@/features/Intermediate_chart/ui/components/styles';
 interface BuyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (stockId: string, buyPrice: number, buyQuantity: number) => Promise<void>;
-  stockId: string;
+  onConfirm: (buyPrice: number, buyQuantity: number) => Promise<void>;
+  stockId: number;
   stockName: string;
   initialPrice: string;
   points: number;
@@ -43,21 +42,39 @@ export const BuyModal: React.FC<BuyModalProps> = ({
     }
     const numValue = parseInt(value);
     setPrice(numValue.toLocaleString());
+    setTotalPrice(numValue * quantity); // 총 금액 업데이트
   };
-
+  
   const handleQuantityChange = (delta: number) => {
     const newQuantity = Math.max(1, quantity + delta);
     setQuantity(newQuantity);
+    if (price) {
+      const priceNum = parseInt(price.replace(/,/g, ''));
+      setTotalPrice(priceNum * newQuantity); // 수량 변경시 총 금액 업데이트
+    }
   };
+
 
   const handleConfirm = async () => {
     try {
-      const buyPrice = parseInt(price.replace(/,/g, ''));
-      await onConfirm(stockId, buyPrice, quantity);
+      const buyPrice = parseInt(price.replace(/,/g, '')); // 콤마 제거하고 숫자로 변환
+      const totalAmount = buyPrice * quantity; // 총 거래 금액 계산
+  
+      // 거래 금액 로깅
+      console.log('매수 요청 데이터:', {
+        stockId: stockId,
+        tradePoint: totalAmount,
+        price: buyPrice,
+        quantity: quantity
+      });
+  
+      await onConfirm(buyPrice, quantity);
     } catch (error) {
       console.error('매수 실패:', error);
     }
   };
+
+  
 
   if (!isOpen) return null;
 
@@ -123,7 +140,3 @@ export const BuyModal: React.FC<BuyModalProps> = ({
     </>
   );
 };
-
-
-
-

@@ -33,11 +33,24 @@ export const useStockStore = create<StockStore>((set) => ({
 
   fetchStocks: async () => {
     try {
-      const response = await baseApi.get<MidStock[]>('/mid-stocks/list');
-      set({ stocks: response.data, isLoading: false });
+      set({ isLoading: true });
+      const response = await baseApi.get('/mid-stocks/list');
+      
+      if (response.status === 200 && response.data) {
+        set({ 
+          stocks: response.data, 
+          isLoading: false 
+        });
+      } else {
+        throw new Error('Invalid response format');
+      }
     } catch (error) {
-      console.error('Stocks fetch error:', error);
-      set({ error: '주식 목록 로딩 실패', isLoading: false });
+      set({ 
+        error: '주식 목록 로딩 실패', 
+        isLoading: false,
+        stocks: [] // 실패 시 빈 배열로 초기화
+      });
+      console.error('Failed to fetch stocks:', error);
     }
   },
 
@@ -97,22 +110,21 @@ export const useStockStore = create<StockStore>((set) => ({
 
   executeTrade: async (stockId: number, tradePoint: number, type: 'buy' | 'sell') => {
     try {
-      if (type === 'sell') {
-        const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
+      if (type === 'buy') {
+        const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
+          tradePoint
+        });
         return response.data;
       } else {
-        // 매수 요청 형식 수정
-        const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
-          tradePoint: tradePoint,  // 명확하게 키값 지정
-        });
+        const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
         return response.data;
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 400) {
-        const errorMessage = error.response.data.message || '매수 처리 중 오류가 발생했습니다.';
-        throw new Error(errorMessage);
+        // 서버에서 오는 구체적인 에러 메시지를 전달
+        throw new Error(error.response.data.message || '거래 처리 중 오류가 발생했습니다.');
       }
       throw error;
     }
-}
+  }
 }));
