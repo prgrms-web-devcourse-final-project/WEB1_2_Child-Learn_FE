@@ -8,6 +8,6 @@ export const checkAttendance = async (
     memberId: userId,
     points: 100, // API 스펙에 맞춰 포함
     isCheckIn: true,
-  });
+  });          
   return response.data;
 };
