@@ -111,38 +111,45 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         'buy'
       );
   
-      setTradeResult({
-        success: true,
-        message: '매수 완료',
-        tradeType: 'buy',
-        stockName: currentStock.midName,
-        price: buyPrice,
-        quantity: buyQuantity,
-        totalPrice: tradePoint
-      });
+      // 매수 성공 시
+      if ('warning' in result) {
+        setTradeResult({
+          success: true,
+          message: '매수 완료',
+          tradeType: 'buy',
+          stockName: currentStock.midName,
+          price: buyPrice,
+          quantity: buyQuantity,
+          totalPrice: tradePoint
+        });
   
-      setUserPoints(prev => prev - tradePoint);
-      setShowBuyModal(false);
-      setShowResultModal(true);
+        // 포인트 차감
+        setUserPoints(prev => prev - tradePoint);
+        setHasBoughtToday(true);
+        
+        // 매도 버튼 활성화를 위해 거래 가능 여부 체크
+        await checkTradeAvailability(currentStock.midStockId);
   
+        setShowBuyModal(false);
+        setShowResultModal(true);
+      }
     } catch (error: any) {
       console.error('매수 처리 중 에러:', error);
-      // 에러 메시지를 결과 모달에 표시
       setTradeResult({
         success: false,
-        message: error.message || '매수 처리 중 오류가 발생했습니다.',
+        message: error.message,
         tradeType: 'buy',
         stockName: currentStock.midName,
         price: buyPrice,
         quantity: buyQuantity,
-        totalPrice: 0
+        totalPrice: buyPrice * buyQuantity
       });
       setShowBuyModal(false);
       setShowResultModal(true);
     }
   };
 
-  // 매도 처리 (하루 1번 전체 매도)
+  // 매도 처리 (하 1번 전체 매도)
   const handleSellConfirm = async () => {
     if (!currentStock || !currentStockPrices.length) return;
     
@@ -186,7 +193,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
     }
   };
 
-  // 슬라이더 이동 처리
+  // 슬라이더 동 처리
   const handleNextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % stockList.length);
     setShowActions(false);

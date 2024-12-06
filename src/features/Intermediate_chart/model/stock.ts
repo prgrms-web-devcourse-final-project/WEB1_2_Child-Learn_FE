@@ -19,7 +19,7 @@ interface StockStore {
   executeTrade: (stockId: number, tradePoint: number, type: 'buy' | 'sell') => Promise<TradeResponse>;
 }
 
-export const useStockStore = create<StockStore>((set) => ({
+export const useStockStore = create<StockStore>((set, get) => ({
   stocks: [],
   currentStockPrices: [],
   tradeAvailability: {
@@ -66,7 +66,7 @@ export const useStockStore = create<StockStore>((set) => ({
       
       set({ currentStockPrices: formattedPrices, isLoading: false });
     } catch (error) {
-      set({ error: '주가 데이터 로딩 실패', isLoading: false });
+      set({ error: '주가 데이�� 로딩 실패', isLoading: false });
       console.error('Stock prices fetch error:', error);
     }
   },
@@ -112,17 +112,20 @@ export const useStockStore = create<StockStore>((set) => ({
     try {
       if (type === 'buy') {
         const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
-          tradePoint
+          tradePoint: Number(tradePoint)
         });
+        
+        await get().checkTradeAvailability(stockId);
         return response.data;
       } else {
         const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
+        await get().checkTradeAvailability(stockId);
         return response.data;
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 400) {
-        // 서버에서 오는 구체적인 에러 메시지를 전달
-        throw new Error(error.response.data.message || '거래 처리 중 오류가 발생했습니다.');
+        const errorMessage = error.response.data.message || '거래 처리 중 오류가 발생했습니다.';
+        throw new Error(errorMessage);
       }
       throw error;
     }
