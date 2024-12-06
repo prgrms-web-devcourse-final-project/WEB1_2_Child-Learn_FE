@@ -1,7 +1,8 @@
-import { baseApi } from '@/shared/api/base';
+
+// quiz.store.ts
 import { create } from 'zustand';
+import { baseApi } from '@/shared/api/base';
 import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
-import { FastGraphData } from '@/features/beginner_chart/model/types/graph';
 
 interface QuizStore {
   quizzes: BeginQuiz[];
@@ -11,30 +12,6 @@ interface QuizStore {
   error: string | null;
   fetchQuizzes: () => Promise<void>;
   submitAnswer: (answer: string) => Promise<{ isCorrect: boolean; points?: number }>;
-  setCurrentQuiz: (quiz: BeginQuiz) => void;
-  setAnswer: (answer: string) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-}
-
-interface QuizResponse {
-  quiz: BeginQuiz[];
-  isCorrect: boolean;
-}
-
-interface PointRequest {
-  memberId: number;
-  transactionType: 'BEGIN' | 'MID' | 'ADVANCE';
-  points: number;
-  pointType: 'STOCK';
-  stockType: 'BEGIN';
-  stockName: string;
-}
-
-interface PointResponse {
-  memberId: number;
-  currentPoints: number;
-  currentCoins: number;
 }
 
 export const useQuizStore = create<QuizStore>((set) => ({
@@ -47,8 +24,7 @@ export const useQuizStore = create<QuizStore>((set) => ({
   fetchQuizzes: async () => {
     try {
       set({ isLoading: true });
-      const response = await baseApi.get('/begin-stocks', {
-      });
+      const response = await baseApi.get('/begin-stocks');
       
       if (response.data.quiz?.[0]) {
         set({
@@ -66,29 +42,22 @@ export const useQuizStore = create<QuizStore>((set) => ({
     try {
       const userId = localStorage.getItem('userId');
 
-      const quizResponse = await baseApi.post<QuizResponse>(
-        '/begin-stocks/submissions', 
-        { answer },
-        
-      );
+      // Submit quiz answer
+      const quizResponse = await baseApi.post('/begin-stocks/submissions', { answer });
 
       set({ selectedAnswer: answer });
 
       if (quizResponse.data.isCorrect) {
-        const pointRequest: PointRequest = {
+        // Submit points if answer is correct
+        const pointRequest = {
           memberId: userId ? parseInt(userId) : 0,
-          transactionType: 'BEGIN',
           points: 200,
-          pointType: 'STOCK',
-          stockType: 'BEGIN',
-          stockName: '초급 주식'
+          pointType: "GAME",
+          gameType: "OX_QUIZ",
+          isWin: true
         };
 
-        await baseApi.post<PointResponse>(
-          '/wallet/invest', 
-          pointRequest,
-          
-        );
+        await baseApi.post('/wallet/game', pointRequest);
 
         return {
           isCorrect: true,
@@ -103,10 +72,5 @@ export const useQuizStore = create<QuizStore>((set) => ({
       console.error('Answer submission error:', error);
       throw error;
     }
-  },
-
-  setCurrentQuiz: (quiz: BeginQuiz) => set({ currentQuiz: quiz }),
-  setAnswer: (answer: string) => set({ selectedAnswer: answer }),
-  setLoading: (loading: boolean) => set({ isLoading: loading }),
-  setError: (error: string | null) => set({ error: error })
+  }
 }));

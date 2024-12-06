@@ -31,26 +31,6 @@ export interface WebSocketMessage {
   connectionId?: string;
 }
 
-export interface WebSocketResponse {
-  message?: string;
-  type: WebSocketActions;
-  data?: {
-    stocks?: Stock[];
-    gameStart?: boolean;
-    gamePause?: boolean;
-    gameEnd?: boolean;
-    remainingTime?: number;
-    symbol: string;
-    timestamp: number;
-    closePrice: string;
-    openPrice: string;
-    highPrice: string;
-    lowPrice: string;
-    change?: number;
-    volume?: number;
-  };
-}
-
 export class StockWebSocket {
   private static instance: StockWebSocket | null = null;
   private ws: WebSocket | null = null;
@@ -61,6 +41,7 @@ export class StockWebSocket {
   private connectionStatus: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
   private static readonly BASE_URL = 'ws://43.202.106.45';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
+  private connectPromise: Promise<void> | null = null;
 
   private constructor() {
     this.connectionId = generateUUID();
@@ -75,12 +56,26 @@ export class StockWebSocket {
   }
 
   private getAuthToken(): string | null {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      console.error('Authentication token not found');
+    try {
+      const authStorageStr = localStorage.getItem('auth-storage');
+      if (!authStorageStr) {
+        console.error('No auth-storage found in localStorage');
+        return null;
+      }
+
+      const authStorage = JSON.parse(authStorageStr);
+      const token = authStorage?.state?.accessToken;
+      
+      if (!token) {
+        console.error('No token found in auth-storage state');
+        return null;
+      }
+
+      return token;
+    } catch (error) {
+      console.error('Error parsing auth-storage:', error);
       return null;
     }
-    return token;
   }
 
   public getConnectionStatus() {
@@ -88,65 +83,91 @@ export class StockWebSocket {
   }
 
   public async connect() {
-    if (!StockWebSocket.shouldInitialize()) {
-      console.log('WebSocket initialization skipped - not on relevant page');
-      return;
-    }
-
-    if (this.connectionStatus === 'connecting') {
-      console.log('Connection already in progress');
-      return;
+    if (this.connectPromise) {
+      return this.connectPromise;
     }
 
     if (this.ws?.readyState === WebSocket.OPEN) {
       console.log('WebSocket already connected');
-      return;
+      return Promise.resolve();
     }
 
-    const token = this.getAuthToken();
-    if (!token) {
-      this.connectionStatus = 'disconnected';
-      console.error('Cannot connect: No authentication token available');
-      return;
-    }
+    this.connectPromise = new Promise<void>((resolve, reject) => {
+      const token = this.getAuthToken();
+      if (!token) {
+        this.connectionStatus = 'disconnected';
+        reject(new Error('No authentication token available'));
+        this.connectPromise = null;
+        return;
+      }
 
-    this.connectionStatus = 'connecting';
+      this.connectionStatus = 'connecting';
 
-    try {
-      const url = new URL(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`);
-      url.searchParams.append('authorization', `Bearer ${token}`);
-      
-      console.log('Connecting to WebSocket:', url.toString());
-      this.ws = new WebSocket(url.toString());
-      
-      this.setupWebSocketHandlers();
-    } catch (error) {
-      this.connectionStatus = 'disconnected';
-      console.error('WebSocket connection failed:', error);
-      this.handleReconnect();
-    }
-  }
+      try {
+        const url = new URL(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`);
+        url.searchParams.append('authorization', `Bearer ${token}`);
 
-  public static shouldInitialize(): boolean {
-    const path = window.location.pathname;
-    return path.includes('/advanced') || path.includes('/chat');
+        console.log('Connecting to WebSocket:', url.toString());
+        this.ws = new WebSocket(url.toString());
+
+        const timeout = setTimeout(() => {
+          reject(new Error('Connection timeout'));
+          this.connectPromise = null;
+          this.ws?.close();
+        }, 5000);
+
+        this.ws.onopen = () => {
+          clearTimeout(timeout);
+          this.connectionStatus = 'connected';
+          this.reconnectAttempts = 0;
+          console.log('WebSocket connected successfully');
+          this.setupWebSocketHandlers();
+          resolve();
+          this.connectPromise = null;
+        };
+
+        this.ws.onerror = (error) => {
+          clearTimeout(timeout);
+          this.connectionStatus = 'disconnected';
+          console.error('WebSocket error:', error);
+          reject(error);
+          this.connectPromise = null;
+          this.handleReconnect();
+        };
+
+      } catch (error) {
+        this.connectionStatus = 'disconnected';
+        reject(error);
+        this.connectPromise = null;
+        this.handleReconnect();
+      }
+    });
+
+    return this.connectPromise;
   }
 
   private setupWebSocketHandlers() {
     if (!this.ws) return;
 
-    this.ws.onopen = () => {
-      console.log('WebSocket connected successfully');
-      this.connectionStatus = 'connected';
-      this.reconnectAttempts = 0;
+    this.ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data) as WebSocketMessage;
+        console.log('Received message:', message);
+        
+        if (this.messageHandler) {
+          this.messageHandler(message);
+        }
+      } catch (error) {
+        console.error('Failed to parse message:', error);
+      }
     };
 
     this.ws.onclose = (event) => {
       this.connectionStatus = 'disconnected';
-      const reason = this.getCloseReason(event.code);
-      console.log(`WebSocket closed: ${event.code} (${reason})`);
+      this.connectPromise = null;
+      console.log(`WebSocket closed: ${event.code} (${this.getCloseReason(event.code)})`);
       
-      if (StockWebSocket.shouldInitialize()) {
+      if (event.code === 1006) {
         this.handleReconnect();
       }
     };
@@ -155,88 +176,48 @@ export class StockWebSocket {
       this.connectionStatus = 'disconnected';
       console.error('WebSocket error:', error);
     };
-
-    this.setupMessageHandler();
   }
 
-  private setupMessageHandler() {
-    if (!this.ws) return;
-
-    this.ws.onmessage = (event: MessageEvent) => {
-      try {
-        const response = JSON.parse(event.data) as WebSocketResponse;
-        console.log(`Received message (${this.connectionId}):`, response);
-
-        switch (response.type) {
-          case WebSocketActions.START_GAME:
-            console.log('Game started:', response.message);
-            break;
-          
-          case WebSocketActions.PAUSE_GAME:
-            console.log('Game paused:', response.message);
-            break;
-
-          case WebSocketActions.REFERENCE_DATA:
-            if (response.data?.stocks) {
-              console.log('Received initial stock data');
-            }
-            break;
-
-          case WebSocketActions.LIVE_DATA:
-            if (response.data) {
-              console.log('Received live stock data update');
-            }
-            break;
-
-          case WebSocketActions.END_GAME:
-            console.log('Game ended:', response.message);
-            break;
-        }
-
-        const message: WebSocketMessage = {
-          type: response.type,
-          data: response.data,
-          action: response.type
-        };
-
-        this.messageHandler?.(message);
-      } catch (error) {
-        console.error('Failed to parse message:', error);
-      }
-    };
-  }
-
-  public sendMessage(action: WebSocketActions, payload = {}) {
-    if (!StockWebSocket.shouldInitialize()) {
+  private async handleReconnect() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('Maximum reconnection attempts reached');
       return;
     }
 
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        action,
-        ...payload,
-        connectionId: this.connectionId
-      });
-      
-      console.log(`Sending message:`, message);
-      this.ws.send(message);
-    } else {
-      console.warn('Cannot send message: WebSocket not connected');
-      this.handleReconnect();
+    const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+    console.log(`Reconnecting in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+    
+    await new Promise(resolve => setTimeout(resolve, timeout));
+    
+    this.reconnectAttempts++;
+    try {
+      await this.connect();
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.sendMessage(WebSocketActions.REFERENCE_DATA);
+      }
+    } catch (error) {
+      console.error('Reconnection failed:', error);
     }
   }
 
-  private handleReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
-      console.log(`Reconnecting in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
-      
-      setTimeout(() => {
-        this.reconnectAttempts++;
-        this.connect();
-      }, timeout);
-    } else {
-      console.error('Maximum reconnection attempts reached');
+  public async sendMessage(type: WebSocketActions, data?: any) {
+    try {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        console.log('WebSocket not connected, attempting to connect...');
+        await this.connect();
+      }
+
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        const message: WebSocketMessage = {
+          type,
+          data,
+          connectionId: this.connectionId
+        };
+        console.log('Sending message:', message);
+        this.ws.send(JSON.stringify(message));
+      }
+    } catch (error) {
+      console.error('Failed to send message:', error);
     }
   }
 
@@ -265,6 +246,7 @@ export class StockWebSocket {
   public disconnect() {
     console.log('Disconnecting WebSocket');
     this.connectionStatus = 'disconnected';
+    this.connectPromise = null;
     
     if (this.ws) {
       this.ws.close(1000, '정상 종료');

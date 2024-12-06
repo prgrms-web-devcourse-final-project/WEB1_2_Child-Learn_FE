@@ -20,9 +20,9 @@ import { PublicRoute } from '@/app/router/PublicRoute';
 import { PrivateRoute } from '@/app/router/PrivateRoute';
 import SearchPage from '@/pages/searchPage/SearchPage';
 import FriendPage from '@/pages/friendPage/FriendPage';
+import LandingPage from '@/pages/LandingPage/LandingPage';
 
 export default function Router() {
-
   return (
     <Routes>
       {/* Public Routes (로그인 불필요) */}
@@ -30,7 +30,7 @@ export default function Router() {
         path="/"
         element={
           <PublicRoute restricted={true}>
-            <LoginPage />
+            <LandingPage />
           </PublicRoute>
         }
       />
