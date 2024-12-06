@@ -38,11 +38,11 @@ export const useQuizStore = create<QuizStore>((set) => ({
       if (response.data.quiz?.[0]) {
         set({
           currentQuiz: response.data.quiz[0],
-          isLoading: false
+          isLoading: true
         });
       }
     } catch (error) {
-      set({ error: '퀴즈 데이터 로딩 실패', isLoading: false });
+      set({ error: '퀴즈 데이터 로딩 실패', isLoading: true });
       console.error('Quiz fetch error:', error);
     }
   },

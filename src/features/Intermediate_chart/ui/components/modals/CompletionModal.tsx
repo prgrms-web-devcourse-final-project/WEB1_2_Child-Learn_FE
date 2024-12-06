@@ -33,7 +33,7 @@ interface CompletionModalProps {
               {`${tradeResult.stockName}
               ${tradeResult.quantity}주를 
               ${tradeResult.totalPrice.toLocaleString()}포인트에 
-              매도하였습니다.`}
+              매수하였습니다.`}
             </S.CompletionMessage>
             <S.CompletionButtonGroup>
               <S.SingleButton 
