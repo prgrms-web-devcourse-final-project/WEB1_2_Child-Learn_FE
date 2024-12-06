@@ -30,7 +30,7 @@ const WebSocketActions = {
 } as const;
 
 // WebSocket 객체를 생성합니다.
-const webSocket = new WebSocket('wss://3.35.242.1');
+const webSocket = new WebSocket('ws://43.202.106.45/api/v1/advanced-invest');
 
 export const useAdvancedGameStore = create<AdvancedGameStore>((set) => ({
   gameState: {

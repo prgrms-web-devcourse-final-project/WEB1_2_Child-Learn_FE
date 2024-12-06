@@ -22,6 +22,80 @@ import {
   Indicator
 } from './styled';
 
+// Custom Hook for Game Timer
+const useGameTimer = ({ 
+  isPlaying, 
+  gameId, 
+  wsRef, 
+  onGameEnd 
+}: {
+  isPlaying: boolean;
+  gameId: string;
+  wsRef: React.RefObject<StockWebSocket>;
+  onGameEnd?: () => void;
+}) => {
+  const [gameTime, setGameTime] = useState(0);
+  const lastUpdateTime = useRef<number | null>(null);
+  const MAX_GAME_TIME = 420; // 7 minutes in seconds
+
+  useEffect(() => {
+    let animationFrameId: number;
+    
+    const updateTimer = () => {
+      const currentTime = Date.now();
+      
+      if (isPlaying) {
+        if (lastUpdateTime.current) {
+          const deltaTime = Math.floor((currentTime - lastUpdateTime.current) / 1000);
+          
+          if (deltaTime >= 1) {
+            setGameTime(prev => {
+              const newTime = prev + deltaTime;
+              
+              if (newTime >= MAX_GAME_TIME) {
+                wsRef.current?.sendMessage(WebSocketActions.END_GAME, { gameId });
+                onGameEnd?.();
+                return MAX_GAME_TIME;
+              }
+              
+              return newTime;
+            });
+            
+            lastUpdateTime.current = currentTime;
+          }
+        } else {
+          lastUpdateTime.current = currentTime;
+        }
+        
+        animationFrameId = requestAnimationFrame(updateTimer);
+      }
+    };
+
+    if (isPlaying) {
+      animationFrameId = requestAnimationFrame(updateTimer);
+    } else {
+      lastUpdateTime.current = null;
+    }
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [isPlaying, gameId, wsRef, onGameEnd]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  return {
+    gameTime,
+    formattedTime: formatTime(gameTime),
+    isTimeUp: gameTime >= MAX_GAME_TIME
+  };
+};
 
 export const StockSlider: React.FC = () => {
   const [gameId] = useState<string>(generateUUID());
@@ -29,11 +103,19 @@ export const StockSlider: React.FC = () => {
   const [showActions, setShowActions] = useState(false);
   const [selectedStock, setSelectedStock] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [gameTime, setGameTime] = useState(0);
   const [stockData, setStockData] = useState<Record<string, StockPrice[]>>({});
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [availableStocks, setAvailableStocks] = useState<Stock[]>([]);
   const wsRef = useRef(StockWebSocket.getInstance());
+
+  const { formattedTime, isTimeUp } = useGameTimer({
+    isPlaying,
+    gameId,
+    wsRef,
+    onGameEnd: () => {
+      setIsPlaying(false);
+    }
+  });
 
   useEffect(() => {
     const ws = wsRef.current;
@@ -98,29 +180,6 @@ export const StockSlider: React.FC = () => {
     return () => ws.disconnect();
   }, [gameId]);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isPlaying) {
-      timer = setInterval(() => {
-        setGameTime(prev => {
-          if (prev >= 420) {
-            wsRef.current.sendMessage(WebSocketActions.END_GAME, { gameId });
-            setIsPlaying(false);  
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [isPlaying, gameId]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
-
   const handlePrevSlide = () => {
     setCurrentSlide(prev => Math.max(0, prev - 1));
   };
@@ -147,7 +206,7 @@ export const StockSlider: React.FC = () => {
     <SlideContainer>
       <TimeDisplay>
         <img src="/img/timer.png" alt="시계" />
-        {formatTime(gameTime)}
+        {formattedTime}
       </TimeDisplay>
 
       <NavigationButton 
