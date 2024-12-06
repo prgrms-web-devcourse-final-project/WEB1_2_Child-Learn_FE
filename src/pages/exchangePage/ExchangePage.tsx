@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useUserStore } from '../../app/providers/state/zustand/userStore'
-import { useCoinPointStore } from '../../features/exchange/model/coinPointStore';
-import CurrentStatus from '../../features/exchange/ui/CurrentStatus';
-import ExchangeBox from '../../features/exchange/ui/ExchangeBox';
-import Popup from '../../features/exchange/ui/Popup'
+import { useUserInfo } from '@/entities/User/lib/queries';
+import { useCoinPointStore } from '@/features/exchange/model/coinPointStore';
+import CurrentStatus from '@/features/exchange/ui/CurrentStatus';
+import ExchangeBox from '@/features/exchange/ui/ExchangeBox';
+import Popup from '@/features/exchange/ui/Popup'
+import { walletApi } from '@/shared/api/wallets';
 
 const EXCHANGE_RATE = 100; // 100 포인트 = 1 코인
 
 const ExchangePage = () => {
-  const { currentPoints, currentCoins } = useUserStore();
+  const { data: userInfo, isLoading, error } = useUserInfo();
   const { point, coin, setPoint, setCoin, addExchangeDetail } = useCoinPointStore();
   const [exchangePoints, setExchangePoints] = useState(''); // 입력된 환전 포인트
   const [exchangeCoins, setExchangeCoins] = useState(''); // 입력된 환전 코인
@@ -18,15 +19,21 @@ const ExchangePage = () => {
   const [popupButtonText, setPopupButtonText] = useState(''); // 팝업 버튼 텍스트
   const [isPopupVisible, setIsPopupVisible] = useState(false);
 
+  if (isLoading) return <div>Loading...</div>;
+  if (error || !userInfo) return <div>Error loading user info.</div>;
+
+  const currentPoints = userInfo.currentPoints;
+  const currentCoins = userInfo.currentCoins;
+
   useEffect(() => {
-    setPoint({ currentPoints: currentPoints || 2000 }); // 기본값 2000 설정
-    setCoin({ currentCoins: currentCoins || 10 }); // 기본값 10 설정
+    setPoint({ currentPoints: userInfo.currentPoints }); // 기본값 2000 설정
+    setCoin({ currentCoins: userInfo.currentCoins }); // 기본값 10 설정
   }, [currentPoints, currentCoins, setPoint, setCoin]);
 
   // 최대 환전 가능 코인 계산
   const maxExchangeableCoins = Math.floor(point.currentPoints / EXCHANGE_RATE);
 
-  const handleExchange = () => {
+  const handleExchange = async () => {
     const pointsToExchange = Number(exchangePoints);
     const coinsToExchange = Number(exchangeCoins);
 
@@ -37,6 +44,12 @@ const ExchangePage = () => {
       setIsPopupVisible(true);
       return;
     }
+
+    try {
+      const updatedWallet = await walletApi.exchangePoints({
+        memberId: userInfo.id,
+        pointsExchanged: pointsToExchange,
+      });
 
     // 상태 업데이트
     setPoint({ currentPoints: point.currentPoints - pointsToExchange });
@@ -58,7 +71,13 @@ const ExchangePage = () => {
     coinsGained: coinsToExchange,
   });
     setIsPopupVisible(true); // 팝업 표시
-  };
+  } catch (error) {
+    console.error('Failed to exchange points:', error);
+    setPopupMessage('환전 처리 중 오류가 발생했습니다.');
+    setPopupButtonText('닫기');
+    setIsPopupVisible(true);
+  }
+};
 
   return (
     <Container>
