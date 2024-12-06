@@ -8,7 +8,49 @@ import { useQuizStore } from '@/features/beginner_chart/model/store/quiz.store';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import QuizModal from '@/features/beginner_chart/ui/quiz-widget/QuizModal';
 
-const PageContainer = styled.div`
+
+const QuizGraphPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [showArticle, setShowArticle] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string>();
+  const [showModal, setShowModal] = useState(false);
+  const [earnedPoints, setEarnedPoints] = useState<number>(0);
+  
+  const { stockData, fetchStockData, isLoading } = useGraphStore();
+  const { currentQuiz, submitAnswer, fetchQuizzes } = useQuizStore();
+
+  useEffect(() => {
+    fetchStockData();
+    fetchQuizzes();
+  }, []);
+
+  const handleChartClick = () => {
+    setShowArticle(true);
+  };
+
+  const handleAnswer = async (answer: string) => {
+    try {
+      setSelectedAnswer(answer);
+      const result = await submitAnswer(answer);
+      if (result && 'points' in result) {
+        setEarnedPoints(result.points ?? 0);
+      }
+      setShowModal(true);
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    setShowArticle(false);
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  const PageContainer = styled.div`
   padding: 20px;
   background-color: #ffffff;
   min-height: 100vh;
@@ -77,6 +119,9 @@ const ArticleDate = styled.div`
 
 const QuizContent = styled.div`
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 `;
 
 const QuizQuestion = styled.h2`
@@ -84,20 +129,27 @@ const QuizQuestion = styled.h2`
   font-weight: bold;
   color: #000000;
   margin-bottom: 20px;
+  line-height: 1.5;
+  word-break: keep-all;
+  white-space: pre-wrap;
 `;
 
 const AnswerButton = styled.button<{ $type: 'O' | 'X'; $isSelected?: boolean }>`
   width: 100%;
+  min-height: 60px;
+  height: auto;
   padding: 16px;
   border: 1px solid ${props => props.$isSelected ? '#82C8BB' : '#e0e0e0'};
   border-radius: 8px;
   background: ${props => props.$isSelected ? '#f5fffd' : 'white'};
   margin-bottom: 12px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   cursor: pointer;
   text-align: left;
+  word-break: keep-all;
+  white-space: pre-wrap;
 
   &:hover {
     background: ${props => props.$isSelected ? '#f5fffd' : '#f5f5f5'};
@@ -112,6 +164,7 @@ const AnswerButton = styled.button<{ $type: 'O' | 'X'; $isSelected?: boolean }>`
 const AnswerCircle = styled.div<{ $type: 'O' | 'X' }>`
   width: 24px;
   height: 24px;
+  min-width: 24px;
   border-radius: 50%;
   background-color: ${props => props.$type === 'O' ? '#4A90E2' : '#E25C5C'};
   display: flex;
@@ -119,53 +172,18 @@ const AnswerCircle = styled.div<{ $type: 'O' | 'X' }>`
   justify-content: center;
   color: white;
   font-weight: bold;
+  margin-top: 2px;
 `;
 
 const AnswerText = styled.span`
-  font-size: 12px;
+  font-size: 14px;
   color: #333;
+  line-height: 1.5;
+  flex: 1;
+  padding-top: 2px;
 `;
 
-const QuizGraphPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [showArticle, setShowArticle] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<string>();
-  const [showModal, setShowModal] = useState(false);
-  const [earnedPoints, setEarnedPoints] = useState<number>(0);
-  
-  const { stockData, fetchStockData, isLoading } = useGraphStore();
-  const { currentQuiz, submitAnswer, fetchQuizzes } = useQuizStore();
 
-  useEffect(() => {
-    fetchStockData();
-    fetchQuizzes();
-  }, []);
-
-  const handleChartClick = () => {
-    setShowArticle(true);
-  };
-
-  const handleAnswer = async (answer: string) => {
-    try {
-      setSelectedAnswer(answer);
-      const result = await submitAnswer(answer);
-      if (result && 'points' in result) {
-        setEarnedPoints(result.points ?? 0);
-      }
-      setShowModal(true);
-    } catch (error) {
-      console.error('Error submitting answer:', error);
-    }
-  };
-
-  const handleModalClose = () => {
-    setShowModal(false);
-    setShowArticle(false);
-  };
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <PageContainer>
