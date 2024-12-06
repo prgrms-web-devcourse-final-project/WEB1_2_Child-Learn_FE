@@ -7,6 +7,8 @@ export const API_CONFIG = {
     findId: '/member/find-id', // 추가
     resetPw: '/member/reset-pw', // 추가
     logout: '/member/logout',
+    friendList: '/friends/list',
+    friendRemove: '/friends/remove',
   },
 } as const;
 
