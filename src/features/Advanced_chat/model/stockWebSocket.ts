@@ -8,6 +8,12 @@ export enum WebSocketActions {
   LIVE_DATA = 'LIVE_DATA'
 }
 
+export interface Stock {
+  id: number;
+  symbol: string;
+  title: string;
+}
+
 export interface WebSocketMessage {
   type: WebSocketActions;
   data?: {
@@ -19,10 +25,30 @@ export interface WebSocketMessage {
     lowPrice: string;
     change?: number;
     volume?: number;
-    stocks?: any[];
+    stocks?: Stock[];
   };
   action?: WebSocketActions;
   connectionId?: string;
+}
+
+export interface WebSocketResponse {
+  message?: string;
+  type: WebSocketActions;
+  data?: {
+    stocks?: Stock[];
+    gameStart?: boolean;
+    gamePause?: boolean;
+    gameEnd?: boolean;
+    remainingTime?: number;
+    symbol: string;
+    timestamp: number;
+    closePrice: string;
+    openPrice: string;
+    highPrice: string;
+    lowPrice: string;
+    change?: number;
+    volume?: number;
+  };
 }
 
 export class StockWebSocket {
@@ -34,7 +60,7 @@ export class StockWebSocket {
   private connectionTimeout: NodeJS.Timeout | null = null;
   private connectionId: string;
   private connectionStatus: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
-  private static readonly BASE_URL = 'wss://3.35.242.1';
+  private static readonly BASE_URL = 'ws://43.202.106.45';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
   private maxWaitTime = 30000;
   private checkInterval = 500;
@@ -190,8 +216,42 @@ export class StockWebSocket {
 
     this.ws.onmessage = (event: MessageEvent) => {
       try {
-        const message = JSON.parse(event.data);
-        console.log(`Received message (${this.connectionId}):`, message);
+        const response = JSON.parse(event.data) as WebSocketResponse;
+        console.log(`Received message (${this.connectionId}):`, response);
+
+        switch (response.type) {
+          case WebSocketActions.START_GAME:
+            console.log('Game started:', response.message);
+            break;
+          
+          case WebSocketActions.PAUSE_GAME:
+            console.log('Game paused:', response.message);
+            break;
+
+          case WebSocketActions.REFERENCE_DATA:
+            if (response.data?.stocks) {
+              console.log('Received initial stock data:', response.data.stocks);
+            }
+            break;
+
+          case WebSocketActions.LIVE_DATA:
+            if (response.data) {
+              console.log('Received live stock data:', response.data);
+            }
+            break;
+
+          case WebSocketActions.END_GAME:
+            console.log('Game ended:', response.message);
+            break;
+        }
+
+        // Convert WebSocketResponse to WebSocketMessage format
+        const message: WebSocketMessage = {
+          type: response.type,
+          data: response.data,
+          action: response.type
+        };
+
         this.messageHandler?.(message);
       } catch (error) {
         console.error(`Failed to parse message (${this.connectionId}):`, error);

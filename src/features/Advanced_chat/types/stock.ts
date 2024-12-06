@@ -50,5 +50,5 @@ export interface WebSocketMessage {
 }
 
 export interface StockResponseDto {
-  // 필요한 속성들 정의
+  
 }
