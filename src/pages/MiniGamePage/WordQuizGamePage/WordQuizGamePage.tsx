@@ -137,11 +137,17 @@ const WordQuizGamePage = () => {
     setUserAnswer([]);
     const response = await wordQuizApi.submitAnswer(true);
 
-  if (!response) {
-    // 게임 종료 처리
-    navigate(`/word-quiz/result/${difficulty}`);
-    return;
-  }
+    if (!response) {
+      console.error("Response is null, game may have ended unexpectedly.");
+      navigate(`/word-quiz/result/${difficulty}`);
+      return;
+    }
+
+     // 게임 종료 여부 확인
+     if (response.currentPhase === 3 && currentPhase === 3) {
+      navigate(`/word-quiz/result/${difficulty}`);
+      return;
+    }
 
   // 다음 문제 업데이트
   setCurrentWord({
