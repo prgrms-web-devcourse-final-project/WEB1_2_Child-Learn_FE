@@ -1,10 +1,4 @@
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
+import { generateUUID } from '@/features/Advanced_chat/utils/uuid';
 
 export enum WebSocketActions {
   START_GAME = 'START_GAME',
@@ -59,131 +53,145 @@ export class StockWebSocket {
     }
     return StockWebSocket.instance;
   }
-  
+
   private getAuthToken(): string | null {
     try {
-        // auth-storage에서 데이터 가져오기
-        const authStorageStr = localStorage.getItem('auth-storage');
-        if (!authStorageStr) {
-            console.error('No auth-storage found in localStorage');
-            return null;
-        }
-
-        // JSON 파싱
-        const authStorage = JSON.parse(authStorageStr);
-        
-        // state.accessToken 접근
-        const token = authStorage?.state?.accessToken;
-        
-        if (!token) {
-            console.error('No token found in auth-storage state');
-            return null;
-        }
-
-        return token;
-    } catch (error) {
-        console.error('Error parsing auth-storage:', error);
+      const authStorageStr = localStorage.getItem('auth-storage');
+      if (!authStorageStr) {
+        console.error('No auth-storage found in localStorage');
         return null;
+      }
+
+      const authStorage = JSON.parse(authStorageStr);
+      const token = authStorage?.state?.accessToken;
+      
+      if (!token) {
+        console.error('No token found in auth-storage state');
+        return null;
+      }
+
+      return token;
+    } catch (error) {
+      console.error('Error parsing auth-storage:', error);
+      return null;
     }
-}
+  }
 
   public getConnectionStatus() {
     return this.connectionStatus;
   }
 
-  private async connect() {
+  public async connect() {
     if (this.connectionStatus === 'connecting') {
-        console.log('Connection already in progress');
-        return;
+      console.log('Connection already in progress');
+      return;
     }
 
     if (this.ws?.readyState === WebSocket.OPEN) {
-        console.log('WebSocket already connected');
-        return;
+      console.log('WebSocket already connected');
+      return;
     }
 
     const token = this.getAuthToken();
     if (!token) {
-        this.connectionStatus = 'disconnected';
-        console.error('Cannot connect: No authentication token available');
-        return;
+      this.connectionStatus = 'disconnected';
+      console.error('Cannot connect: No authentication token available');
+      return;
     }
 
     this.connectionStatus = 'connecting';
 
     try {
-        // 토큰을 헤더로 전달
-        const ws = new WebSocket(
-            `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`,
-            [`Bearer ${token}`]  // 토큰을 프로토콜로 전달
-        );
+      // URL에 토큰을 쿼리 파라미터로 추가
+      const url = new URL(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`);
+      url.searchParams.append('token', token);
 
-        // 연결 성공 대기
-        await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                reject(new Error('Connection timeout'));
-            }, 5000);
+      console.log('Connecting to WebSocket:', url.toString());
+      this.ws = new WebSocket(url.toString());
+      
+      await this.waitForConnection();
+      this.setupWebSocketHandlers();
 
-            ws.onopen = () => {
-                clearTimeout(timeout);
-                resolve(true);
-            };
+    } catch (error) {
+      this.connectionStatus = 'disconnected';
+      console.error('WebSocket connection failed:', error);
+      this.handleReconnect();
+    }
+  }
 
-            ws.onerror = (error) => {
-                clearTimeout(timeout);
-                reject(error);
-            };
-        });
+  private async waitForConnection(): Promise<void> {
+    if (!this.ws) throw new Error('WebSocket instance not created');
 
-        this.ws = ws;
-        this.setupWebSocketHandlers();
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Connection timeout'));
+      }, 5000);
+
+      this.ws!.onopen = () => {
+        clearTimeout(timeout);
         this.connectionStatus = 'connected';
         this.reconnectAttempts = 0;
         console.log('WebSocket connected successfully');
+        resolve();
+      };
 
-    } catch (error) {
-        this.connectionStatus = 'disconnected';
-        console.error('WebSocket connection failed:', error);
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.handleReconnect();
-        }
-    }
-}
+      this.ws!.onerror = (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      };
+    });
+  }
 
-private setupWebSocketHandlers() {
+  private setupWebSocketHandlers() {
     if (!this.ws) return;
 
     this.ws.onopen = () => {
-        console.log('WebSocket connected successfully');
-        this.connectionStatus = 'connected';
-        this.reconnectAttempts = 0;
-        
-        // 연결 성공 시 바로 REFERENCE_DATA 요청
-        this.sendMessage(WebSocketActions.REFERENCE_DATA);
+      console.log('WebSocket connected successfully');
+      this.connectionStatus = 'connected';
+      this.reconnectAttempts = 0;
+      
+      // 연결 즉시 REFERENCE_DATA 요청
+      this.sendMessage(WebSocketActions.REFERENCE_DATA);
     };
 
-    this.ws.onclose = async (event) => {
-        this.connectionStatus = 'disconnected';
-        console.log(`WebSocket closed: ${event.code} (${this.getCloseReason(event.code)})`);
-        
-        if (event.code === 1006) {
-            // 비정상 종료인 경우 재연결 시도
-            await this.handleReconnect();
-        }
+    this.ws.onclose = (event) => {
+      this.connectionStatus = 'disconnected';
+      console.log(`WebSocket closed: ${event.code} (${this.getCloseReason(event.code)})`);
+      
+      if (event.code === 1006) {
+        this.handleReconnect();
+      }
     };
 
     this.ws.onerror = (error) => {
-        this.connectionStatus = 'disconnected';
-        console.error('WebSocket error:', error);
+      this.connectionStatus = 'disconnected';
+      console.error('WebSocket error:', error);
     };
 
     this.setupMessageHandler();
-}
+  }
 
-private async handleReconnect() {
+  private setupMessageHandler() {
+    if (!this.ws) return;
+    
+    this.ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data) as WebSocketMessage;
+        console.log('Received message:', message);
+        
+        if (this.messageHandler) {
+          this.messageHandler(message);
+        }
+      } catch (error) {
+        console.error('Failed to parse message:', error);
+      }
+    };
+  }
+
+  private async handleReconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('Maximum reconnection attempts reached');
-        return;
+      console.error('Maximum reconnection attempts reached');
+      return;
     }
 
     const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
@@ -193,7 +201,33 @@ private async handleReconnect() {
     
     this.reconnectAttempts++;
     await this.connect();
-}
+  }
+
+  public sendMessage(type: WebSocketActions, data?: any) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.warn('WebSocket not connected, attempting to connect...');
+      this.connect().then(() => {
+        if (this.ws?.readyState === WebSocket.OPEN) {
+          const message: WebSocketMessage = {
+            type,
+            data,
+            connectionId: this.connectionId
+          };
+          console.log('Sending message:', message);
+          this.ws.send(JSON.stringify(message));
+        }
+      });
+      return;
+    }
+
+    const message: WebSocketMessage = {
+      type,
+      data,
+      connectionId: this.connectionId
+    };
+    console.log('Sending message:', message);
+    this.ws.send(JSON.stringify(message));
+  }
 
   private getCloseReason(code: number): string {
     const reasons: Record<number, string> = {
@@ -231,4 +265,3 @@ private async handleReconnect() {
 }
 
 export const webSocket = StockWebSocket.getInstance();
-
