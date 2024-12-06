@@ -28,10 +28,10 @@ export const useStockStore = create<StockStore>((set, get) => ({
  currentStockPrices: [],
  tradeAvailability: {
    isPossibleBuy: false,
-   isPossibleSell: false
+   isPossibleSell: true
  },
  stockDetails: [],
- isLoading: false,
+ isLoading: true,
  error: null,
 
  fetchStockHoldings: async (stockId: number) => {
@@ -159,4 +159,5 @@ export const useStockStore = create<StockStore>((set, get) => ({
       return [];
     }
   }
+  
 }));
