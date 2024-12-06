@@ -1,5 +1,6 @@
 import { baseApi } from "./base";
 import { Card } from "@/features/minigame/flipcardgame/types/cardTypes";
+import { WordQuizResponse, WordQuizRequest } from "@/features/minigame/wordquizgame/types/wordTypes";
 
 interface DifficultyAvailability {
   isBegin: boolean;
@@ -9,15 +10,6 @@ interface DifficultyAvailability {
 
 interface LastPlayTimeResponse {
   lastPlayTime: string;
-}
-
-export interface WordQuizQuestion {
-  word: string;
-  explanation: string;
-  hint: string;
-  currentPhase: number;
-  remainLife: number;
-  difficulty: 'EASY' | 'NORMAL' | 'HARD';
 }
 
 export const flipCardApi = {
@@ -91,7 +83,7 @@ export const wordQuizApi = {
   },
 
   // 난이도별 퀴즈 조회
-  getQuizByDifficulty: async (difficulty: 'EASY' | 'NORMAL' | 'HARD'): Promise<WordQuizQuestion> => {
+  getQuizByDifficulty: async (difficulty: 'EASY' | 'NORMAL' | 'HARD'): Promise<WordQuizResponse> => {
     const response = await baseApi.get(`/word-quiz/${difficulty}`,{
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
@@ -101,26 +93,28 @@ export const wordQuizApi = {
   },
 
   // 답안 제출
-  submitAnswer: async (
-    isCorrect: boolean
-  ): Promise<WordQuizQuestion | { message: string }> => {
-    const response = await baseApi.post(
-      `/word-quiz/submissions`,
-      { isCorrect },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+submitAnswer: async (
+  isCorrect: boolean
+): Promise<WordQuizResponse | null> => {
+  const body: WordQuizRequest = { isCorrect };
 
-    // API가 'message' 키를 반환하면 게임이 종료된 상태임
-    if (response.data.message) {
-      return { message: response.data.message }; // 게임 종료 또는 완료 메시지
+  const response = await baseApi.post(
+    `/word-quiz/submissions`,
+    body,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
+        'Content-Type': 'application/json',
+      },
     }
+  );
 
-    // 게임 상태 업데이트
-    return response.data as WordQuizQuestion;
-  },
+  // API가 null을 반환하면 게임 종료 상태임
+  if (!response.data) {
+    return null; // 게임 종료
+  }
+
+  // 게임 상태 업데이트
+  return response.data as WordQuizResponse;
+},
 };

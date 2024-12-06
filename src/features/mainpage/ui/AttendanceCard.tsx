@@ -5,10 +5,9 @@ import { useAttendance } from '@/features/mainpage/lib/queries';
 interface AttendanceCardProps {
   title: string;
   userId: number;
-  onClick?: () => void;
 }
 
-export const AttendanceCard = ({ onClick, userId }: AttendanceCardProps) => {
+export const AttendanceCard = ({ userId }: AttendanceCardProps) => {
   const [isChecked, setIsChecked] = useState(false);
   const { attendanceMutation, isAttendanceChecked } = useAttendance();
 
@@ -22,7 +21,6 @@ export const AttendanceCard = ({ onClick, userId }: AttendanceCardProps) => {
       attendanceMutation.mutate(userId, {
         onSuccess: () => {
           setIsChecked(true);
-          onClick?.();
         },
       });
     }

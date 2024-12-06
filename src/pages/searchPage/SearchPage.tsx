@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SearchBar } from '@/shared/ui/SearchBar/SearchBar';
 import {
   useSearchUsers,
@@ -7,22 +7,34 @@ import {
 } from '@/features/search/lib/queries';
 import { useDebounce } from '@/features/search/lib/useDebounce';
 import { SearchResultList } from '@/features/search/ui/SearchResultList';
+import showToast from '@/shared/lib/toast';
 
 const SearchPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(0); // 페이지 상태 추가
+  const [currentPage, setCurrentPage] = useState(0);
   const debouncedSearch = useDebounce(searchTerm, 500);
 
-  const { data: searchResults, isLoading } = useSearchUsers(
-    debouncedSearch,
-    currentPage,
-    8
-  ); // currentPage 전달
+  const {
+    data: searchResults,
+    isLoading,
+    error,
+  } = useSearchUsers(debouncedSearch, currentPage, 8);
+
   const { mutate: sendFriendRequest, isPending } = useSendFriendRequest();
+
+  useEffect(() => {
+    if (error) {
+      const axiosError = error as any;
+      // 500 에러(검색 결과 없음)일 때는 토스트를 표시하지 않음
+      if (axiosError.response?.status !== 500) {
+        showToast.error('검색 중 오류가 발생했습니다.');
+      }
+    }
+  }, [error]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setCurrentPage(0); // 새로운 검색어 입력시 페이지 초기화
+    setCurrentPage(0);
   };
 
   return (
@@ -31,7 +43,7 @@ const SearchPage = () => {
       <SearchBarWrapper>
         <SearchBar
           value={searchTerm}
-          onChange={handleSearch} // 핸들러 함수로 변경
+          onChange={handleSearch}
           placeholder="Search"
         />
       </SearchBarWrapper>
@@ -40,9 +52,9 @@ const SearchPage = () => {
         isLoading={isLoading}
         onFriendRequest={sendFriendRequest}
         isSending={isPending}
-        currentPage={currentPage} // 페이지 props 추가
-        totalPages={searchResults?.totalPages || 0} // 전체 페이지 수 전달
-        onPageChange={setCurrentPage} // 페이지 변경 핸들러 전달
+        currentPage={currentPage}
+        totalPages={searchResults?.totalPages || 0}
+        onPageChange={setCurrentPage}
       />
     </ContentContainer>
   );
