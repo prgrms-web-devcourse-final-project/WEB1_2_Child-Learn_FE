@@ -21,6 +21,7 @@ import { PrivateRoute } from '@/app/router/PrivateRoute';
 import SearchPage from '@/pages/searchPage/SearchPage';
 import FriendPage from '@/pages/friendPage/FriendPage';
 import LandingPage from '@/pages/LandingPage/LandingPage';
+import NotificationPage from '@/pages/notificationPage/NotificationPage';
 
 export default function Router() {
   return (
@@ -192,6 +193,14 @@ export default function Router() {
         element={
           <PrivateRoute>
             <FriendPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <PrivateRoute>
+            <NotificationPage />
           </PrivateRoute>
         }
       />

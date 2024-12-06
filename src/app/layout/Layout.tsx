@@ -18,6 +18,7 @@ const HIDDEN_HEADER_PATHS = [
   '/fast-navigation',
   '/avatar',
   '/auth/find-id',
+  '/notifications',
 ];
 
 // GNB를 숨길 페이지 경로들

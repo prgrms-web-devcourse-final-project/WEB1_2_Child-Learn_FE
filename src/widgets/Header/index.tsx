@@ -2,50 +2,41 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
-    const navigate = useNavigate();
-  
-    // 채팅이나 알림 클릭 시 페이지 이동을 처리하는 핸들러
-    const handleChatClick = () => {
-      navigate('/chat');
-    };
-  
-    const handleNotificationClick = () => {
-      navigate('/notifications');
-    };
-  
-    return (
-      <HeaderContainer>
-        <LogoLink to="/main">
-          <Logo 
-            src="/img/logo.png" 
-            alt="Logo"
-          />
-        </LogoLink>
-        <IconsWrapper>
-          <IconButton onClick={handleChatClick}>
-            <Icon 
-              src="/img/chat.png" 
-              alt="Chat"
-            />
-          </IconButton>
-          <IconButton onClick={handleNotificationClick}>
-            <Icon 
-              src="/img/bell.png" 
-              alt="Notifications"
-            />
-          </IconButton>
-        </IconsWrapper>
-      </HeaderContainer>
-    );
+  const navigate = useNavigate();
+
+  // 채팅이나 알림 클릭 시 페이지 이동을 처리하는 핸들러
+  const handleChatClick = () => {
+    navigate('/chat');
   };
-  
-  export default Header;
+
+  const handleNotificationClick = () => {
+    navigate('/notifications');
+  };
+
+  return (
+    <HeaderContainer>
+      <LogoLink to="/main">
+        <Logo src="/img/logo.png" alt="Logo" />
+      </LogoLink>
+      <IconsWrapper>
+        <IconButton onClick={handleChatClick}>
+          <Icon src="/img/chat.png" alt="Chat" />
+        </IconButton>
+        <IconButton onClick={handleNotificationClick}>
+          <Icon src="/img/bell.png" alt="Notifications" />
+        </IconButton>
+      </IconsWrapper>
+    </HeaderContainer>
+  );
+};
+
+export default Header;
 
 // 스타일 컴포넌트 정의
 const HeaderContainer = styled.header`
   width: 100%;
   height: 40px;
-  background: #FFFFFF;
+  background: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -80,6 +71,10 @@ const IconButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
+
+  &:focus {
+    outline: none;
+  }
 `;
 
 const Icon = styled.img`
