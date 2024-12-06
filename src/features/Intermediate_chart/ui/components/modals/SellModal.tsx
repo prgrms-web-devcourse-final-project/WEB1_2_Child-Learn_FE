@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStockStore } from '@/features/Intermediate_chart/model/stock';
+import { useStockStore  } from '@/features/Intermediate_chart/model/stock';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
 
 interface SellModalProps {
@@ -20,6 +20,8 @@ interface SellModalProps {
     if (!isOpen) return null;
   
     console.log(stockId);
+
+    
   
     return (
       <>
