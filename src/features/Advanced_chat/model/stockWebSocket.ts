@@ -59,23 +59,30 @@ export class StockWebSocket {
     }
     return StockWebSocket.instance;
   }
-
+  
   private getAuthToken(): string | null {
     try {
-        // state 객체에서 토큰 가져오기
-        const authState = localStorage.getItem('auth');
-        if (authState) {
-            const parsedAuth = JSON.parse(authState);
-            const token = parsedAuth?.state?.accessToken;
-            if (token) {
-                return token;
-            }
+        // auth-storage에서 데이터 가져오기
+        const authStorageStr = localStorage.getItem('auth-storage');
+        if (!authStorageStr) {
+            console.error('No auth-storage found in localStorage');
+            return null;
         }
+
+        // JSON 파싱
+        const authStorage = JSON.parse(authStorageStr);
         
-        console.error('Authentication token not found in auth state');
-        return null;
+        // state.accessToken 접근
+        const token = authStorage?.state?.accessToken;
+        
+        if (!token) {
+            console.error('No token found in auth-storage state');
+            return null;
+        }
+
+        return token;
     } catch (error) {
-        console.error('Error getting auth token:', error);
+        console.error('Error parsing auth-storage:', error);
         return null;
     }
 }
