@@ -153,6 +153,12 @@ const WordQuizGamePage = () => {
   setPhase(response.currentPhase);
   };
 
+  // 팝업 닫기 핸들러
+const handleCloseIncorrectPopup = () => {
+  setShowIncorrectPopup(false);
+  setUserAnswer([]); // 팝업 닫힐 때 답안 초기화
+};
+
   // 목숨이 0이 되면 결과 페이지로 이동
   useEffect(() => {
     if (lives === 0) {
@@ -170,7 +176,7 @@ const WordQuizGamePage = () => {
       <HintIcon onClick={() => setShowHint(true)}>💡</HintIcon>
       {showHint && <Popup message={currentWord?.hint || ''} buttonText="알 것 같아요!" onClose={() => setShowHint(false)} />}
       {showCorrectPopup && <Popup message="😃 정답!" buttonText="다음 문제" onClose={handleNextQuestion} />}
-      {showIncorrectPopup && <Popup message="😢 오답!" buttonText="다시 도전해봐요!" onClose={() => setShowIncorrectPopup(false)} />}
+      {showIncorrectPopup && <Popup message="😢 오답!" buttonText="다시 도전해봐요!" onClose={handleCloseIncorrectPopup} />}
       <Keyboard letters={keyboardLetters} onSelect={handleSelectLetter} />
     </PageContainer>
   );
