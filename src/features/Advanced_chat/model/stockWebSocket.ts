@@ -91,124 +91,109 @@ export class StockWebSocket {
     return this.connectionStatus;
   }
 
-  public async connect() {
+  private async connect() {
     if (this.connectionStatus === 'connecting') {
-      console.log('Connection already in progress');
-      return;
+        console.log('Connection already in progress');
+        return;
     }
 
     if (this.ws?.readyState === WebSocket.OPEN) {
-      console.log('WebSocket already connected');
-      return;
+        console.log('WebSocket already connected');
+        return;
     }
 
     const token = this.getAuthToken();
     if (!token) {
-      this.connectionStatus = 'disconnected';
-      console.error('Cannot connect: No authentication token available');
-      return;
+        this.connectionStatus = 'disconnected';
+        console.error('Cannot connect: No authentication token available');
+        return;
     }
 
     this.connectionStatus = 'connecting';
 
     try {
-      const url = new URL(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`);
-      url.searchParams.append('authorization', `Bearer ${token}`);
-      
-      console.log('Connecting to WebSocket:', url.toString());
-      this.ws = new WebSocket(url.toString());
-      
-      this.setupWebSocketHandlers();
-    } catch (error) {
-      this.connectionStatus = 'disconnected';
-      console.error('WebSocket connection failed:', error);
-      this.handleReconnect();
-    }
-  }
+        // 토큰을 헤더로 전달
+        const ws = new WebSocket(
+            `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`,
+            [`Bearer ${token}`]  // 토큰을 프로토콜로 전달
+        );
 
-  private setupWebSocketHandlers() {
+        // 연결 성공 대기
+        await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                reject(new Error('Connection timeout'));
+            }, 5000);
+
+            ws.onopen = () => {
+                clearTimeout(timeout);
+                resolve(true);
+            };
+
+            ws.onerror = (error) => {
+                clearTimeout(timeout);
+                reject(error);
+            };
+        });
+
+        this.ws = ws;
+        this.setupWebSocketHandlers();
+        this.connectionStatus = 'connected';
+        this.reconnectAttempts = 0;
+        console.log('WebSocket connected successfully');
+
+    } catch (error) {
+        this.connectionStatus = 'disconnected';
+        console.error('WebSocket connection failed:', error);
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.handleReconnect();
+        }
+    }
+}
+
+private setupWebSocketHandlers() {
     if (!this.ws) return;
 
     this.ws.onopen = () => {
-      console.log('WebSocket connected successfully');
-      this.connectionStatus = 'connected';
-      this.reconnectAttempts = 0;
+        console.log('WebSocket connected successfully');
+        this.connectionStatus = 'connected';
+        this.reconnectAttempts = 0;
+        
+        // 연결 성공 시 바로 REFERENCE_DATA 요청
+        this.sendMessage(WebSocketActions.REFERENCE_DATA);
     };
 
-    this.ws.onclose = (event) => {
-      this.connectionStatus = 'disconnected';
-      console.log(`WebSocket closed: ${event.code} (${this.getCloseReason(event.code)})`);
-      this.handleReconnect();
+    this.ws.onclose = async (event) => {
+        this.connectionStatus = 'disconnected';
+        console.log(`WebSocket closed: ${event.code} (${this.getCloseReason(event.code)})`);
+        
+        if (event.code === 1006) {
+            // 비정상 종료인 경우 재연결 시도
+            await this.handleReconnect();
+        }
     };
 
     this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      this.connectionStatus = 'disconnected';
+        this.connectionStatus = 'disconnected';
+        console.error('WebSocket error:', error);
     };
 
     this.setupMessageHandler();
-  }
+}
 
-  private setupMessageHandler() {
-    if (!this.ws) return;
-
-    this.ws.onmessage = (event: MessageEvent) => {
-      try {
-        const response = JSON.parse(event.data);
-        console.log(`Received message (${this.connectionId}):`, response);
-
-        if (response.type) {
-          const message: WebSocketMessage = {
-            type: response.type,
-            data: response.data,
-            action: response.type
-          };
-          this.messageHandler?.(message);
-        }
-      } catch (error) {
-        console.error('Failed to parse message:', error);
-      }
-    };
-  }
-
-  public sendMessage(action: WebSocketActions, payload = {}) {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        action,
-        ...payload,
-        connectionId: this.connectionId
-      });
-      
-      console.log(`Sending message:`, message);
-      this.ws.send(message);
-    } else {
-      console.warn('Cannot send message: WebSocket not connected');
-      this.connect().then(() => {
-        if (this.ws?.readyState === WebSocket.OPEN) {
-          const message = JSON.stringify({
-            action,
-            ...payload,
-            connectionId: this.connectionId
-          });
-          this.ws.send(message);
-        }
-      });
+private async handleReconnect() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+        console.error('Maximum reconnection attempts reached');
+        return;
     }
-  }
 
-  private handleReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
-      console.log(`Reconnecting in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
-      
-      setTimeout(() => {
-        this.reconnectAttempts++;
-        this.connect();
-      }, timeout);
-    } else {
-      console.error('Maximum reconnection attempts reached');
-    }
-  }
+    const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+    console.log(`Reconnecting in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+    
+    await new Promise(resolve => setTimeout(resolve, timeout));
+    
+    this.reconnectAttempts++;
+    await this.connect();
+}
 
   private getCloseReason(code: number): string {
     const reasons: Record<number, string> = {
