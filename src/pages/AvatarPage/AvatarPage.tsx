@@ -5,6 +5,7 @@ import { useAvatarStore } from "@/features/avatar/model/avatarStore";
 import { useItemStore } from "@/features/avatar/model/itemStore";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "@/app/providers/state/zustand/userStore";
+import { avatarApi } from "@/shared/api/avatar";
 import AvatarPreview from "@/features/avatar/ui/AvatarPreview";
 import ItemGrid from "@/features/avatar/ui/ItemGrid";
 import Tabs from "@/features/avatar/ui/Tabs";
