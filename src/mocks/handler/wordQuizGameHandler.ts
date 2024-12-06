@@ -93,40 +93,41 @@ export const wordQuizGameHandlers = [
   // 답안 제출
   http.post('/api/v1/word-quiz/submissions', async ({ request }) => {
     const body = (await request.json()) as WordQuizRequest;
-
-
+  
     if (!sessionGameState) {
       return new HttpResponse(
         JSON.stringify({ error: 'Game state not initialized.' }),
         { status: 400 }
       );
     }
-
+  
     if (body.isCorrect) {
       if (sessionGameState.currentPhase < 3) {
         sessionGameState.currentPhase += 1;
-
-      // 새로운 문제 가져오기
-      const randomIndex = Math.floor(Math.random() * mockQuestions.length);
-      const newQuestion = mockQuestions[randomIndex];
-
-      // sessionGameState 갱신
-      sessionGameState.word = newQuestion.word;
-      sessionGameState.explanation = newQuestion.explanation;
-      sessionGameState.hint = newQuestion.hint;
+  
+        // 새로운 문제 가져오기
+        const randomIndex = Math.floor(Math.random() * mockQuestions.length);
+        const newQuestion = mockQuestions[randomIndex];
+  
+        // sessionGameState 갱신
+        sessionGameState.word = newQuestion.word;
+        sessionGameState.explanation = newQuestion.explanation;
+        sessionGameState.hint = newQuestion.hint;
       } else {
-        // 게임 완료 시 세션 초기화
-        sessionGameState = null;
-        return HttpResponse.json({ message: 'Game completed' });
+        // 마지막 문제 완료
+        sessionGameState = {
+          ...sessionGameState,
+          currentPhase: 3, // 마지막 단계 유지
+        };
       }
     } else {
       sessionGameState.remainLife -= 1;
       if (sessionGameState.remainLife <= 0) {
-        sessionGameState = null; // 생명 소진 시 게임 종료
-        return HttpResponse.json({ message: 'Game over' });
+        // 생명이 모두 소진된 경우 상태 초기화
+        sessionGameState = null;
       }
     }
-
-    return HttpResponse.json(sessionGameState);
-  }),
+  
+    return HttpResponse.json(sessionGameState); // 단순히 sessionGameState 반환
+  }),  
 ];
