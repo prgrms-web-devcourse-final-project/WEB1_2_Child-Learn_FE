@@ -105,7 +105,7 @@ const MainPage = () => {
             description="친구들과 같이 둘러보아요!"
             iconSrc="/img/boy.png"
             iconAlt="남자아이"
-            onClick={() => navigate('/friends')}
+            onClick={() => navigate('/friend')}
           />
         </ContentContainer>
       </PageContainer>

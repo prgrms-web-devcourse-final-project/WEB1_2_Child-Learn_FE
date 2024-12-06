@@ -12,6 +12,7 @@ import { flipCardGameHandlers } from './flipCardGameHandlers';
 import { wordQuizGameHandlers } from './wordQuizGameHandler';
 import { searchHandlers } from './searchHandlers';
 import { avatarHandlers } from './avatarHandlers';
+import { friendHandlers } from './friendHandlers';
 
 export const handlers = [
   ...signUpHandlers,
@@ -27,5 +28,6 @@ export const handlers = [
   ...beginUserHandlers,
   ...searchHandlers,
   ...walletHandlers,
-  ...avatarHandlers
+  ...avatarHandlers,
+  ...friendHandlers,
 ];
