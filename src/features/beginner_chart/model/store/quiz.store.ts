@@ -1,4 +1,3 @@
-
 // quiz.store.ts
 import { create } from 'zustand';
 import { baseApi } from '@/shared/api/base';
@@ -85,7 +84,9 @@ export const useQuizStore = create<QuizStore>((set) => ({
 
         return {
           isCorrect: true,
-          points: 200
+          points: 200,
+          currentPoints: pointResponse.data.currentPoints,
+          currentCoins: pointResponse.data.currentCoins
         };
       }
 
