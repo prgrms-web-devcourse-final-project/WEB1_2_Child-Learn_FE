@@ -1,16 +1,25 @@
+import { useState } from 'react';
 import styled from 'styled-components';
 import { SearchBar } from '@/shared/ui/SearchBar/SearchBar';
 import { FriendList } from '@/features/freind/ui/FriendList';
 import { useFriendList, useRemoveFriend } from '@/features/freind/lib/quries';
-import { useState } from 'react';
+import { useDebounce } from '@/features/search/lib/useDebounce';
 
 const FriendPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { friends, isLoading, hasMore, loadMore } = useFriendList(searchTerm);
-  const { mutateAsync: removeFriend } = useRemoveFriend();
+  const [currentPage, setCurrentPage] = useState(0);
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const { data, isLoading } = useFriendList(debouncedSearchTerm, currentPage);
+  const removeFriendMutation = useRemoveFriend();
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
+    setCurrentPage(0);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -24,11 +33,12 @@ const FriendPage = () => {
         />
       </SearchBarWrapper>
       <FriendList
-        friends={friends}
+        friends={data?.content ?? []}
         isLoading={isLoading}
-        onRemoveFriend={removeFriend}
-        hasMore={hasMore}
-        onLoadMore={loadMore}
+        onRemoveFriend={removeFriendMutation.mutateAsync}
+        currentPage={currentPage}
+        totalPages={data?.totalPages ?? 0}
+        onPageChange={handlePageChange}
       />
     </ContentContainer>
   );

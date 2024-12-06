@@ -1,48 +1,31 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { friendApi } from '@/features/freind/api/friendApi';
+import { Friend } from '@/features/freind/model/types';
+import showToast from '@/shared/lib/toast';
 
-const ITEMS_PER_PAGE = 8;
+interface FriendListResponse {
+  content: Friend[];
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  number: number;
+  size: number;
+  empty: boolean;
+}
 
 export const FRIEND_KEYS = {
   all: ['friends'] as const,
-  list: () => [...FRIEND_KEYS.all, 'list'] as const,
+  list: (page: number, searchKeyword?: string) => 
+    [...FRIEND_KEYS.all, 'list', page, searchKeyword] as const,
 };
 
-export const useFriendList = (searchTerm: string) => {
-  const [displayedItems, setDisplayedItems] = useState(ITEMS_PER_PAGE);
-
-  const { data: allFriends = [], isLoading } = useQuery({
-    queryKey: FRIEND_KEYS.list(),
-    queryFn: friendApi.getFriendsList,
+export const useFriendList = (searchKeyword: string, page: number = 0) => {
+  return useQuery<FriendListResponse>({
+    queryKey: FRIEND_KEYS.list(page, searchKeyword),
+    queryFn: () => friendApi.getFriendsList(page, 8, searchKeyword),
+    // enabled 조건 제거 - 항상 쿼리 실행되도록
+    staleTime: 1000 * 60,
   });
-
-  // 검색어로 필터링
-  const filteredFriends = allFriends.filter(friend =>
-    friend.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    friend.loginId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // 현재 화면에 보여줄 친구들
-  const visibleFriends = filteredFriends.slice(0, displayedItems);
-  const hasMore = displayedItems < filteredFriends.length;
-
-  const loadMore = () => {
-    setDisplayedItems(prev => prev + ITEMS_PER_PAGE);
-  };
-
-  const resetDisplayedItems = () => {
-    setDisplayedItems(ITEMS_PER_PAGE);
-  };
-
-  return {
-    friends: visibleFriends,
-    isLoading,
-    hasMore,
-    loadMore,
-    resetDisplayedItems,
-    totalCount: filteredFriends.length
-  };
 };
 
 export const useRemoveFriend = () => {
@@ -51,10 +34,11 @@ export const useRemoveFriend = () => {
   return useMutation({
     mutationFn: friendApi.removeFriend,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: FRIEND_KEYS.list() });
+      queryClient.invalidateQueries({ queryKey: FRIEND_KEYS.all });
+      showToast.success('친구가 삭제되었습니다.');
     },
-    onError: (error) => {
-      console.error('친구 삭제 실패:', error);
-    },
+    onError: () => {
+      showToast.error('친구 삭제에 실패했습니다.');
+    }
   });
 };

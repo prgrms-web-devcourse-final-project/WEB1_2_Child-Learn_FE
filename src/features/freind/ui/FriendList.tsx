@@ -7,8 +7,11 @@ interface FriendListProps {
   friends: Friend[];
   isLoading: boolean;
   onRemoveFriend: (friendId: number) => Promise<void>;
-  hasMore: boolean;
-  onLoadMore: () => void;
+  hasMore?: boolean;
+  onLoadMore?: () => void;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export const FriendList = ({
@@ -17,13 +20,16 @@ export const FriendList = ({
   onRemoveFriend,
   hasMore,
   onLoadMore,
+  currentPage = 0,
+  totalPages = 0,
+  onPageChange,
 }: FriendListProps) => {
   const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
-        if (entries[0].isIntersecting && hasMore) {
+        if (entries[0].isIntersecting && hasMore && onLoadMore) {
           onLoadMore();
         }
       },
@@ -87,6 +93,24 @@ export const FriendList = ({
         ))}
         {hasMore && <LoadingTarget ref={observerTarget} />}
       </ListContainer>
+
+      {totalPages > 1 && onPageChange && (
+        <Pagination>
+          <NavigationButton
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 0}
+          >
+            이전
+          </NavigationButton>
+          <PageNumber>{currentPage + 1} / {totalPages}</PageNumber>
+          <NavigationButton
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages - 1}
+          >
+            다음
+          </NavigationButton>
+        </Pagination>
+      )}
     </Wrapper>
   );
 };
@@ -226,6 +250,43 @@ const EmptySubText = styled.p`
 const LoadingTarget = styled.div`
   height: 20px;
   width: 100%;
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  margin-top: 8px;
+`;
+
+const PageNumber = styled.span`
+  color: #666;
+  font-size: 14px;
+  min-width: 60px;
+  text-align: center;
+`;
+
+const NavigationButton = styled.button`
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: #f5f5f5;
+  }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+  }
 `;
 
 export default FriendList;

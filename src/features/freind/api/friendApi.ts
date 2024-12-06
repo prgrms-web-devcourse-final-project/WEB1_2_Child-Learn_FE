@@ -2,23 +2,52 @@ import { baseApi } from '@/shared/api/base';
 import { Friend } from '@/features/freind/model/types';
 import { API_CONFIG } from '@/shared/config';
 
+export interface FriendListResponse {
+  content: Friend[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  numberOfElements: number;
+  last: boolean;
+  first: boolean;
+  empty: boolean;
+}
+
 export const friendApi = {
-  // 친구 목록 조회
-  getFriendsList: async (): Promise<Friend[]> => {
-    try {
-      const { data } = await baseApi.get(API_CONFIG.endpoints.friendList);
-      return data;
-    } catch (error) {
-      throw new Error('친구 목록을 불러오는데 실패했습니다.');
-    }
+  getFriendsList: async (
+    page: number = 0,
+    size: number = 8,
+    searchKeyword?: string
+  ): Promise<FriendListResponse> => {
+    const { data } = await baseApi.get(API_CONFIG.endpoints.friendList, {
+      params: {
+        page,
+        size,
+        searchKeyword: searchKeyword?.trim(),
+      },
+    });
+    return data;
   },
 
-  // 친구 삭제
   removeFriend: async (friendId: number): Promise<void> => {
-    try {
-      await baseApi.delete(`${API_CONFIG.endpoints.friendRemove}/${friendId}`);
-    } catch (error) {
-      throw new Error('친구 삭제에 실패했습니다.');
-    }
-  },
+    await baseApi.delete(`${API_CONFIG.endpoints.friendRemove}/${friendId}`);
+  }
 };
