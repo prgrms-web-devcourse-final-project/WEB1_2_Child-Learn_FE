@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
-import { MarketItem } from "../../features/avatar/types/marketItemTypes";
-import { useItemStore } from "../../features/avatar/model/itemStore";
-import { useAvatarStore } from "../../features/avatar/model/avatarStore";
-import { useUserStore } from "../../app/providers/state/zustand/userStore";
+import { MarketItem } from "@/features/avatar/types/marketItemTypes";
+import { useItemStore } from "@/features/avatar/model/itemStore";
+import { useAvatarStore } from "@/features/avatar/model/avatarStore";
+import { useUserStore } from "@/app/providers/state/zustand/userStore";
 
 const AvatarDetailPage = () => {
   const { marketItems, updateMarketItems } = useItemStore();
@@ -137,7 +137,7 @@ const AvatarDetailPage = () => {
         <ItemTitle>
           {selectedItem?.prd_name}
           <ItemPrice>
-            <CoinIcon src="/public/img/coins.png" alt="코인" />
+            <CoinIcon src="/img/coins.png" alt="코인" />
             {selectedItem?.prd_price} Coin
           </ItemPrice>
         </ItemTitle>

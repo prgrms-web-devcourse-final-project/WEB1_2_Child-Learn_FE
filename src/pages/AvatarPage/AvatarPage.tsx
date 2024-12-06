@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useAvatarStore } from "../../features/avatar/model/avatarStore";
-import { useItemStore } from "../../features/avatar/model/itemStore";
+import { useAvatarStore } from "@/features/avatar/model/avatarStore";
+import { useItemStore } from "@/features/avatar/model/itemStore";
 import { useNavigate } from "react-router-dom";
-import { useUserStore } from "../../app/providers/state/zustand/userStore";
-import AvatarPreview from "../../features/avatar/ui/AvatarPreview";
-import ItemGrid from "../../features/avatar/ui/ItemGrid";
-import Tabs from "../../features/avatar/ui/Tabs";
-import Modal from "../../features/avatar/ui/Modal";
+import { useUserStore } from "@/app/providers/state/zustand/userStore";
+import AvatarPreview from "@/features/avatar/ui/AvatarPreview";
+import ItemGrid from "@/features/avatar/ui/ItemGrid";
+import Tabs from "@/features/avatar/ui/Tabs";
+import Modal from "@/features/avatar/ui/Modal";
 
 function AvatarPage() {
   const { avatar, setAvatar } = useAvatarStore();
