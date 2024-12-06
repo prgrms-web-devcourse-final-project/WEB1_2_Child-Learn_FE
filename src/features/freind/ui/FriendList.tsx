@@ -66,17 +66,15 @@ export const FriendList = ({
         {friends.map((friend) => (
           <UserItem key={friend.id}>
             <UserInfoWrapper>
-              <ProfileImage
-                src={friend.profileImage || '/img/basic-profile.png'}
-                alt="프로필"
-              />
+              <ProfileWrapper>
+                <ProfileImage
+                  src={friend.profileImage || '/img/basic-profile.png'}
+                  alt="프로필"
+                />
+                {friend.active && <ActiveIndicator />}
+              </ProfileWrapper>
               <UserInfo>
-                <NameWrapper>
-                  <UserName>{friend.username}</UserName>
-                  <ActiveStatus $isActive={friend.active}>
-                    {friend.active ? '접속중' : '미접속'}
-                  </ActiveStatus>
-                </NameWrapper>
+                <UserName>{friend.username}</UserName>
                 <UserLoginId>{friend.loginId}</UserLoginId>
               </UserInfo>
             </UserInfoWrapper>
@@ -138,23 +136,10 @@ const UserInfoWrapper = styled.div`
   gap: 12px;
 `;
 
-const ProfileImage = styled.img`
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  object-fit: cover;
-`;
-
 const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-`;
-
-const NameWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
 `;
 
 const UserName = styled.span`
@@ -166,14 +151,6 @@ const UserName = styled.span`
 const UserLoginId = styled.span`
   color: #666;
   font-size: 12px;
-`;
-
-const ActiveStatus = styled.span<{ $isActive: boolean }>`
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  background-color: ${props => props.$isActive ? '#6cc2a1' : '#666'};
-  color: white;
 `;
 
 const ButtonsWrapper = styled.div`
@@ -287,6 +264,30 @@ const NavigationButton = styled.button`
     color: #999;
     cursor: not-allowed;
   }
+`;
+
+const ProfileWrapper = styled.div`
+  position: relative;
+  width: 45px;
+  height: 45px;
+`;
+
+const ActiveIndicator = styled.div`
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #6cc2a1;
+  border: 2px solid white;
+`;
+
+const ProfileImage = styled.img`
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 `;
 
 export default FriendList;
