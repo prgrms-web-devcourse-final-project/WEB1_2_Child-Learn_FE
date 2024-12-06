@@ -62,30 +62,23 @@ export class StockWebSocket {
 
   private getAuthToken(): string | null {
     try {
-      // JWT 토큰을 세션 스토리지에서 먼저 확인
-      let token = sessionStorage.getItem('accessToken');
-      if (!token) {
-        // 세션 스토리지에 없으면 로컬 스토리지 확인
-        token = localStorage.getItem('accessToken');
-      }
-      if (!token) {
-        // 쿠키에서도 확인
-        const cookieToken = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('accessToken='))
-          ?.split('=')[1];
-        token = cookieToken || null;
-      }
-      if (!token) {
-        console.error('Authentication token not found');
+        // state 객체에서 토큰 가져오기
+        const authState = localStorage.getItem('auth');
+        if (authState) {
+            const parsedAuth = JSON.parse(authState);
+            const token = parsedAuth?.state?.accessToken;
+            if (token) {
+                return token;
+            }
+        }
+        
+        console.error('Authentication token not found in auth state');
         return null;
-      }
-      return token;
     } catch (error) {
-      console.error('Error getting auth token:', error);
-      return null;
+        console.error('Error getting auth token:', error);
+        return null;
     }
-  }
+}
 
   public getConnectionStatus() {
     return this.connectionStatus;
