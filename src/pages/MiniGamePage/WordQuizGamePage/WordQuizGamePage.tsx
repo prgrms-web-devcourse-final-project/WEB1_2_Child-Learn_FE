@@ -111,16 +111,20 @@ const WordQuizGamePage = () => {
 
       try {
         const response = await wordQuizApi.submitAnswer(false);
-        if ('message' in response) {
-          navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
-        } else {
-          setCurrentWord({
-            word: response.word,
-            explanation: response.explanation,
-            hint: response.hint,
-          });
-          setLives(response.remainLife || 3);
+  
+        // 게임 종료 상태 처리
+        if (!response) {
+          navigate(`/word-quiz/result/${difficulty}`);
+          return;
         }
+  
+        // 다음 문제 상태 갱신
+        setCurrentWord({
+          word: response.word,
+          explanation: response.explanation,
+          hint: response.hint,
+        });
+        setLives(response.remainLife || 3);
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
       }
@@ -131,24 +135,29 @@ const WordQuizGamePage = () => {
   const handleNextQuestion = async () => {
     setShowCorrectPopup(false);
     setUserAnswer([]);
+    const response = await wordQuizApi.submitAnswer(true);
 
-    try {
-      const response = await wordQuizApi.submitAnswer(true);
-      if ('message' in response) {
-        navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
-      } else {
-        setCurrentWord({
-          word: response.word,
-          explanation: response.explanation,
-          hint: response.hint,
-        });
-        setLives(response.remainLife);
-        setPhase(response.currentPhase); // 단계 업데이트
-      }
-    } catch (error) {
-      console.error('Failed to fetch next question:', error);
-    }
+  if (!response) {
+    // 게임 종료 처리
+    navigate(`/word-quiz/result/${difficulty}`);
+    return;
+  }
+
+  // 다음 문제 업데이트
+  setCurrentWord({
+    word: response.word,
+    explanation: response.explanation,
+    hint: response.hint,
+  });
+  setLives(response.remainLife);
+  setPhase(response.currentPhase);
   };
+
+  // 팝업 닫기 핸들러
+const handleCloseIncorrectPopup = () => {
+  setShowIncorrectPopup(false);
+  setUserAnswer([]); // 팝업 닫힐 때 답안 초기화
+};
 
   // 목숨이 0이 되면 결과 페이지로 이동
   useEffect(() => {
@@ -167,7 +176,7 @@ const WordQuizGamePage = () => {
       <HintIcon onClick={() => setShowHint(true)}>💡</HintIcon>
       {showHint && <Popup message={currentWord?.hint || ''} buttonText="알 것 같아요!" onClose={() => setShowHint(false)} />}
       {showCorrectPopup && <Popup message="😃 정답!" buttonText="다음 문제" onClose={handleNextQuestion} />}
-      {showIncorrectPopup && <Popup message="😢 오답!" buttonText="다시 도전해봐요!" onClose={() => setShowIncorrectPopup(false)} />}
+      {showIncorrectPopup && <Popup message="😢 오답!" buttonText="다시 도전해봐요!" onClose={handleCloseIncorrectPopup} />}
       <Keyboard letters={keyboardLetters} onSelect={handleSelectLetter} />
     </PageContainer>
   );

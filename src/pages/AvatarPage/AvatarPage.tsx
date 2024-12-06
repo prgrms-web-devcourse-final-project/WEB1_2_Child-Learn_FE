@@ -19,11 +19,13 @@ function AvatarPage() {
   const [isRestrictedModalOpen, setIsRestrictedModalOpen] = useState(false); 
 
    // 페이지 접근 제약 조건 확인
+   /*
    useEffect(() => {
     if (gameCount < 5) {
       setIsRestrictedModalOpen(true); // 모달 열기
     }
   }, [gameCount]);
+    */
 
   // 초기 데이터 설정
   useEffect(() => {

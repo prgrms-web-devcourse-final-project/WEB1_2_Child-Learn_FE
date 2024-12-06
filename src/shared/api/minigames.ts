@@ -93,28 +93,28 @@ export const wordQuizApi = {
   },
 
   // 답안 제출
-  submitAnswer: async (
-    isCorrect: boolean
-  ): Promise<WordQuizResponse | { message: string }> => {
-    const body: WordQuizRequest = { isCorrect };
+submitAnswer: async (
+  isCorrect: boolean
+): Promise<WordQuizResponse | null> => {
+  const body: WordQuizRequest = { isCorrect };
 
-    const response = await baseApi.post(
-      `/word-quiz/submissions`,
-      body,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    // API가 'message' 키를 반환하면 게임이 종료된 상태임
-    if (response.data.message) {
-      return { message: response.data.message }; // 게임 종료 또는 완료 메시지
+  const response = await baseApi.post(
+    `/word-quiz/submissions`,
+    body,
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
+        'Content-Type': 'application/json',
+      },
     }
+  );
 
-    // 게임 상태 업데이트
-    return response.data as WordQuizResponse;
-  },
+  // API가 null을 반환하면 게임 종료 상태임
+  if (!response.data) {
+    return null; // 게임 종료
+  }
+
+  // 게임 상태 업데이트
+  return response.data as WordQuizResponse;
+},
 };
