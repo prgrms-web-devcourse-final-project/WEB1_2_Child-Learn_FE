@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useAvatarStore } from "../../features/avatar/model/avatarStore";
-import { useItemStore } from "../../features/avatar/model/itemStore";
+import { useUserInfo } from "@/entities/User/lib/queries";
+import { useAvatarStore } from "@/features/avatar/model/avatarStore";
+import { useItemStore } from "@/features/avatar/model/itemStore";
 import { useNavigate } from "react-router-dom";
-import { useUserStore } from "../../app/providers/state/zustand/userStore";
-import AvatarPreview from "../../features/avatar/ui/AvatarPreview";
-import ItemGrid from "../../features/avatar/ui/ItemGrid";
-import Tabs from "../../features/avatar/ui/Tabs";
-import Modal from "../../features/avatar/ui/Modal";
+import { useUserStore } from "@/app/providers/state/zustand/userStore";
+import { avatarApi } from "@/shared/api/avatar";
+import AvatarPreview from "@/features/avatar/ui/AvatarPreview";
+import ItemGrid from "@/features/avatar/ui/ItemGrid";
+import Tabs from "@/features/avatar/ui/Tabs";
+import Modal from "@/features/avatar/ui/Modal";
 
 function AvatarPage() {
+  const { data: userInfo, isLoading, error } = useUserInfo();
   const { avatar, setAvatar } = useAvatarStore();
   const { marketItems } = useItemStore();
   const { gameCount } = useUserStore();
@@ -17,6 +20,9 @@ function AvatarPage() {
 
   const [activeTab, setActiveTab] = useState<"background" | "pet" | "hat">("background");
   const [isRestrictedModalOpen, setIsRestrictedModalOpen] = useState(false); 
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error || !userInfo) return <div>Error loading user info.</div>;
 
    // 페이지 접근 제약 조건 확인
    /*
@@ -31,7 +37,7 @@ function AvatarPage() {
   useEffect(() => {
     setAvatar({
       avatar_id: 1,
-      member_id: 1,
+      member_id: userInfo.id,
       cur_background: avatar?.cur_background || undefined,
       cur_pet: avatar?.cur_pet || undefined,
       cur_hat: avatar?.cur_hat || undefined,
