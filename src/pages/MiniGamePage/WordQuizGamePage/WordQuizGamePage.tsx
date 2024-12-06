@@ -105,6 +105,33 @@ const WordQuizGamePage = () => {
     if (updatedAnswer.join('') === correctWord) {
       incrementCorrectAnswers();
       setShowCorrectPopup(true);
+
+        // 다음 문제 상태를 미리 갱신
+    try {
+      const response = await wordQuizApi.submitAnswer(true);
+      if (!response) {
+        console.error("Game may have ended unexpectedly.");
+        navigate(`/word-quiz/result/${difficulty}`);
+        return;
+      }
+
+      // 게임 종료 여부 확인
+     if (response.currentPhase === 3 && currentPhase === 3) {
+      navigate(`/word-quiz/result/${difficulty}`);
+      return;
+    }
+
+      // 다음 문제 상태 업데이트
+      setCurrentWord({
+        word: response.word,
+        explanation: response.explanation,
+        hint: response.hint,
+      });
+      setLives(response.remainLife);
+      setPhase(response.currentPhase);
+    } catch (error) {
+      console.error("Failed to fetch next question:", error);
+    }
     } else if (updatedAnswer.length === correctWord.length) {
       decrementLives();
       setShowIncorrectPopup(true);
@@ -132,31 +159,9 @@ const WordQuizGamePage = () => {
   };
 
   // 다음 문제로 이동
-  const handleNextQuestion = async () => {
+  const handleNextQuestion = () => {
     setShowCorrectPopup(false);
     setUserAnswer([]);
-    const response = await wordQuizApi.submitAnswer(true);
-
-    if (!response) {
-      console.error("Response is null, game may have ended unexpectedly.");
-      navigate(`/word-quiz/result/${difficulty}`);
-      return;
-    }
-
-     // 게임 종료 여부 확인
-     if (response.currentPhase === 3 && currentPhase === 3) {
-      navigate(`/word-quiz/result/${difficulty}`);
-      return;
-    }
-
-  // 다음 문제 업데이트
-  setCurrentWord({
-    word: response.word,
-    explanation: response.explanation,
-    hint: response.hint,
-  });
-  setLives(response.remainLife);
-  setPhase(response.currentPhase);
   };
 
   // 팝업 닫기 핸들러
