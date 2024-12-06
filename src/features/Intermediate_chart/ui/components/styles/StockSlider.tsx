@@ -104,38 +104,30 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         setShowPointErrorModal(true);
         return;
       }
-
-      // 매수 요청 전 데이터 로깅
-      console.log('매수 요청 데이터:', {
-        stockId: currentStock.midStockId,
-        tradePoint: tradePoint
-      });
-
+  
       const result = await executeTrade(
         currentStock.midStockId,
         tradePoint,
         'buy'
       );
-
-      // 매수 성공 시에만 후속 처리
-      if (result) {
-        setTradeResult({
-          success: true,
-          message: '매수 완료',
-          tradeType: 'buy',
-          stockName: currentStock.midName,
-          price: buyPrice,
-          quantity: buyQuantity,
-          totalPrice: tradePoint
-        });
-
-        setUserPoints(prev => prev - tradePoint);
-        setShowBuyModal(false);
-        setShowResultModal(true);
-      }
-
+  
+      setTradeResult({
+        success: true,
+        message: '매수 완료',
+        tradeType: 'buy',
+        stockName: currentStock.midName,
+        price: buyPrice,
+        quantity: buyQuantity,
+        totalPrice: tradePoint
+      });
+  
+      setUserPoints(prev => prev - tradePoint);
+      setShowBuyModal(false);
+      setShowResultModal(true);
+  
     } catch (error: any) {
       console.error('매수 처리 중 에러:', error);
+      // 에러 메시지를 결과 모달에 표시
       setTradeResult({
         success: false,
         message: error.message || '매수 처리 중 오류가 발생했습니다.',
@@ -143,12 +135,12 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         stockName: currentStock.midName,
         price: buyPrice,
         quantity: buyQuantity,
-        totalPrice: buyPrice * buyQuantity
+        totalPrice: 0
       });
       setShowBuyModal(false);
       setShowResultModal(true);
     }
-};
+  };
 
   // 매도 처리 (하루 1번 전체 매도)
   const handleSellConfirm = async () => {
