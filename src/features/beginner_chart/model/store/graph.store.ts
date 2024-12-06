@@ -1,3 +1,4 @@
+// graph.store.ts
 import { create } from 'zustand';
 import { baseApi } from '@/shared/api/base';
 import { BeginStockResponse } from '@/features/beginner_chart/model/types/stock';
@@ -17,9 +18,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
   fetchStockData: async () => {
     try {
       set({ isLoading: true });
-      const response = await baseApi.get<BeginStockResponse>('/begin-stocks', {
-
-      });
+      const response = await baseApi.get<BeginStockResponse>('/begin-stocks');
       
       if (response.data.stockData) {
         const mappedData: FastGraphData[] = response.data.stockData.map(stock => ({
