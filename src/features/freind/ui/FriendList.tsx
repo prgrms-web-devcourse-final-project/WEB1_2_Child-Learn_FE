@@ -292,7 +292,7 @@ const Pagination = styled.div`
   align-items: center;
   gap: 12px;
   padding: 12px 0;
-  margin-top: 8px;
+  margin-top: -20px;
 `;
 
 const PageNumber = styled.span`
