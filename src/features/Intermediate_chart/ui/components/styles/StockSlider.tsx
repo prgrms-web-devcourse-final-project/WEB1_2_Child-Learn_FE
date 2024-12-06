@@ -15,6 +15,7 @@ import { TrendPrediction, Relevance } from '@/features/article/type/article';
 import StockChart from '@/shared/ui/Intermediate/StockChat';
 import { TradeDetail } from '@/features/Intermediate_chart/model/types/stock';
 import { MidStock } from '@/features/Intermediate_chart/model/types/stock';
+import { stockApi } from '@/shared/api/advancedGame';
 
 interface TradeResult {
   success: boolean;
@@ -41,7 +42,7 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [showPointErrorModal, setShowPointErrorModal] = useState(false);
   const [tradeType, setTradeType] = useState<'buy' | 'sell'>('buy');
-  const [stockList, setStockList] = useState<MidStock[]>([]);
+  const [stockList, setStockList] = useState<MidStock[]>(stocks);
   const [userPoints, setUserPoints] = useState(2000);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
   const [hasSoldToday, setHasSoldToday] = useState(false);
@@ -56,10 +57,29 @@ const StockSlider: React.FC<StockSliderProps> = ({ stocks }) => {
   const currentStock = useMemo(() => stockList[currentSlide], [stockList, currentSlide]);
 
   useEffect(() => {
-    if (Array.isArray(stocks) && stocks.length > 0) {
-      setStockList(stocks);
-    }
-  }, [stocks]);
+    const initializeData = async () => {
+      try {
+        const refData = await stockApi.getReferenceData();
+        const liveData = await stockApi.getLiveData();
+        setStockList(refData.stocks);
+        
+        const memberId = Number(localStorage.getItem('memberId'));
+        
+        if (!memberId || isNaN(memberId)) {
+          console.error('유효하지 않은 memberId');
+          return;
+        }
+        
+        const quantities = await stockApi.getAllStockQuantities(memberId);
+        console.log('Stock quantities:', quantities);
+  
+  
+      } catch (error) {
+        console.error('데이터 로드 실패:', error);
+      }
+    };
+    initializeData();
+}, []);
 
   useEffect(() => {
     if (currentStock) {
@@ -285,7 +305,7 @@ const handleSellConfirm = async () => {
         isOpen={showLimitModal}
         onClose={() => setShowLimitModal(false)}
         tradeType={tradeType}
-        message={tradeType === 'sell' ? '내일 다시 도전하세요!' : ''}
+        message={tradeType === 'sell' ? '내일 다��� 도전하세요!' : ''}
       />
 
       <PointErrorModal

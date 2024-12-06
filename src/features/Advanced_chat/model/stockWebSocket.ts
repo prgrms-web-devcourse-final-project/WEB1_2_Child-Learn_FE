@@ -60,7 +60,7 @@ export class StockWebSocket {
   private connectionTimeout: NodeJS.Timeout | null = null;
   private connectionId: string;
   private connectionStatus: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
-  private static readonly BASE_URL = 'ws://43.202.106.45:8080';
+  private static readonly BASE_URL = 'ws://43.202.106.45';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
   private maxWaitTime = 30000;
   private checkInterval = 500;
