@@ -111,16 +111,20 @@ const WordQuizGamePage = () => {
 
       try {
         const response = await wordQuizApi.submitAnswer(false);
-        if ('message' in response) {
-          navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
-        } else {
-          setCurrentWord({
-            word: response.word,
-            explanation: response.explanation,
-            hint: response.hint,
-          });
-          setLives(response.remainLife || 3);
+  
+        // 게임 종료 상태 처리
+        if (!response) {
+          navigate(`/word-quiz/result/${difficulty}`);
+          return;
         }
+  
+        // 다음 문제 상태 갱신
+        setCurrentWord({
+          word: response.word,
+          explanation: response.explanation,
+          hint: response.hint,
+        });
+        setLives(response.remainLife || 3);
       } catch (error) {
         console.error('Failed to submit incorrect answer:', error);
       }
@@ -131,26 +135,22 @@ const WordQuizGamePage = () => {
   const handleNextQuestion = async () => {
     setShowCorrectPopup(false);
     setUserAnswer([]);
-    if (currentPhase === 3) {
-      navigate(`/word-quiz/result/${difficulty}`);
-    } else {
-    try {
-      const response = await wordQuizApi.submitAnswer(true);
-      if ('message' in response) {
-        navigate(`/word-quiz/result/${difficulty}`, { state: { message: response.message } });
-      } else {
-        setCurrentWord({
-          word: response.word,
-          explanation: response.explanation,
-          hint: response.hint,
-        });
-        setLives(response.remainLife);
-        setPhase(response.currentPhase); // 단계 업데이트
-      }
-    } catch (error) {
-      console.error('Failed to fetch next question:', error);
-    }
+    const response = await wordQuizApi.submitAnswer(true);
+
+  if (!response) {
+    // 게임 종료 처리
+    navigate(`/word-quiz/result/${difficulty}`);
+    return;
   }
+
+  // 다음 문제 업데이트
+  setCurrentWord({
+    word: response.word,
+    explanation: response.explanation,
+    hint: response.hint,
+  });
+  setLives(response.remainLife);
+  setPhase(response.currentPhase);
   };
 
   // 목숨이 0이 되면 결과 페이지로 이동
