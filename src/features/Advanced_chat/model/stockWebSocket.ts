@@ -1,4 +1,10 @@
-import { generateUUID } from '@/features/Advanced_chat/utils/uuid';
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 export enum WebSocketActions {
   START_GAME = 'START_GAME',
@@ -31,26 +37,6 @@ export interface WebSocketMessage {
   connectionId?: string;
 }
 
-export interface WebSocketResponse {
-  message?: string;
-  type: WebSocketActions;
-  data?: {
-    stocks?: Stock[];
-    gameStart?: boolean;
-    gamePause?: boolean;
-    gameEnd?: boolean;
-    remainingTime?: number;
-    symbol: string;
-    timestamp: number;
-    closePrice: string;
-    openPrice: string;
-    highPrice: string;
-    lowPrice: string;
-    change?: number;
-    volume?: number;
-  };
-}
-
 export class StockWebSocket {
   private static instance: StockWebSocket | null = null;
   private ws: WebSocket | null = null;
@@ -75,12 +61,30 @@ export class StockWebSocket {
   }
 
   private getAuthToken(): string | null {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      console.error('Authentication token not found');
+    try {
+      // JWT 토큰을 세션 스토리지에서 먼저 확인
+      let token = sessionStorage.getItem('accessToken');
+      if (!token) {
+        // 세션 스토리지에 없으면 로컬 스토리지 확인
+        token = localStorage.getItem('accessToken');
+      }
+      if (!token) {
+        // 쿠키에서도 확인
+        const cookieToken = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('accessToken='))
+          ?.split('=')[1];
+        token = cookieToken || null;
+      }
+      if (!token) {
+        console.error('Authentication token not found');
+        return null;
+      }
+      return token;
+    } catch (error) {
+      console.error('Error getting auth token:', error);
       return null;
     }
-    return token;
   }
 
   public getConnectionStatus() {
@@ -88,11 +92,6 @@ export class StockWebSocket {
   }
 
   public async connect() {
-    if (!StockWebSocket.shouldInitialize()) {
-      console.log('WebSocket initialization skipped - not on relevant page');
-      return;
-    }
-
     if (this.connectionStatus === 'connecting') {
       console.log('Connection already in progress');
       return;
@@ -127,11 +126,6 @@ export class StockWebSocket {
     }
   }
 
-  public static shouldInitialize(): boolean {
-    const path = window.location.pathname;
-    return path.includes('/advanced') || path.includes('/chat');
-  }
-
   private setupWebSocketHandlers() {
     if (!this.ws) return;
 
@@ -143,17 +137,13 @@ export class StockWebSocket {
 
     this.ws.onclose = (event) => {
       this.connectionStatus = 'disconnected';
-      const reason = this.getCloseReason(event.code);
-      console.log(`WebSocket closed: ${event.code} (${reason})`);
-      
-      if (StockWebSocket.shouldInitialize()) {
-        this.handleReconnect();
-      }
+      console.log(`WebSocket closed: ${event.code} (${this.getCloseReason(event.code)})`);
+      this.handleReconnect();
     };
 
     this.ws.onerror = (error) => {
-      this.connectionStatus = 'disconnected';
       console.error('WebSocket error:', error);
+      this.connectionStatus = 'disconnected';
     };
 
     this.setupMessageHandler();
@@ -164,42 +154,17 @@ export class StockWebSocket {
 
     this.ws.onmessage = (event: MessageEvent) => {
       try {
-        const response = JSON.parse(event.data) as WebSocketResponse;
+        const response = JSON.parse(event.data);
         console.log(`Received message (${this.connectionId}):`, response);
 
-        switch (response.type) {
-          case WebSocketActions.START_GAME:
-            console.log('Game started:', response.message);
-            break;
-          
-          case WebSocketActions.PAUSE_GAME:
-            console.log('Game paused:', response.message);
-            break;
-
-          case WebSocketActions.REFERENCE_DATA:
-            if (response.data?.stocks) {
-              console.log('Received initial stock data');
-            }
-            break;
-
-          case WebSocketActions.LIVE_DATA:
-            if (response.data) {
-              console.log('Received live stock data update');
-            }
-            break;
-
-          case WebSocketActions.END_GAME:
-            console.log('Game ended:', response.message);
-            break;
+        if (response.type) {
+          const message: WebSocketMessage = {
+            type: response.type,
+            data: response.data,
+            action: response.type
+          };
+          this.messageHandler?.(message);
         }
-
-        const message: WebSocketMessage = {
-          type: response.type,
-          data: response.data,
-          action: response.type
-        };
-
-        this.messageHandler?.(message);
       } catch (error) {
         console.error('Failed to parse message:', error);
       }
@@ -207,10 +172,6 @@ export class StockWebSocket {
   }
 
   public sendMessage(action: WebSocketActions, payload = {}) {
-    if (!StockWebSocket.shouldInitialize()) {
-      return;
-    }
-
     if (this.ws?.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         action,
@@ -222,7 +183,16 @@ export class StockWebSocket {
       this.ws.send(message);
     } else {
       console.warn('Cannot send message: WebSocket not connected');
-      this.handleReconnect();
+      this.connect().then(() => {
+        if (this.ws?.readyState === WebSocket.OPEN) {
+          const message = JSON.stringify({
+            action,
+            ...payload,
+            connectionId: this.connectionId
+          });
+          this.ws.send(message);
+        }
+      });
     }
   }
 
@@ -276,3 +246,4 @@ export class StockWebSocket {
 }
 
 export const webSocket = StockWebSocket.getInstance();
+
