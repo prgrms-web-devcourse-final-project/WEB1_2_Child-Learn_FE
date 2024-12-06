@@ -81,17 +81,19 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         currentStock.midStockId,
         tradePoint,
         'buy'
-      );
+      );  
 
       if ('warning' in result) {
         // 매수 포인트 차감 API 호출
-        await baseApi.post('/wallet/game', {
-          points: -tradePoint,
-          pointType: "GAME",
-          gameType: "STOCK",
-          isWin: false
+        await baseApi.post('/wallet/invest', {
+          memberId: parseInt(localStorage.getItem('userId') || '0'),
+          transactionType: "MID",  // 중급 주식
+          points: tradePoint,
+          pointType: "STOCK",
+          stockType: "MID",
+          stockName: currentStock.midName
         });
-
+  
         setTradeResult({
           success: true,
           message: '매수 완료',
@@ -101,11 +103,11 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
           quantity: buyQuantity,
           totalPrice: tradePoint
         });
-
+  
         setUserPoints(prev => prev - tradePoint);
         setShowBuyModal(false);
         setShowResultModal(true);
-
+  
         if (result.warning) {
           setTimeout(() => {
             setShowWarningModal(true);
@@ -113,70 +115,72 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         }
       }
     } catch (error: any) {
-      console.error('매수 처리 중 에러:', error);
-      setTradeResult({
-        success: false,
-        message: error.message,
-        tradeType: 'buy',
-        stockName: currentStock.midName,
-        price: buyPrice,
-        quantity: buyQuantity,
-        totalPrice: buyPrice * buyQuantity
-      });
-      setShowBuyModal(false);
-      setShowResultModal(true);
-    }
-  };
-
-  const handleSellConfirm = async () => {
-    if (!currentStock || !currentStockPrices.length) return;
-    
-    try {
-      const result = await executeTrade(
-        currentStock.midStockId,
-        0,
-        'sell'
-      );
-      
-      if ('earnedPoints' in result) {
-        // 매도 수익/손실 포인트 처리
-        await baseApi.post('/wallet/game', {
-          points: Math.abs(result.earnedPoints ?? 0),
-          pointType: "GAME",
-          gameType: "STOCK",
-          isWin: (result.earnedPoints ?? 0) > 0
-        });
-
+        console.error('매수 처리 중 에러:', error);
         setTradeResult({
-          success: true,
-          message: '매도 완료',
+          success: false,
+          message: error.message,
+          tradeType: 'buy',
+          stockName: currentStock.midName,
+          price: buyPrice,
+          quantity: buyQuantity,
+          totalPrice: buyPrice * buyQuantity
+        });
+        setShowBuyModal(false);
+        setShowResultModal(true);
+      }
+    };
+    
+    const handleSellConfirm = async () => {
+      if (!currentStock || !currentStockPrices.length) return;
+      
+      try {
+        const result = await executeTrade(
+          currentStock.midStockId,
+          0,
+          'sell'
+        );
+        
+        if ('earnedPoints' in result) {
+          // 매도 수익/손실 포인트 처리
+          await baseApi.post('/wallet/invest', {
+            memberId: parseInt(localStorage.getItem('userId') || '0'),
+            transactionType: "MID",  // 중급 주식
+            points: result.earnedPoints ?? 0,
+            pointType: "STOCK",
+            stockType: "MID",
+            stockName: currentStock.midName
+          });
+    
+          setTradeResult({
+            success: true,
+            message: '매도 완료',
+            tradeType: 'sell',
+            stockName: '',
+            price: 0,
+            quantity: 1,
+            totalPrice: result.earnedPoints ?? 0
+          });
+    
+          setUserPoints(prev => prev + (result.earnedPoints ?? 0));
+          setShowSellModal(false);
+          setShowResultModal(true);
+          setHasSoldToday(true);
+        }
+      } catch (error: any) {
+        console.error('매도 처리 중 에러:', error);
+        setTradeResult({
+          success: false,
+          message: error.message,
           tradeType: 'sell',
           stockName: '',
           price: 0,
-          quantity: 1,
-          totalPrice: result.earnedPoints ?? 0
+          quantity: 0,
+          totalPrice: 0
         });
-
-        setUserPoints(prev => prev + (result.earnedPoints ?? 0));
         setShowSellModal(false);
         setShowResultModal(true);
-        setHasSoldToday(true);
       }
-    } catch (error: any) {
-      console.error('매도 처리 중 에러:', error);
-      setTradeResult({
-        success: false,
-        message: error.message,
-        tradeType: 'sell',
-        stockName: '',
-        price: 0,
-        quantity: 0,
-        totalPrice: 0
-      });
-      setShowSellModal(false);
-      setShowResultModal(true);
-    }
-  };
+    };
 
   const handleTradeClick = async (type: 'buy' | 'sell') => {
     if (type === 'sell') {
