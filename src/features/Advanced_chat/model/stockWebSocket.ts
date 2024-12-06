@@ -63,7 +63,7 @@ export class StockWebSocket {
   private static readonly BASE_URL = 'ws://43.202.106.45';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
   private maxWaitTime = 30000;
-  private checkInterval = 500;
+  private checkInterval = 1000;
 
   private constructor() {
     this.connectionId = generateUUID();
@@ -77,51 +77,53 @@ export class StockWebSocket {
     return StockWebSocket.instance;
   }
 
-  private isStoreReady(): boolean {
-    const store = (window as any).store;
-    const state = store?.getState?.();
-    const token = state?.state?.accessToken;
-    return Boolean(token);
-  }
-
   private getToken(): string | null {
-    const store = (window as any).store;
-    if (!store) {
-      console.error('Redux store가 존재하지 않습니다.');
-      return null;
+    // 1. localStorage 확인
+    const localToken = localStorage.getItem('accessToken');
+    if (localToken) {
+      console.log('Token found in localStorage');
+      return localToken;
     }
 
-    const state = store.getState?.();
-    if (!state) {
-      console.error('Redux 상태를 가져올 수 없습니다.');
-      return null;
+    // 2. sessionStorage 확인
+    const sessionToken = sessionStorage.getItem('accessToken');
+    if (sessionToken) {
+      console.log('Token found in sessionStorage');
+      return sessionToken;
     }
 
-    const token = state.state?.accessToken;
-    if (!token) {
-      console.error('JWT 토큰이 없습니다. 인증이 필요합니다.');
-      return null;
+    // 3. Redux store 확인 (fallback)
+    try {
+      const store = (window as any).store;
+      const state = store?.getState?.();
+      const token = state?.state?.accessToken;
+      if (token) {
+        console.log('Token found in Redux store');
+        return token;
+      }
+    } catch (error) {
+      console.warn('Redux store access failed:', error);
     }
 
-    return token;
+    console.error('JWT 토큰이 없습니다. 인증이 필요합니다.');
+    return null;
   }
 
   private async waitForToken(): Promise<string | null> {
+    console.log('Starting token wait cycle...');
     const startTime = Date.now();
 
     while (Date.now() - startTime < this.maxWaitTime) {
-      if (this.isStoreReady()) {
-        const token = this.getToken();
-        if (token) {
-          console.log('Token found:', token.substring(0, 10) + '...');
-          return token;
-        }
+      const token = this.getToken();
+      if (token) {
+        console.log('Token successfully retrieved');
+        return token;
       }
       await new Promise(resolve => setTimeout(resolve, this.checkInterval));
-      console.log('Waiting for token...');
+      console.log('Still waiting for token...');
     }
 
-    console.error('Token waiting timeout');
+    console.error('Token waiting timeout after', this.maxWaitTime, 'ms');
     return null;
   }
 
@@ -133,7 +135,7 @@ export class StockWebSocket {
     console.log('Attempting to connect WebSocket');
     
     if (!StockWebSocket.shouldInitialize()) {
-      console.log('WebSocket 초기화가 필요하지 않음');
+      console.log('WebSocket initialization skipped - not on relevant page');
       return;
     }
 
@@ -143,7 +145,7 @@ export class StockWebSocket {
     }
 
     if (this.ws?.readyState === WebSocket.OPEN) {
-      console.log('WebSocket이 이미 연결됨');
+      console.log('WebSocket already connected');
       return;
     }
 
@@ -153,12 +155,12 @@ export class StockWebSocket {
       const token = await this.waitForToken();
       if (!token) {
         this.connectionStatus = 'disconnected';
-        console.error('토큰을 가져오는데 실패했습니다.');
+        console.error('Failed to obtain token for WebSocket connection');
         return;
       }
 
       const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
-      console.log('Attempting secure WebSocket connection:', url);
+      console.log('Initiating WebSocket connection to:', url);
 
       this.ws = new WebSocket(url);
       this.setupWebSocketHandlers();
@@ -171,15 +173,16 @@ export class StockWebSocket {
 
   public static shouldInitialize(): boolean {
     const path = window.location.pathname;
-    console.log('Current path:', path);
-    return path.includes('/advanced') || path.includes('/chat');
+    const shouldInit = path.includes('/advanced') || path.includes('/chat');
+    console.log('Checking initialization:', path, shouldInit);
+    return shouldInit;
   }
 
   private setupWebSocketHandlers() {
     if (!this.ws) return;
 
     this.ws.onopen = () => {
-      console.log('Secure WebSocket connection established');
+      console.log('WebSocket connection established');
       this.connectionStatus = 'connected';
       if (this.connectionTimeout) {
         clearTimeout(this.connectionTimeout);
@@ -201,7 +204,7 @@ export class StockWebSocket {
 
     this.ws.onerror = (error) => {
       this.connectionStatus = 'disconnected';
-      console.error('WebSocket error:', {
+      console.error('WebSocket error occurred:', {
         error,
         readyState: this.ws?.readyState,
         url: this.ws?.url
@@ -217,7 +220,7 @@ export class StockWebSocket {
     this.ws.onmessage = (event: MessageEvent) => {
       try {
         const response = JSON.parse(event.data) as WebSocketResponse;
-        console.log(`Received message (${this.connectionId}):`, response);
+        console.log(`Received WebSocket message (${this.connectionId}):`, response);
 
         switch (response.type) {
           case WebSocketActions.START_GAME:
@@ -245,7 +248,6 @@ export class StockWebSocket {
             break;
         }
 
-        // Convert WebSocketResponse to WebSocketMessage format
         const message: WebSocketMessage = {
           type: response.type,
           data: response.data,
@@ -254,13 +256,14 @@ export class StockWebSocket {
 
         this.messageHandler?.(message);
       } catch (error) {
-        console.error(`Failed to parse message (${this.connectionId}):`, error);
+        console.error(`Failed to parse WebSocket message (${this.connectionId}):`, error);
       }
     };
   }
 
   public sendMessage(action: WebSocketActions, payload = {}) {
     if (!StockWebSocket.shouldInitialize()) {
+      console.log('Message not sent - not on relevant page');
       return;
     }
 
@@ -270,10 +273,10 @@ export class StockWebSocket {
         ...payload,
         connectionId: this.connectionId
       });
-      console.log(`Sending message (${this.connectionId}):`, message);
+      console.log(`Sending WebSocket message (${this.connectionId}):`, message);
       this.ws.send(message);
     } else {
-      console.warn(`Cannot send message, WebSocket state: ${this.ws?.readyState}, connection status: ${this.connectionStatus}`);
+      console.warn(`Cannot send message - WebSocket not ready (State: ${this.ws?.readyState}, Status: ${this.connectionStatus})`);
     }
   }
 
@@ -286,22 +289,16 @@ export class StockWebSocket {
   }
 
   private handleReconnect() {
-    if (!this.isStoreReady()) {
-      console.log('Store not ready, delaying reconnection...');
-      setTimeout(() => this.connect(), 1000);
-      return;
-    }
-
     if (this.reconnectAttempts < this.maxReconnectAttempts && StockWebSocket.shouldInitialize()) {
       const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
-      console.log(`Attempting to reconnect (${this.connectionId}) in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+      console.log(`Scheduling reconnection (${this.connectionId}) in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
       
       setTimeout(() => {
         this.reconnectAttempts++;
         this.connect();
       }, timeout);
     } else {
-      console.error(`Maximum reconnection attempts reached for connection ${this.connectionId}`);
+      console.error(`Maximum reconnection attempts (${this.maxReconnectAttempts}) reached for connection ${this.connectionId}`);
     }
   }
 
@@ -328,6 +325,7 @@ export class StockWebSocket {
   }
 
   public disconnect() {
+    console.log('Disconnecting WebSocket');
     this.connectionStatus = 'disconnected';
     if (this.connectionTimeout) {
       clearTimeout(this.connectionTimeout);
@@ -337,10 +335,6 @@ export class StockWebSocket {
       this.ws = null;
     }
     StockWebSocket.instance = null;
-  }
-
-  static create() {
-    return new StockWebSocket();
   }
 }
 
