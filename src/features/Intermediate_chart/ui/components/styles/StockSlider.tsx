@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { baseApi } from '@/shared/api/base';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { useStockStore } from '@/features/Intermediate_chart/model/stock';
 import { BuyModal } from '@/features/Intermediate_chart/ui/components/modals/BuyModal';
@@ -14,6 +13,8 @@ import ArticleComponent from '@/features/article/article';
 import StockChart from '@/shared/ui/Intermediate/StockChat';
 import { TrendPrediction, Relevance } from '@/features/article/type/article';
 import { MidStock } from '@/features/Intermediate_chart/model/types/stock';
+import { WarningModal } from '@/features/Intermediate_chart/ui/components/modals/WarningModal';
+
 
 interface TradeResult {
   success: boolean;
@@ -23,6 +24,11 @@ interface TradeResult {
   price: number;
   quantity: number;
   totalPrice: number;
+}
+
+interface Holding {
+  tradeType: 'BUY' | 'SELL';
+  // 다른 필요한 속성들도 여기에 추가
 }
 
 const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
@@ -38,7 +44,9 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
   const [stockList, setStockList] = useState<MidStock[]>([]);
   const [userPoints, setUserPoints] = useState(2000);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
+  const [hasBoughtToday, setHasBoughtToday] = useState(false);
   const [hasSoldToday, setHasSoldToday] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
 
   const {
     fetchStockPrices,
@@ -50,7 +58,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
 
   const currentStock = useMemo(() => stockList[currentSlide], [stockList, currentSlide]);
 
-  // 초기 데이터 로드
+  // 초기 데이터 로
   useEffect(() => {
     if (Array.isArray(stocks) && stocks.length > 0) {
       setStockList(stocks);
@@ -59,71 +67,77 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
 
   // 현재 주식 정보 업데이트
   useEffect(() => {
-    if (currentStock) {
+    if (currentStock?.midStockId) {
       fetchStockPrices(currentStock.midStockId);
       checkTradeAvailability(currentStock.midStockId);
     }
-  }, [currentStock]);
+  }, [currentStock, currentSlide]);
 
-  // 매수 처리
+  // 거래 버튼 클릭 처리
+  const handleTradeClick = async (type: 'buy' | 'sell') => {
+    await checkTradeAvailability(currentStock.midStockId);
+    
+    if (type === 'sell') {
+      if (hasSoldToday || !tradeAvailability.isPossibleSell) {
+        setShowLimitModal(true);
+        return;
+      }
+      setShowSellModal(true);
+    } else if (type === 'buy') {
+      if (hasBoughtToday) {
+        setShowLimitModal(true);
+        return;
+      }
+      setShowBuyModal(true);
+    }
+  };
+
+  // 매수 처리 (무제한 가능)
   const handleBuyTrade = async (buyPrice: number, buyQuantity: number) => {
     if (!currentStock) return;
     
     try {
       const tradePoint = buyPrice * buyQuantity;
       
+      // 포인트 체크만 수행
       if (tradePoint > userPoints) {
+        setShowBuyModal(false);
         setShowPointErrorModal(true);
         return;
       }
 
-      const result = await executeTrade(
+      await executeTrade(
         currentStock.midStockId,
         tradePoint,
         'buy'
       );
 
-      if ('warning' in result) {
-        // 포인트 차감 처리
-        await baseApi.post('/wallet/game', {
-          points: tradePoint,
-          pointType: "GAME",
-          gameType: "STOCK",
-          isWin: false
-        });
+      setTradeResult({
+        success: true,
+        message: '매수 완료',
+        tradeType: 'buy',
+        stockName: currentStock.midName,
+        price: buyPrice,
+        quantity: buyQuantity,
+        totalPrice: tradePoint
+      });
 
-        setTradeResult({
-          success: true,
-          message: '매수 완료',
-          tradeType: 'buy',
-          stockName: currentStock.midName,
-          price: buyPrice,
-          quantity: buyQuantity,
-          totalPrice: tradePoint
-        });
+      setUserPoints(prev => prev - tradePoint);
+      setShowBuyModal(false);
+      setShowResultModal(true);
 
-        setShowBuyModal(false);
-        setShowResultModal(true);
-        setUserPoints(prev => prev - tradePoint);
-
-        // 올인 매수 경고
-        if (result.warning) {
-          setTimeout(() => {
-            setShowCompletionModal(true);
-          }, 1500);
-        }
-      }
-    } catch (error: any) {
-      console.error('매수 처리 중 에러:', error);
+    } catch (error) {
       setTradeResult({
         success: false,
-        message: error.message || '거래 처리 중 오류가 발생했습니다.',
+        message: '매수 실패',
         tradeType: 'buy',
         stockName: currentStock.midName,
         price: buyPrice,
         quantity: buyQuantity,
         totalPrice: buyPrice * buyQuantity
       });
+      
+      setShowBuyModal(false);
       setShowResultModal(true);
     }
   };
@@ -133,66 +147,42 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
     if (!currentStock || !currentStockPrices.length) return;
     
     try {
-      // 전체 매도 실행
-      const result = await executeTrade(
-        currentStock.midStockId,
-        0,
-        'sell'
-      );
+        const result = await executeTrade(
+            currentStock.midStockId,
+            0,
+            'sell'
+        );
       
-      if ('earnedPoints' in result) {
-        // 포인트 업데이트
-        await baseApi.post('/wallet/game', {
-          points: Math.abs(result?.earnedPoints ?? 0),
-          pointType: "GAME",
-          gameType: "STOCK",
-          isWin: (result?.earnedPoints ?? 0) > 0
-        });
+        if ('earnedPoints' in result) {
+            const earnedPoints = result.earnedPoints ?? 0;
+            setTradeResult({
+                success: true,
+                message: '매도 완료',
+                tradeType: 'sell',
+                stockName: '', 
+                price: 0,
+                quantity: 0,
+                totalPrice: earnedPoints
+            });
 
-        setTradeResult({
-          success: true,
-          message: '매도 완료',
-          tradeType: 'sell',
-          stockName: currentStock.midName,
-          price: currentStockPrices[0].avgPrice,
-          quantity: 1,
-          totalPrice: result.earnedPoints ?? 0
-        });
-
-        setShowSellModal(false);
-        setShowResultModal(true);
-        setHasSoldToday(true); // 당일 매도 완료 표시
-        setUserPoints(prev => prev + (result?.earnedPoints ?? 0));
-
-        setTimeout(() => {
-          setShowCompletionModal(true);
-        }, 1500);
-      }
+            setShowSellModal(false);
+            setShowResultModal(true);
+            setHasSoldToday(true);
+            setUserPoints(prev => prev + earnedPoints);
+        }
     } catch (error: any) {
-      console.error('매도 처리 중 에러:', error);
-      setTradeResult({
-        success: false,
-        message: error.message || '매도 처리 중 오류가 발생했습니다.',
-        tradeType: 'sell',
-        stockName: currentStock.midName,
-        price: currentStockPrices[0].avgPrice,
-        quantity: 0,
-        totalPrice: 0
-      });
-      setShowResultModal(true);
-    }
-  };
-
-  // 거래 버튼 클릭 처리
-  const handleTradeClick = async (type: 'buy' | 'sell') => {
-    if (type === 'sell') {
-      if (hasSoldToday) {
-        setShowLimitModal(true);
-        return;
-      }
-      setShowSellModal(true);
-    } else {
-      setShowBuyModal(true);
+        console.error('매도 처리 중 에러:', error);
+        setShowSellModal(false);  // 에러 시에도 모달 닫기
+        setTradeResult({
+            success: false,
+            message: error.message || '매도 처리 중 오류가 발생했습니다.',
+            tradeType: 'sell',
+            stockName: '',
+            price: 0,
+            quantity: 0,
+            totalPrice: 0
+        });
+        setShowResultModal(true);
     }
   };
 
@@ -206,6 +196,17 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
     setCurrentSlide((prev) => (prev - 1 + stockList.length) % stockList.length);
     setShowActions(false);
   };
+
+  // 거래 가능 여부 주기적 체크
+  useEffect(() => {
+    const checkInterval = setInterval(() => {
+      if (currentStock?.midStockId) {
+        checkTradeAvailability(currentStock.midStockId);
+      }
+    }, 5000);
+
+    return () => clearInterval(checkInterval);
+  }, [currentStock]);
 
   return (
     <SlideContainer>
@@ -308,6 +309,11 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         onClose={() => setShowPointErrorModal(false)}
       />
 
+      <WarningModal
+        isOpen={showWarningModal}
+        onClose={() => setShowWarningModal(false)}
+      />
+
       <NextButton 
         onClick={handleNextSlide} 
         disabled={currentSlide === stockList.length - 1} 
@@ -365,6 +371,11 @@ const ActionButtons = styled.div`
   justify-content: center;
   gap: 106px;
   margin-top: 16px;
+  
+  button:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 `;
 
 const Button = styled.button`

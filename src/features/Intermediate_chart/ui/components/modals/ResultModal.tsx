@@ -1,14 +1,9 @@
 import React from 'react';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
-import { TradeDetail } from '@/features/Intermediate_chart/model/types/stock';
+import { TradeResult } from '@/features/Intermediate_chart/model/types/stock';
 
-interface TradeResult {
-  tradeType: 'buy' | 'sell';
-  stockName: string;
-  price: number;
-  quantity: number;
-  totalPrice: number;
-}
+
+// ResultModal.tsx
 interface ResultModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -31,24 +26,28 @@ interface ResultModalProps {
             주식 {tradeResult.tradeType === 'buy' ? '매수' : '매도'}주문
           </S.ModalTitle>
           <S.ModalContent>
-            <S.ResultRow>
-              <S.ResultLabel>종목명</S.ResultLabel>
-              <S.ResultValue>{tradeResult.stockName}</S.ResultValue>
-            </S.ResultRow>
+            {tradeResult.tradeType === 'buy' && (
+              <S.ResultRow>
+                <S.ResultLabel>종목명</S.ResultLabel>
+                <S.ResultValue>{tradeResult.stockName}</S.ResultValue>
+              </S.ResultRow>
+            )}
             <S.ResultRow>
               <S.ResultLabel>
-                {tradeResult.tradeType === 'buy' ? '매수가격' : '매도가격'}
+                {tradeResult.tradeType === 'buy' ? '매수가격' : '매도금액'}
               </S.ResultLabel>
-              <S.ResultValue>{tradeResult.price}원</S.ResultValue>  {/* 원래 매수가격(100원) */}
+              <S.ResultValue>
+                {tradeResult.tradeType === 'buy' ? 
+                  `${tradeResult.totalPrice.toLocaleString()}P` : 
+                  `${tradeResult.totalPrice.toLocaleString()}P`}
+              </S.ResultValue>
             </S.ResultRow>
-            <S.ResultRow>
-              <S.ResultLabel>주문수량</S.ResultLabel>
-              <S.ResultValue>{tradeResult.quantity}주</S.ResultValue>
-            </S.ResultRow>
-            <S.ResultRow>
-              <S.ResultLabel>포인트가격</S.ResultLabel>
-              <S.ResultValue>{tradeResult.totalPrice.toLocaleString()}P</S.ResultValue>
-            </S.ResultRow>
+            {tradeResult.tradeType === 'buy' && (
+              <S.ResultRow>
+                <S.ResultLabel>주문수량</S.ResultLabel>
+                <S.ResultValue>{tradeResult.quantity}주</S.ResultValue>
+              </S.ResultRow>
+            )}
             <S.ResultButtonGroup>
               <S.SingleButton color="#50b498" onClick={onConfirm}>
                 확인
@@ -59,3 +58,4 @@ interface ResultModalProps {
       </>
     );
   };
+  

@@ -1,3 +1,4 @@
+// BuyModal.tsx
 import React, { useState, useEffect } from 'react';
 import { useStockStore } from '@/features/Intermediate_chart/model/stock';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
@@ -5,8 +6,8 @@ import * as S from '@/features/Intermediate_chart/ui/components/styles';
 interface BuyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (buyPrice: number, buyQuantity: number) => Promise<void>;
-  stockId: number;
+  onConfirm: (stockId: string, buyPrice: number, buyQuantity: number) => Promise<void>;
+  stockId: string;
   stockName: string;
   initialPrice: string;
   points: number;
@@ -49,16 +50,10 @@ export const BuyModal: React.FC<BuyModalProps> = ({
     setQuantity(newQuantity);
   };
 
-
   const handleConfirm = async () => {
     try {
-      const buyPrice = parseInt(price.replace(/,/g, '')); // 매수가격 (100원)
-      const buyQuantity = quantity; // 수량 (2주)
-      const tradePoint = buyPrice * buyQuantity; // 총 포인트 (100 * 2 = 200P)
-      
-      const response = await executeTrade(stockId, tradePoint, 'buy');
-      onConfirm(buyPrice, buyQuantity); // 매수가격과 수량 전달
-  
+      const buyPrice = parseInt(price.replace(/,/g, ''));
+      await onConfirm(stockId, buyPrice, quantity);
     } catch (error) {
       console.error('매수 실패:', error);
     }
@@ -128,3 +123,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
     </>
   );
 };
+
+
+
+

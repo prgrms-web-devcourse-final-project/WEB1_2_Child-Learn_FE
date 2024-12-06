@@ -33,3 +33,10 @@ export interface TradeResponse {
   message?: string;
 }
 
+export interface TradeResult {
+  tradeType: 'buy' | 'sell';
+  stockName: string;
+  quantity: number;
+  totalPrice: number;
+}
+
