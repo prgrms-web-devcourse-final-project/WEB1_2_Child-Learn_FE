@@ -1,7 +1,12 @@
 import { http, HttpResponse } from 'msw';
 import { WordQuizRequest, WordQuizResponse } from '@/features/minigame/wordquizgame/types/wordTypes';
 
-let sessionGameState: WordQuizResponse | null = null;
+let sessionGameState: WordQuizResponse;
+
+// 마지막 플레이 날짜 업데이트 (모의 함수)
+function updateLastPlayedDate(difficulty: 'EASY' | 'NORMAL' | 'HARD') {
+    console.log(`Updating last played date for difficulty: ${difficulty}`);
+  }
 
 // Mock 데이터: JSON에서 불러온 원본 데이터
 const mockQuestions = [
@@ -119,12 +124,12 @@ export const wordQuizGameHandlers = [
           ...sessionGameState,
           currentPhase: 3, // 마지막 단계 유지
         };
+        updateLastPlayedDate(sessionGameState.difficulty);
       }
     } else {
       sessionGameState.remainLife -= 1;
       if (sessionGameState.remainLife <= 0) {
-        // 생명이 모두 소진된 경우 상태 초기화
-        sessionGameState = null;
+        sessionGameState.remainLife = 0; 
       }
     }
   
