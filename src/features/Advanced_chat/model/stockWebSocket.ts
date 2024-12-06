@@ -33,10 +33,11 @@ export class StockWebSocket {
   private maxReconnectAttempts = 5;
   private connectionTimeout: NodeJS.Timeout | null = null;
   private connectionId: string;
+  private connectionStatus: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
   private static readonly BASE_URL = 'wss://3.35.242.1';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
-  private maxWaitTime = 30000; // 30초
-  private checkInterval = 500; // 0.5초
+  private maxWaitTime = 30000;
+  private checkInterval = 500;
 
   private constructor() {
     this.connectionId = generateUUID();
@@ -50,10 +51,11 @@ export class StockWebSocket {
     return StockWebSocket.instance;
   }
 
-  public static shouldInitialize(): boolean {
-    const path = window.location.pathname;
-    console.log('Current path:', path);
-    return path.includes('/advanced') || path.includes('/chat');
+  private isStoreReady(): boolean {
+    const store = (window as any).store;
+    const state = store?.getState?.();
+    const token = state?.state?.accessToken;
+    return Boolean(token);
   }
 
   private getToken(): string | null {
@@ -82,14 +84,23 @@ export class StockWebSocket {
     const startTime = Date.now();
 
     while (Date.now() - startTime < this.maxWaitTime) {
-      const token = this.getToken();
-      if (token) {
-        return token;
+      if (this.isStoreReady()) {
+        const token = this.getToken();
+        if (token) {
+          console.log('Token found:', token.substring(0, 10) + '...');
+          return token;
+        }
       }
       await new Promise(resolve => setTimeout(resolve, this.checkInterval));
+      console.log('Waiting for token...');
     }
 
+    console.error('Token waiting timeout');
     return null;
+  }
+
+  public getConnectionStatus() {
+    return this.connectionStatus;
   }
 
   public async connect() {
@@ -100,27 +111,42 @@ export class StockWebSocket {
       return;
     }
 
+    if (this.connectionStatus === 'connecting') {
+      console.log('Connection already in progress');
+      return;
+    }
+
     if (this.ws?.readyState === WebSocket.OPEN) {
       console.log('WebSocket이 이미 연결됨');
       return;
     }
 
-    const token = await this.waitForToken();
-    if (!token) {
-      console.error('토큰을 가져오는데 실패했습니다.');
-      return;
-    }
+    this.connectionStatus = 'connecting';
 
     try {
+      const token = await this.waitForToken();
+      if (!token) {
+        this.connectionStatus = 'disconnected';
+        console.error('토큰을 가져오는데 실패했습니다.');
+        return;
+      }
+
       const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
       console.log('Attempting secure WebSocket connection:', url);
 
       this.ws = new WebSocket(url);
       this.setupWebSocketHandlers();
     } catch (error) {
+      this.connectionStatus = 'disconnected';
       console.error('WebSocket connection failed:', error);
       this.handleReconnect();
     }
+  }
+
+  public static shouldInitialize(): boolean {
+    const path = window.location.pathname;
+    console.log('Current path:', path);
+    return path.includes('/advanced') || path.includes('/chat');
   }
 
   private setupWebSocketHandlers() {
@@ -128,6 +154,7 @@ export class StockWebSocket {
 
     this.ws.onopen = () => {
       console.log('Secure WebSocket connection established');
+      this.connectionStatus = 'connected';
       if (this.connectionTimeout) {
         clearTimeout(this.connectionTimeout);
       }
@@ -135,6 +162,7 @@ export class StockWebSocket {
     };
 
     this.ws.onclose = (event) => {
+      this.connectionStatus = 'disconnected';
       if (this.connectionTimeout) {
         clearTimeout(this.connectionTimeout);
       }
@@ -146,6 +174,7 @@ export class StockWebSocket {
     };
 
     this.ws.onerror = (error) => {
+      this.connectionStatus = 'disconnected';
       console.error('WebSocket error:', {
         error,
         readyState: this.ws?.readyState,
@@ -184,7 +213,7 @@ export class StockWebSocket {
       console.log(`Sending message (${this.connectionId}):`, message);
       this.ws.send(message);
     } else {
-      console.warn(`Cannot send message, WebSocket state: ${this.ws?.readyState}`);
+      console.warn(`Cannot send message, WebSocket state: ${this.ws?.readyState}, connection status: ${this.connectionStatus}`);
     }
   }
 
@@ -197,6 +226,12 @@ export class StockWebSocket {
   }
 
   private handleReconnect() {
+    if (!this.isStoreReady()) {
+      console.log('Store not ready, delaying reconnection...');
+      setTimeout(() => this.connect(), 1000);
+      return;
+    }
+
     if (this.reconnectAttempts < this.maxReconnectAttempts && StockWebSocket.shouldInitialize()) {
       const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
       console.log(`Attempting to reconnect (${this.connectionId}) in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
@@ -233,6 +268,7 @@ export class StockWebSocket {
   }
 
   public disconnect() {
+    this.connectionStatus = 'disconnected';
     if (this.connectionTimeout) {
       clearTimeout(this.connectionTimeout);
     }
