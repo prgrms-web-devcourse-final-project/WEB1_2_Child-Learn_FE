@@ -39,7 +39,7 @@ export class StockWebSocket {
   private maxReconnectAttempts = 5;
   private connectionId: string;
   private connectionStatus: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
-  private static readonly BASE_URL = 'ws://43.202.106.45';
+  private static readonly BASE_URL = 'wss://43.202.106.45';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
   private connectPromise: Promise<void> | null = null;
 
