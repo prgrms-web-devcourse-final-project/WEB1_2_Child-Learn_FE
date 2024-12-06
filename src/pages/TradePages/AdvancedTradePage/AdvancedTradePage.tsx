@@ -13,7 +13,7 @@ const AdvancedTradePage = () => {
         <OutButton onClick={() => navigate('/main')}>
           <img src="/img/out.png" alt="나가기" />
         </OutButton>
-        <PointBadge points={2000} />
+        <PointBadge/>
       </HeaderWrapper>
       <StockSlider />
     </PageContainer>
