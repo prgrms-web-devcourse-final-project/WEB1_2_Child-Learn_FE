@@ -1,9 +1,9 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import Header from '../../widgets/Header/index';
-import FloatingGNB from '../../widgets/Footer/index';
-import { BackButton } from '../../widgets/BackButton/index';
+import Header from '@/widgets/Header/index';
+import FloatingGNB from '@/widgets/Footer/index';
+import { BackButton } from '@/widgets/BackButton/index';
 
 // 헤더를 숨길 페이지 경로들
 const HIDDEN_HEADER_PATHS = [
