@@ -1,4 +1,3 @@
-// quiz.store.ts
 import { create } from 'zustand';
 import { baseApi } from '@/shared/api/base';
 import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
@@ -16,14 +15,6 @@ interface QuizStore {
 interface QuizResponse {
   quiz: BeginQuiz[];
   isCorrect: boolean;
-}
-
-interface PointRequest {
-  memberId: number;
-  points: number;
-  pointType: string;
-  gameType: string;
-  isWin: boolean;
 }
 
 interface PointResponse {
@@ -58,22 +49,16 @@ export const useQuizStore = create<QuizStore>((set) => ({
 
   submitAnswer: async (answer: string) => {
     try {
-      const userId = localStorage.getItem('userId');
-      if (!userId) {
-        throw new Error('User ID not found');
-      }
-
+      // Submit quiz answer without requiring userId
       const quizResponse = await baseApi.post<QuizResponse>('/begin-stocks/submissions', {
-        memberId: parseInt(userId),
         answer: answer
       });
 
       set({ selectedAnswer: answer });
 
       if (quizResponse.data.isCorrect) {
-     
-        const pointRequest: PointRequest = {
-          memberId: parseInt(userId),
+        // Submit points if answer is correct
+        const pointRequest = {
           points: 200,
           pointType: "GAME",
           gameType: "OX_QUIZ",
@@ -84,9 +69,7 @@ export const useQuizStore = create<QuizStore>((set) => ({
 
         return {
           isCorrect: true,
-          points: 200,
-          currentPoints: pointResponse.data.currentPoints,
-          currentCoins: pointResponse.data.currentCoins
+          points: pointResponse.data.currentPoints
         };
       }
 
