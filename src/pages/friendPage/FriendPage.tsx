@@ -1,9 +1,13 @@
 import styled from 'styled-components';
-import { useState } from 'react';
 import { SearchBar } from '@/shared/ui/SearchBar/SearchBar';
+import { FriendList } from '@/features/freind/ui/FriendList';
+import { useFriendList, useRemoveFriend } from '@/features/freind/lib/quries';
+import { useState } from 'react';
 
 const FriendPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const { friends, isLoading, hasMore, loadMore } = useFriendList(searchTerm);
+  const { mutateAsync: removeFriend } = useRemoveFriend();
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -19,12 +23,16 @@ const FriendPage = () => {
           placeholder="친구 검색"
         />
       </SearchBarWrapper>
-      {/* 여기에 친구 목록 컴포넌트들이 들어갈 예정입니다 */}
+      <FriendList
+        friends={friends}
+        isLoading={isLoading}
+        onRemoveFriend={removeFriend}
+        hasMore={hasMore}
+        onLoadMore={loadMore}
+      />
     </ContentContainer>
   );
 };
-
-export default FriendPage;
 
 const ContentContainer = styled.div`
   padding: 20px;
@@ -42,3 +50,5 @@ const PageTitle = styled.h1`
 const SearchBarWrapper = styled.div`
   margin-bottom: 24px;
 `;
+
+export default FriendPage;
