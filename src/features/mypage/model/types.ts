@@ -11,7 +11,7 @@ export const MENU_ITEMS: MenuItem[] = [
     icon: '/img/user-icon.png',
     label: '친구 목록',
     backgroundColor: '#707EFF4D',
-    path: '/friends',
+    path: '/friend',
     iconColor:
       'invert(47%) sepia(95%) saturate(1485%) hue-rotate(213deg) brightness(103%) contrast(101%)', // 보라색
   },

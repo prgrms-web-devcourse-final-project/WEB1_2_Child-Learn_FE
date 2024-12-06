@@ -19,6 +19,7 @@ import QuizGraphPage from '@/pages/TradePages/BeginnerTradePage/QuizGraphPage';
 import { PublicRoute } from '@/app/router/PublicRoute';
 import { PrivateRoute } from '@/app/router/PrivateRoute';
 import SearchPage from '@/pages/searchPage/SearchPage';
+import FriendPage from '@/pages/friendPage/FriendPage';
 
 export default function Router() {
 
@@ -186,7 +187,14 @@ export default function Router() {
           </PrivateRoute>
         }
       />
-
+      <Route
+        path="/friend"
+        element={
+          <PrivateRoute>
+            <FriendPage />
+          </PrivateRoute>
+        }
+      />
       {/* 404 페이지 */}
       <Route path="*" element={<div>Page not found</div>} />
     </Routes>
