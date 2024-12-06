@@ -14,6 +14,25 @@ interface QuizStore {
   submitAnswer: (answer: string) => Promise<{ isCorrect: boolean; points?: number }>;
 }
 
+interface QuizResponse {
+  quiz: BeginQuiz[];
+  isCorrect: boolean;
+}
+
+interface PointRequest {
+  memberId: number;
+  points: number;
+  pointType: string;
+  gameType: string;
+  isWin: boolean;
+}
+
+interface PointResponse {
+  memberId: number;
+  currentPoints: number;
+  currentCoins: number;
+}
+
 export const useQuizStore = create<QuizStore>((set) => ({
   quizzes: [],
   currentQuiz: null,
@@ -41,23 +60,28 @@ export const useQuizStore = create<QuizStore>((set) => ({
   submitAnswer: async (answer: string) => {
     try {
       const userId = localStorage.getItem('userId');
+      if (!userId) {
+        throw new Error('User ID not found');
+      }
 
-      // Submit quiz answer
-      const quizResponse = await baseApi.post('/begin-stocks/submissions', { answer });
+      const quizResponse = await baseApi.post<QuizResponse>('/begin-stocks/submissions', {
+        memberId: parseInt(userId),
+        answer: answer
+      });
 
       set({ selectedAnswer: answer });
 
       if (quizResponse.data.isCorrect) {
-        // Submit points if answer is correct
-        const pointRequest = {
-          memberId: userId ? parseInt(userId) : 0,
+     
+        const pointRequest: PointRequest = {
+          memberId: parseInt(userId),
           points: 200,
           pointType: "GAME",
           gameType: "OX_QUIZ",
           isWin: true
         };
 
-        await baseApi.post('/wallet/game', pointRequest);
+        const pointResponse = await baseApi.post<PointResponse>('/wallet/game', pointRequest);
 
         return {
           isCorrect: true,
