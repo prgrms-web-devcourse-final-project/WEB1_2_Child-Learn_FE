@@ -1,5 +1,5 @@
 import { baseApi } from '@/shared/api/base';
-import { Friend } from '../model/types';
+import { Friend } from '@/features/freind/model/types';
 import { API_CONFIG } from '@/shared/config';
 
 export const friendApi = {
