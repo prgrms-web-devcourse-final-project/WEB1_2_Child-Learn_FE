@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { MessageCircle } from 'lucide-react';
 import { Friend } from '@/features/freind/model/types';
@@ -24,7 +24,9 @@ export const FriendList = ({
   totalPages = 0,
   onPageChange,
 }: FriendListProps) => {
+  const [slideId, setSlideId] = useState<number | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
+  const [startX, setStartX] = useState<number | null>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -42,6 +44,33 @@ export const FriendList = ({
 
     return () => observer.disconnect();
   }, [hasMore, onLoadMore]);
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent, friendId: number) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    setStartX(clientX);
+    
+    // 다른 항목이 슬라이드된 상태라면 닫기
+    if (slideId && slideId !== friendId) {
+      setSlideId(null);
+    }
+  };
+
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent, friendId: number) => {
+    if (!startX) return;
+    
+    const currentX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const diff = startX - currentX;
+
+    if (diff > 50) {
+      setSlideId(friendId);
+    } else if (diff < -50) {
+      setSlideId(null);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setStartX(null);
+  };
 
   if (isLoading && friends.length === 0) {
     return (
@@ -64,34 +93,50 @@ export const FriendList = ({
     <Wrapper>
       <ListContainer>
         {friends.map((friend) => (
-          <UserItem key={friend.id}>
-            <UserInfoWrapper>
-              <ProfileWrapper>
-                <ProfileImage
-                  src={friend.profileImage || '/img/basic-profile.png'}
-                  alt="프로필"
-                />
-                {friend.active && <ActiveIndicator />}
-              </ProfileWrapper>
-              <UserInfo>
-                <UserName>{friend.username}</UserName>
-                <UserLoginId>{friend.loginId}</UserLoginId>
-              </UserInfo>
-            </UserInfoWrapper>
-            <ButtonsWrapper>
+          <UserItemWrapper key={friend.id}>
+            <UserItem
+              onMouseDown={(e) => handleDragStart(e, friend.id)}
+              onMouseMove={(e) => handleDragMove(e, friend.id)}
+              onMouseUp={handleDragEnd}
+              onMouseLeave={handleDragEnd}
+              onTouchStart={(e) => handleDragStart(e, friend.id)}
+              onTouchMove={(e) => handleDragMove(e, friend.id)}
+              onTouchEnd={handleDragEnd}
+              $isSlided={slideId === friend.id}
+            >
+              <UserInfoWrapper>
+                <ProfileWrapper>
+                  <ProfileImage
+                    src={friend.profileImage || '/img/basic-profile.png'}
+                    alt="프로필"
+                  />
+                  {friend.active && <ActiveIndicator />}
+                </ProfileWrapper>
+                <UserInfo>
+                  <UserName>{friend.username}</UserName>
+                  <UserLoginId>{friend.loginId}</UserLoginId>
+                </UserInfo>
+              </UserInfoWrapper>
               <MessageButton>
                 <MessageCircle size={16} />
                 <span>메시지</span>
               </MessageButton>
-              <DeleteButton onClick={() => onRemoveFriend(friend.id)}>
+            </UserItem>
+            <DeleteButtonWrapper $isVisible={slideId === friend.id}>
+              <DeleteButton 
+                onClick={async () => {
+                  await onRemoveFriend(friend.id);
+                  setSlideId(null);
+                }}
+              >
                 삭제
               </DeleteButton>
-            </ButtonsWrapper>
-          </UserItem>
+            </DeleteButtonWrapper>
+          </UserItemWrapper>
         ))}
         {hasMore && <LoadingTarget ref={observerTarget} />}
       </ListContainer>
-
+  
       {totalPages > 1 && onPageChange && (
         <Pagination>
           <NavigationButton
@@ -123,13 +168,21 @@ const ListContainer = styled.div`
   padding: 5px 0;
 `;
 
-const UserItem = styled.div`
+const UserItem = styled.div<{ $isSlided: boolean }>`
   min-height: 65px;
   padding: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
+  background-color: white;
+  transform: translateX(${props => props.$isSlided ? '-80px' : '0'});
+  transition: transform 0.3s ease-out;
+  cursor: grab;
+  
+  &:active {
+    cursor: grabbing;
+  }
 `;
 
 const UserInfoWrapper = styled.div`
@@ -153,11 +206,6 @@ const UserName = styled.span`
 const UserLoginId = styled.span`
   color: #666;
   font-size: 12px;
-`;
-
-const ButtonsWrapper = styled.div`
-  display: flex;
-  gap: 8px;
 `;
 
 const MessageButton = styled.button`
@@ -184,19 +232,27 @@ const MessageButton = styled.button`
 `;
 
 const DeleteButton = styled.button`
-  padding: 8px 16px;
-  border-radius: 30px;
-  border: none;
+  width: 80px;
+  height: 100%;
   background-color: #ff6b6b;
+  border: none;
   color: white;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
 
   &:hover {
     background-color: #ff5252;
   }
+`;
+
+const DeleteButtonWrapper = styled.div<{ $isVisible: boolean }>`
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  transform: translateX(${props => props.$isVisible ? '0' : '100%'});
+  transition: transform 0.3s ease-out;
 `;
 
 const EmptyStateWrapper = styled.div`
@@ -290,6 +346,13 @@ const ProfileImage = styled.img`
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+`;
+
+const UserItemWrapper = styled.div`
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
 `;
 
 export default FriendList;
