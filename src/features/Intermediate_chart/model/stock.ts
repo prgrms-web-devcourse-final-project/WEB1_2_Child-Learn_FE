@@ -101,16 +101,18 @@ export const useStockStore = create<StockStore>((set) => ({
         const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
         return response.data;
       } else {
+        // 매수 요청 형식 수정
         const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
-          tradePoint
+          tradePoint: tradePoint,  // 명확하게 키값 지정
         });
         return response.data;
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 400) {
-        throw new Error(error.response.data.message);
+        const errorMessage = error.response.data.message || '매수 처리 중 오류가 발생했습니다.';
+        throw new Error(errorMessage);
       }
       throw error;
     }
-  }
+}
 }));
