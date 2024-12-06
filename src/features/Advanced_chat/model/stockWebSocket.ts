@@ -33,8 +33,11 @@ export class StockWebSocket {
   private maxReconnectAttempts = 5;
   private connectionTimeout: NodeJS.Timeout | null = null;
   private connectionId: string;
+  private connectionStatus: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
   private static readonly BASE_URL = 'wss://3.35.242.1';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
+  private maxWaitTime = 30000;
+  private checkInterval = 500;
 
   private constructor() {
     this.connectionId = generateUUID();
@@ -48,8 +51,11 @@ export class StockWebSocket {
     return StockWebSocket.instance;
   }
 
-  public static shouldInitialize(): boolean {
-    return window.location.pathname.includes('/advanced');
+  private isStoreReady(): boolean {
+    const store = (window as any).store;
+    const state = store?.getState?.();
+    const token = state?.state?.accessToken;
+    return Boolean(token);
   }
 
   private getToken(): string | null {
@@ -74,27 +80,39 @@ export class StockWebSocket {
     return token;
   }
 
-  private async waitForStore(): Promise<boolean> {
-    let attempts = 0;
-    const maxAttempts = 10;
-    
-    while (attempts < maxAttempts) {
-      const store = (window as any).store;
-      const state = store?.getState?.();
-      
-      if (state?.state?.accessToken) {
-        return true;
+  private async waitForToken(): Promise<string | null> {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < this.maxWaitTime) {
+      if (this.isStoreReady()) {
+        const token = this.getToken();
+        if (token) {
+          console.log('Token found:', token.substring(0, 10) + '...');
+          return token;
+        }
       }
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      attempts++;
+      await new Promise(resolve => setTimeout(resolve, this.checkInterval));
+      console.log('Waiting for token...');
     }
-    return false;
+
+    console.error('Token waiting timeout');
+    return null;
+  }
+
+  public getConnectionStatus() {
+    return this.connectionStatus;
   }
 
   public async connect() {
+    console.log('Attempting to connect WebSocket');
+    
     if (!StockWebSocket.shouldInitialize()) {
       console.log('WebSocket 초기화가 필요하지 않음');
+      return;
+    }
+
+    if (this.connectionStatus === 'connecting') {
+      console.log('Connection already in progress');
       return;
     }
 
@@ -103,33 +121,40 @@ export class StockWebSocket {
       return;
     }
 
-    const storeReady = await this.waitForStore();
-    if (!storeReady) {
-      console.log('스토어 초기화 실패');
-      return;
-    }
+    this.connectionStatus = 'connecting';
 
-    const token = this.getToken();
-    if (!token) {
-      console.log('토큰이 없어 WebSocket 연결 불가');
-      return;
-    }
-
-    const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
-    console.log('Attempting secure WebSocket connection:', url);
-
-    this.ws = new WebSocket(url);
-
-    this.connectionTimeout = setTimeout(() => {
-      if (this.ws?.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket connection timeout');
-        this.ws?.close();
-        this.handleReconnect();
+    try {
+      const token = await this.waitForToken();
+      if (!token) {
+        this.connectionStatus = 'disconnected';
+        console.error('토큰을 가져오는데 실패했습니다.');
+        return;
       }
-    }, 5000);
+
+      const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
+      console.log('Attempting secure WebSocket connection:', url);
+
+      this.ws = new WebSocket(url);
+      this.setupWebSocketHandlers();
+    } catch (error) {
+      this.connectionStatus = 'disconnected';
+      console.error('WebSocket connection failed:', error);
+      this.handleReconnect();
+    }
+  }
+
+  public static shouldInitialize(): boolean {
+    const path = window.location.pathname;
+    console.log('Current path:', path);
+    return path.includes('/advanced') || path.includes('/chat');
+  }
+
+  private setupWebSocketHandlers() {
+    if (!this.ws) return;
 
     this.ws.onopen = () => {
       console.log('Secure WebSocket connection established');
+      this.connectionStatus = 'connected';
       if (this.connectionTimeout) {
         clearTimeout(this.connectionTimeout);
       }
@@ -137,6 +162,7 @@ export class StockWebSocket {
     };
 
     this.ws.onclose = (event) => {
+      this.connectionStatus = 'disconnected';
       if (this.connectionTimeout) {
         clearTimeout(this.connectionTimeout);
       }
@@ -148,10 +174,11 @@ export class StockWebSocket {
     };
 
     this.ws.onerror = (error) => {
+      this.connectionStatus = 'disconnected';
       console.error('WebSocket error:', {
         error,
         readyState: this.ws?.readyState,
-        url: url
+        url: this.ws?.url
       });
     };
 
@@ -186,7 +213,7 @@ export class StockWebSocket {
       console.log(`Sending message (${this.connectionId}):`, message);
       this.ws.send(message);
     } else {
-      console.warn(`Cannot send message, WebSocket state: ${this.ws?.readyState}`);
+      console.warn(`Cannot send message, WebSocket state: ${this.ws?.readyState}, connection status: ${this.connectionStatus}`);
     }
   }
 
@@ -199,6 +226,12 @@ export class StockWebSocket {
   }
 
   private handleReconnect() {
+    if (!this.isStoreReady()) {
+      console.log('Store not ready, delaying reconnection...');
+      setTimeout(() => this.connect(), 1000);
+      return;
+    }
+
     if (this.reconnectAttempts < this.maxReconnectAttempts && StockWebSocket.shouldInitialize()) {
       const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
       console.log(`Attempting to reconnect (${this.connectionId}) in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
@@ -221,14 +254,13 @@ export class StockWebSocket {
       1005: "상태 코드 없음",
       1006: "비정상 종료",
       1007: "잘못된 데이터 형식",
-      1008: "책 위반",
+      1008: "정책 위반",
       1009: "메시지 크기 초과",
       1010: "필수 확장 기능 누락",
       1011: "내부 서버 오류",
       1015: "TLS 보안 연결 실패"
-
     };
-    return reasons[code] || "알 수 는 오류";
+    return reasons[code] || "알 수 없는 오류";
   }
 
   public onMessage(handler: (message: WebSocketMessage) => void) {
@@ -236,6 +268,7 @@ export class StockWebSocket {
   }
 
   public disconnect() {
+    this.connectionStatus = 'disconnected';
     if (this.connectionTimeout) {
       clearTimeout(this.connectionTimeout);
     }
