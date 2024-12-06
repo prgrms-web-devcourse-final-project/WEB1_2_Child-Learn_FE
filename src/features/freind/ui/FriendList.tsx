@@ -119,7 +119,6 @@ export const FriendList = ({
               </UserInfoWrapper>
               <MessageButton>
                 <MessageCircle size={16} />
-                <span>메시지</span>
               </MessageButton>
             </UserItem>
             <DeleteButtonWrapper $isVisible={slideId === friend.id}>
@@ -238,7 +237,7 @@ const DeleteButton = styled.button`
   border: none;
   color: white;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
 
   &:hover {
