@@ -120,14 +120,16 @@ const Wrapper = styled.div`
 const ListContainer = styled.div`
   height: 590px;
   overflow-y: auto;
+  padding: 5px 0;
 `;
 
 const UserItem = styled.div`
+  min-height: 65px;
   padding: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f0f0f0;
+  box-sizing: border-box;
 `;
 
 const UserInfoWrapper = styled.div`
@@ -139,7 +141,7 @@ const UserInfoWrapper = styled.div`
 const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px; 
 `;
 
 const UserName = styled.span`
