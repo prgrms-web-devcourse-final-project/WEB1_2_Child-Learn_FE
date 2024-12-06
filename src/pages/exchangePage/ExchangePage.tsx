@@ -52,12 +52,12 @@ const ExchangePage = () => {
       });
 
     // 상태 업데이트
-    setPoint({ currentPoints: point.currentPoints - pointsToExchange });
-    setCoin({ currentCoins: coin.currentCoins + coinsToExchange });
+    setPoint({ currentPoints: updatedWallet.currentPoints  });
+    setCoin({ currentCoins: updatedWallet.currentCoins });
 
     addExchangeDetail({
       exchangeId: Date.now(),
-      memberId: 1, // 예시로 사용
+      memberId: userInfo.id,// 예시로 사용
       pointsExchanged: pointsToExchange,
       coinsReceived: coinsToExchange,
       createdAt: new Date().toISOString(),
