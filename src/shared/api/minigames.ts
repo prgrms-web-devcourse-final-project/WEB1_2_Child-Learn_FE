@@ -109,11 +109,6 @@ submitAnswer: async (
     }
   );
 
-  // API가 null을 반환하면 게임 종료 상태임
-  if (!response.data) {
-    return null; // 게임 종료
-  }
-
   // 게임 상태 업데이트
   return response.data as WordQuizResponse;
 },
