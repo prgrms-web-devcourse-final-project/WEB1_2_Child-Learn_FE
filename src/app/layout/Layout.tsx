@@ -1,9 +1,9 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useLocation } from 'react-router-dom';
-import Header from '../../widgets/Header/index';
-import FloatingGNB from '../../widgets/Footer/index';
-import { BackButton } from '../../widgets/BackButton/index';
+import Header from '@/widgets/Header/index';
+import FloatingGNB from '@/widgets/Footer/index';
+import { BackButton } from '@/widgets/BackButton/index';
 
 // 헤더를 숨길 페이지 경로들
 const HIDDEN_HEADER_PATHS = [
@@ -16,13 +16,13 @@ const HIDDEN_HEADER_PATHS = [
   /^\/word-quiz\/result\/[^/]+$/,
   '/exchange',
   '/fast-navigation',
-   '/avatar',
+  '/avatar',
   '/auth/find-id',
 ];
 
 // GNB를 숨길 페이지 경로들
 const HIDDEN_GNB_PATHS = [
-  /^\/avatar\/details\/[^/]+\/[^/]+$/, 
+  /^\/avatar\/details\/[^/]+\/[^/]+$/,
   '/',
   '/auth/login',
   '/auth/signup',
@@ -38,7 +38,13 @@ const HIDDEN_GNB_PATHS = [
 ];
 
 // BackButton만 표시할 페이지 경로들
-const SHOW_BACK_BUTTON_PATHS = [/^\/flip-card\/[^/]+$/, /^\/word-quiz\/[^/]+$/, '/exchange', '/avatar', /^\/avatar\/details\/[^/]+\/[^/]+$/,];
+const SHOW_BACK_BUTTON_PATHS = [
+  /^\/flip-card\/[^/]+$/,
+  /^\/word-quiz\/[^/]+$/,
+  '/exchange',
+  '/avatar',
+  /^\/avatar\/details\/[^/]+\/[^/]+$/,
+];
 
 // BackButton을 숨길 페이지 경로 추가
 const HIDDEN_BACK_BUTTON_PATHS = [/^\/word-quiz\/result\/[^/]+$/];
@@ -46,7 +52,10 @@ const HIDDEN_BACK_BUTTON_PATHS = [/^\/word-quiz\/result\/[^/]+$/];
 // 정확한 경로 매칭을 위한 함수
 const isExactPath = (currentPath: string, targetPath: string | RegExp) => {
   if (typeof targetPath === 'string') {
-    return currentPath === targetPath || (targetPath.startsWith('/auth/') && currentPath.startsWith(targetPath));
+    return (
+      currentPath === targetPath ||
+      (targetPath.startsWith('/auth/') && currentPath.startsWith(targetPath))
+    );
   } else if (targetPath instanceof RegExp) {
     return targetPath.test(currentPath);
   }
@@ -65,12 +74,14 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 
   const shouldShowBackButton =
-  SHOW_BACK_BUTTON_PATHS.some((path) =>
-    typeof path === 'string' ? location.pathname.startsWith(path) : path.test(location.pathname)
-  ) &&
-  !HIDDEN_BACK_BUTTON_PATHS.some((path) =>
-    isExactPath(location.pathname, path)
-  );
+    SHOW_BACK_BUTTON_PATHS.some((path) =>
+      typeof path === 'string'
+        ? location.pathname.startsWith(path)
+        : path.test(location.pathname)
+    ) &&
+    !HIDDEN_BACK_BUTTON_PATHS.some((path) =>
+      isExactPath(location.pathname, path)
+    );
 
   return (
     <>
