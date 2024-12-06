@@ -5,15 +5,17 @@ import { useUserInfo } from '@/entities/User/lib/queries';
 import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
 import { walletApi } from '@/shared/api/wallets';
 import { MiniGameTransaction } from '@/features/minigame/points/types/pointTypes';
+import { useQueryClient } from '@tanstack/react-query';
 
 const WordQuizResultPage = () => {
   const navigate = useNavigate();
   const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
+  const queryClient = useQueryClient();
   const { correctAnswers, resetQuiz } = useWordQuizStore();
 
   // 별의 개수 계산 (최대 별 3개)
   const stars = Math.min(correctAnswers, 3); // 최대 별 3개
-  const earnedPoints = correctAnswers * 100;
+  const earnedPoints = correctAnswers * 1000;
 
   useEffect(() => {
     const processPoints = async () => {
@@ -24,22 +26,34 @@ const WordQuizResultPage = () => {
       try {
         const transaction: MiniGameTransaction = {
           memberId: userInfo.id,
+          gameType: 'WORD_QUIZ', // 고정 값
           points: earnedPoints,
           pointType: 'GAME', // 고정 값
-          gameType: 'WORD_QUIZ', // 고정 값
           isWin: earnedPoints > 0, // 포인트가 0보다 크면 승리
         };
 
         // API 호출
         const updatedWallet = await walletApi.processMiniGamePoints(transaction);
         console.log("Wallet updated successfully:", updatedWallet);
+
+        // React Query의 캐시를 갱신
+        queryClient.setQueryData(['userInfo'], (oldData: any) => {
+          if (oldData) {
+            return {
+              ...oldData,
+              currentPoints: oldData.currentPoints + earnedPoints,
+            };
+          }
+          return oldData;
+        });
+
       } catch (error) {
         console.error("Failed to process mini-game points:", error);
       }
     };
 
     processPoints();
-  }, [earnedPoints]);
+  }, [earnedPoints, queryClient, userInfo]);
 
   const handleNavigate = () => {
     resetQuiz(); // 퀴즈 상태 초기화
