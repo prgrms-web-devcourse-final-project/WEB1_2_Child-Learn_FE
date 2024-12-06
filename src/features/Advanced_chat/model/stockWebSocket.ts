@@ -35,6 +35,8 @@ export class StockWebSocket {
   private connectionId: string;
   private static readonly BASE_URL = 'wss://3.35.242.1';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
+  private maxWaitTime = 30000; // 30초
+  private checkInterval = 500; // 0.5초
 
   private constructor() {
     this.connectionId = generateUUID();
@@ -49,7 +51,9 @@ export class StockWebSocket {
   }
 
   public static shouldInitialize(): boolean {
-    return window.location.pathname.includes('/advanced');
+    const path = window.location.pathname;
+    console.log('Current path:', path);
+    return path.includes('/advanced') || path.includes('/chat');
   }
 
   private getToken(): string | null {
@@ -74,25 +78,23 @@ export class StockWebSocket {
     return token;
   }
 
-  private async waitForStore(): Promise<boolean> {
-    let attempts = 0;
-    const maxAttempts = 10;
-    
-    while (attempts < maxAttempts) {
-      const store = (window as any).store;
-      const state = store?.getState?.();
-      
-      if (state?.state?.accessToken) {
-        return true;
+  private async waitForToken(): Promise<string | null> {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < this.maxWaitTime) {
+      const token = this.getToken();
+      if (token) {
+        return token;
       }
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      attempts++;
+      await new Promise(resolve => setTimeout(resolve, this.checkInterval));
     }
-    return false;
+
+    return null;
   }
 
   public async connect() {
+    console.log('Attempting to connect WebSocket');
+    
     if (!StockWebSocket.shouldInitialize()) {
       console.log('WebSocket 초기화가 필요하지 않음');
       return;
@@ -103,30 +105,26 @@ export class StockWebSocket {
       return;
     }
 
-    const storeReady = await this.waitForStore();
-    if (!storeReady) {
-      console.log('스토어 초기화 실패');
-      return;
-    }
-
-    const token = this.getToken();
+    const token = await this.waitForToken();
     if (!token) {
-      console.log('토큰이 없어 WebSocket 연결 불가');
+      console.error('토큰을 가져오는데 실패했습니다.');
       return;
     }
 
-    const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
-    console.log('Attempting secure WebSocket connection:', url);
+    try {
+      const url = `${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}?token=${token}`;
+      console.log('Attempting secure WebSocket connection:', url);
 
-    this.ws = new WebSocket(url);
+      this.ws = new WebSocket(url);
+      this.setupWebSocketHandlers();
+    } catch (error) {
+      console.error('WebSocket connection failed:', error);
+      this.handleReconnect();
+    }
+  }
 
-    this.connectionTimeout = setTimeout(() => {
-      if (this.ws?.readyState !== WebSocket.OPEN) {
-        console.error('WebSocket connection timeout');
-        this.ws?.close();
-        this.handleReconnect();
-      }
-    }, 5000);
+  private setupWebSocketHandlers() {
+    if (!this.ws) return;
 
     this.ws.onopen = () => {
       console.log('Secure WebSocket connection established');
@@ -151,7 +149,7 @@ export class StockWebSocket {
       console.error('WebSocket error:', {
         error,
         readyState: this.ws?.readyState,
-        url: url
+        url: this.ws?.url
       });
     };
 
@@ -221,14 +219,13 @@ export class StockWebSocket {
       1005: "상태 코드 없음",
       1006: "비정상 종료",
       1007: "잘못된 데이터 형식",
-      1008: "책 위반",
+      1008: "정책 위반",
       1009: "메시지 크기 초과",
       1010: "필수 확장 기능 누락",
       1011: "내부 서버 오류",
       1015: "TLS 보안 연결 실패"
-
     };
-    return reasons[code] || "알 수 는 오류";
+    return reasons[code] || "알 수 없는 오류";
   }
 
   public onMessage(handler: (message: WebSocketMessage) => void) {
