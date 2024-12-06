@@ -134,32 +134,32 @@ export const stockApi = {
 
   // REST API Methods
   getReferenceData: async (): Promise<ReferenceData> => {
-    const response = await baseApi.get('/adv-stocks/reference');
+    const response = await baseApi.get('/advanced-invest/reference');
     return response.data;
   },
 
   getLiveData: async (): Promise<LiveData> => {
-    const response = await baseApi.get('/adv-stocks/live');
+    const response = await baseApi.get('/advanced-invest/live');
     return response.data;
   },
 
   getTradeHistory: async (memberId: number): Promise<TradeHistory[]> => {
-    const response = await baseApi.get(`/stock-records/${memberId}`);
+    const response = await baseApi.get(`/advanced-invest/${memberId}`);
     return response.data;
   },
 
   getStockQuantity: async (memberId: number, stockSymbol: string): Promise<StockQuantity> => {
-    const response = await baseApi.get(`/stock-records/${memberId}/${stockSymbol}/quantity`);
+    const response = await baseApi.get(`/advanced-invest/${memberId}/${stockSymbol}/quantity`);
     return response.data;
   },
 
   getAllStockQuantities: async (memberId: number): Promise<StockQuantities> => {
-    const response = await baseApi.get(`/stock-records/${memberId}/quantities`);
+    const response = await baseApi.get(`/advanced-invest/${memberId}/quantities`);
     return response.data;
   },
 
   triggerScheduler: async (): Promise<void> => {
-    await baseApi.post('/adv-stocks/trigger-scheduler');
+    await baseApi.post('/advanced-invest/trigger-scheduler');
   }
 };
 
