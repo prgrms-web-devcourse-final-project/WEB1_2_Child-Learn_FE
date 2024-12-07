@@ -17,12 +17,12 @@ export interface Stock {
 export interface WebSocketMessage {
   type: WebSocketActions;
   data?: {
-    symbol?: string;
-    timestamp?: number;
-    closePrice?: string;
-    openPrice?: string;
-    highPrice?: string;
-    lowPrice?: string;
+    symbol: string;
+    timestamp: number;
+    closePrice: string;
+    openPrice: string;
+    highPrice: string;
+    lowPrice: string;
     change?: number;
     volume?: number;
     stocks?: Stock[];
@@ -42,7 +42,6 @@ export class StockWebSocket {
   private static readonly BASE_URL = 'ws://43.202.106.45';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
   private connectPromise: Promise<void> | null = null;
-  private initialized = false;
 
   private constructor() {
     this.connectionId = generateUUID();
@@ -54,15 +53,6 @@ export class StockWebSocket {
       StockWebSocket.instance = new StockWebSocket();
     }
     return StockWebSocket.instance;
-  }
-
-  public static initializeWebSocket(): StockWebSocket {
-    const instance = StockWebSocket.getInstance();
-    if (!instance.initialized) {
-      console.log('Initializing WebSocket instance:', instance.connectionId);
-      instance.initialized = true;
-    }
-    return instance;
   }
 
   private getAuthToken(): string | null {
@@ -93,11 +83,6 @@ export class StockWebSocket {
   }
 
   public async connect() {
-    if (!this.initialized) {
-      console.error('WebSocket not initialized. Call initializeWebSocket first.');
-      return Promise.reject(new Error('WebSocket not initialized'));
-    }
-
     if (this.connectPromise) {
       return this.connectPromise;
     }
@@ -119,13 +104,11 @@ export class StockWebSocket {
       this.connectionStatus = 'connecting';
 
       try {
-        const headers = {
-          'Authorization': `Bearer ${token}`
-        };
-        
-        this.ws = new WebSocket(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`, {
-          headers: headers
-        });
+        const url = new URL(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`);
+        url.searchParams.append('authorization', `Bearer ${token}`);
+
+        console.log('Connecting to WebSocket:', url.toString());
+        this.ws = new WebSocket(url.toString());
 
         const timeout = setTimeout(() => {
           reject(new Error('Connection timeout'));
@@ -146,7 +129,7 @@ export class StockWebSocket {
         this.ws.onerror = (error) => {
           clearTimeout(timeout);
           this.connectionStatus = 'disconnected';
-          console.error('WebSocket connection error:', error);
+          console.error('WebSocket error:', error);
           reject(error);
           this.connectPromise = null;
           this.handleReconnect();
@@ -154,7 +137,6 @@ export class StockWebSocket {
 
       } catch (error) {
         this.connectionStatus = 'disconnected';
-        console.error('WebSocket connection failed:', error);
         reject(error);
         this.connectPromise = null;
         this.handleReconnect();
@@ -203,7 +185,7 @@ export class StockWebSocket {
     }
 
     const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
-    console.log(`Attempting reconnection ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts} in ${timeout}ms`);
+    console.log(`Reconnecting in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
     
     await new Promise(resolve => setTimeout(resolve, timeout));
     
@@ -219,14 +201,9 @@ export class StockWebSocket {
   }
 
   public async sendMessage(type: WebSocketActions, data?: any) {
-    if (!this.initialized) {
-      console.error('WebSocket not initialized. Call initializeWebSocket first.');
-      return;
-    }
-
     try {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        console.log('WebSocket not connected, attempting to connect...');
+        console.log('WebSocket not connected, attempting to connect…');
         await this.connect();
       }
 
@@ -253,7 +230,7 @@ export class StockWebSocket {
       1005: "상태 코드 없음",
       1006: "비정상 종료",
       1007: "잘못된 데이터 형식",
-      1008: "정 위반",
+      1008: "정책 위반",
       1009: "메시지 크기 초과",
       1010: "필수 확장 기능 누락",
       1011: "내부 서버 오류",
@@ -270,7 +247,6 @@ export class StockWebSocket {
     console.log('Disconnecting WebSocket');
     this.connectionStatus = 'disconnected';
     this.connectPromise = null;
-    this.initialized = false;
     
     if (this.ws) {
       this.ws.close(1000, '정상 종료');
@@ -281,4 +257,4 @@ export class StockWebSocket {
   }
 }
 
-export const getWebSocketInstance = StockWebSocket.getInstance;
+export const webSocket = StockWebSocket.getInstance();

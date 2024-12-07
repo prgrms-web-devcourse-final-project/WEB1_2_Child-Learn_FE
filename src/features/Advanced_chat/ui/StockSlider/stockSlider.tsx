@@ -117,10 +117,10 @@ export const StockSlider: React.FC = () => {
   });
 
   useEffect(() => {
-    const ws = StockWebSocket.initializeWebSocket();
+    const ws = new StockWebSocket();
     setWebSocket(ws);
     
-    const initializeWebSocket = async () => {
+    const connectWebSocket = async () => {
       try {
         await ws.connect();
         
@@ -160,7 +160,7 @@ export const StockSlider: React.FC = () => {
       }
     };
 
-    initializeWebSocket();
+    connectWebSocket();
 
     return () => {
       ws.disconnect();
