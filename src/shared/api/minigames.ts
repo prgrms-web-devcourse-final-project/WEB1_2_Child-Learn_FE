@@ -117,10 +117,10 @@ submitAnswer: async (
 
 export const oxQuizApi = {
   // 퀴즈 시작 (난이도별 퀴즈 조회)
-  startQuiz: async (difficulty: 'EASY' | 'MEDIUM' | 'HARD'): Promise<QuizResponseDto[]> => {
+  startQuiz: async (memberId: number, difficulty: 'easy' | 'medium' | 'hard'): Promise<QuizResponseDto[]> => {
     const response = await baseApi.post(
       `/ox-quiz-progression/start`,
-      { difficulty },
+      { memberId, difficulty },
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증

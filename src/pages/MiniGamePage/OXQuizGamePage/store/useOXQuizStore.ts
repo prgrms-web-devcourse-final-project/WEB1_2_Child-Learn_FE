@@ -7,7 +7,7 @@ export interface OXQuizState {
   currentIndex: number; // 진행 중인 퀴즈의 인덱스
   loading: boolean; // 로딩 상태
   result: QuizAnswerResponseDto | null; // 현재 퀴즈 결과
-  fetchQuizzes: (difficulty: 'EASY' | 'MEDIUM' | 'HARD') => Promise<void>; // 퀴즈 가져오기
+  fetchQuizzes: (memberId: number, difficulty: 'easy' | 'medium' | 'hard') => Promise<void>; // 퀴즈 가져오기
   submitAnswer: (oxQuizDataId: number, userAnswer: 'O' | 'X') => Promise<void>; // 정답 제출
   resetQuiz: () => void; // 퀴즈 상태 초기화
 }
@@ -18,10 +18,10 @@ const useOXQuizStore = create<OXQuizState>((set) => ({
   loading: false,
   result: null,
 
-  fetchQuizzes: async (difficulty) => {
+  fetchQuizzes: async (memberId, difficulty) => {
     set({ loading: true });
     try {
-      const quizzes = await oxQuizApi.startQuiz(difficulty);
+      const quizzes = await oxQuizApi.startQuiz(memberId, difficulty);
       set({ oxQuizzes: quizzes, currentIndex: 0, result: null });
     } catch (error) {
       console.error('Failed to fetch quizzes:', error);

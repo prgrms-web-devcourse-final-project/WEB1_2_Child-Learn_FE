@@ -1,17 +1,18 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useUserInfo } from '@/entities/User/lib/queries';
 import useOXQuizStore from './store/useOXQuizStore';
 
 // 난이도 매핑 함수
-const mapDifficulty = (paramDifficulty: 'begin' | 'mid' | 'adv'): 'EASY' | 'MEDIUM' | 'HARD' => {
+const mapDifficulty = (paramDifficulty: 'begin' | 'mid' | 'adv'): 'easy' | 'medium' | 'hard' => {
   switch (paramDifficulty) {
     case 'begin':
-      return 'EASY';
+      return 'easy';
     case 'mid':
-      return 'MEDIUM';
+      return 'medium';
     case 'adv':
-      return 'HARD';
+      return 'hard';
     default:
       throw new Error(`Invalid difficulty parameter: ${paramDifficulty}`);
   }
@@ -19,13 +20,14 @@ const mapDifficulty = (paramDifficulty: 'begin' | 'mid' | 'adv'): 'EASY' | 'MEDI
 
 const OXQuizGamePage = () => {
   const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
+  const { data: userInfo } = useUserInfo();
   const { oxQuizzes, currentIndex, fetchQuizzes, submitAnswer, result, loading } = useOXQuizStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (difficulty) {
       const mappedDifficulty = mapDifficulty(difficulty); // 매핑된 난이도
-      fetchQuizzes(mappedDifficulty); // 난이도에 따라 퀴즈 가져오기
+      fetchQuizzes(userInfo.id, mappedDifficulty); // 난이도에 따라 퀴즈 가져오기
     }
   }, [difficulty, fetchQuizzes]);
 
