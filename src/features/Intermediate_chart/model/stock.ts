@@ -66,7 +66,7 @@ export const useStockStore = create<StockStore>((set, get) => ({
       
       set({ currentStockPrices: formattedPrices, isLoading: false });
     } catch (error) {
-      set({ error: '주가 데이�� 로딩 실패', isLoading: false });
+      set({ error: '주가 데이터 로딩 실패', isLoading: false });
       console.error('Stock prices fetch error:', error);
     }
   },
