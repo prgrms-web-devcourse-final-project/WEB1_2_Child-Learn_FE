@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { Notification } from '@/features/notification/model/types';
+import { useDeleteNotification } from '@/features/notification/lib/queries';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -12,6 +13,17 @@ export const NotificationItem = ({
   onAccept,
   onReject,
 }: NotificationItemProps) => {
+  const { mutateAsync: deleteNotification } = useDeleteNotification();
+
+  // 삭제 핸들러 추가
+  const handleDelete = async () => {
+    try {
+      await deleteNotification(notification.notificationId);
+    } catch (error) {
+      console.error('알림 삭제 실패:', error);
+    }
+  };
+
   const renderMessage = () => {
     switch (notification.type) {
       case 'FRIEND_REQUEST':
@@ -52,6 +64,9 @@ export const NotificationItem = ({
 
   return (
     <ItemContainer>
+      <DeleteButton onClick={handleDelete}>
+        <img src="/img/close.png" alt="delete" width="16" height="16" />
+      </DeleteButton>
       <ProfileContainer>
         {notification.profileImageUrl ? (
           <ProfileImage src={notification.profileImageUrl} alt="profile" />
@@ -68,6 +83,7 @@ export const NotificationItem = ({
 };
 
 const ItemContainer = styled.div`
+  position: relative; // 추가
   display: flex;
   align-items: center;
   padding: 16px;
@@ -126,5 +142,25 @@ const ActionButton = styled.button`
 
   &:hover {
     background-color: #e0e0e0;
+  }
+`;
+
+const DeleteButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &:focus {
+    outline: none;
   }
 `;
