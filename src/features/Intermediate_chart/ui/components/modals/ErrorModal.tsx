@@ -106,7 +106,6 @@ export const TradeComponent: React.FC = () => {
       <div>
         <button onClick={() => handleTrade({ 
           stockId: 1,
-          tradePoint: 1000,
           type: 'buy'
         })}>
           매수
