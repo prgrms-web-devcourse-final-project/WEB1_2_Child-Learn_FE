@@ -1,21 +1,21 @@
 import React from 'react';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
-
 interface TradeResult {
-  tradeType: 'buy' | 'sell';
-  stockName: string;
-  price: number;
-  quantity: number;
-  totalPrice: number;
-}
-interface ResultModalProps {
+    success: boolean;
+    message: string;
+    tradeType: 'buy' | 'sell';
+    stockName: string;
+    price: number;
+    quantity: number;
+    totalPrice: number;
+  }
+  
+  export const ResultModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
     tradeResult: TradeResult | null;
     onConfirm: () => void;
-  }
-  
-  export const ResultModal: React.FC<ResultModalProps> = ({
+  }> = ({
     isOpen,
     tradeResult,
     onConfirm
@@ -27,7 +27,7 @@ interface ResultModalProps {
         <S.ModalOverlay />
         <S.ModalContainer>
           <S.ModalTitle>
-            주식 {tradeResult.tradeType === 'buy' ? '매수' : '매도'}주문
+            주식 {tradeResult.tradeType === 'buy' ? '매수' : '매도'} 결과
           </S.ModalTitle>
           <S.ModalContent>
             <S.ResultRow>
@@ -38,14 +38,14 @@ interface ResultModalProps {
               <S.ResultLabel>
                 {tradeResult.tradeType === 'buy' ? '매수가격' : '매도가격'}
               </S.ResultLabel>
-              <S.ResultValue>{tradeResult.price}원</S.ResultValue>  {/* 원래 매수가격(100원) */}
+              <S.ResultValue>{tradeResult.price.toLocaleString()}P</S.ResultValue>
             </S.ResultRow>
             <S.ResultRow>
               <S.ResultLabel>주문수량</S.ResultLabel>
               <S.ResultValue>{tradeResult.quantity}주</S.ResultValue>
             </S.ResultRow>
             <S.ResultRow>
-              <S.ResultLabel>포인트가격</S.ResultLabel>
+              <S.ResultLabel>총 거래금액</S.ResultLabel>
               <S.ResultValue>{tradeResult.totalPrice.toLocaleString()}P</S.ResultValue>
             </S.ResultRow>
             <S.ResultButtonGroup>
