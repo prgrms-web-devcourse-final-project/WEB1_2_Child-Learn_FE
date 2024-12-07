@@ -119,7 +119,7 @@ export const oxQuizApi = {
   // 퀴즈 시작 (난이도별 퀴즈 조회)
   startQuiz: async (difficulty: 'EASY' | 'MEDIUM' | 'HARD'): Promise<QuizResponseDto[]> => {
     const response = await baseApi.post(
-      `/ox-quiz/start`,
+      `/ox-quiz-progression/start`,
       { difficulty },
       {
         headers: {
@@ -139,7 +139,7 @@ export const oxQuizApi = {
     const body = { userAnswer };
 
     const response = await baseApi.post(
-      `/ox-quiz/${oxQuizDataId}/answer`,
+      `/ox-quiz-progression/${oxQuizDataId}`,
       body,
       {
         headers: {
@@ -150,20 +150,5 @@ export const oxQuizApi = {
     );
 
     return response.data; // QuizAnswerResponseDto 반환
-  },
-
-  // 사용자 진행 상태 확인
-  checkProgress: async (): Promise<{
-    completed: number; // 완료된 퀴즈 수
-    total: number; // 총 퀴즈 수
-    isQuizAvailable: boolean; // 퀴즈 시작 가능 여부
-  }> => {
-    const response = await baseApi.get(`/ox-quiz/progress`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
-      },
-    });
-
-    return response.data; // 진행 상태 정보 반환
   },
 };
