@@ -41,11 +41,7 @@ export const stockApi = {
   // WebSocket Methods
   connectWebSocket: (token: string) => {
     if (!ws || ws.readyState === WebSocket.CLOSED) {
-      // URL에 Authorization 파라미터로 토큰 전달
-      const wsUrl = new URL(`${process.env.WS_BASE_URL}/api/v1/advanced-invest`);
-      wsUrl.searchParams.append('Authorization', `Bearer ${token}`);
-      
-      ws = new WebSocket(wsUrl.toString());
+      ws = new WebSocket(`${process.env.WS_BASE_URL}/api/v1/advanced-invest?token=${token}`);
       
       ws.onopen = () => {
         console.log('WebSocket Connected');
@@ -58,14 +54,6 @@ export const stockApi = {
       ws.onerror = (error) => {
         console.error('WebSocket Error:', error);
       };
-
-      // 연결 실패 시 재연결 로직 추가
-      ws.addEventListener('close', (event) => {
-        if (event.code === 1006) {
-          console.log('Abnormal closure, attempting to reconnect...');
-          setTimeout(() => stockApi.connectWebSocket(token), 3000);
-        }
-      });
     }
     return ws;
   },
