@@ -17,6 +17,7 @@ const useOXQuizStore = create<OXQuizState>((set) => ({
   oxQuizzes: [],
   currentIndex: 0,
   completedQuizzes: 0, // 초기값 설정
+  currentKey: null,
   loading: false,
   result: null,
 
@@ -38,7 +39,7 @@ const useOXQuizStore = create<OXQuizState>((set) => ({
       const response = await oxQuizApi.submitAnswer(oxQuizDataId, userAnswer);
       set((state) => ({
         result: response,
-        currentIndex: state.currentIndex + 1,
+        currentIndex: state.currentIndex,
         completedQuizzes: response.isCorrect ? state.completedQuizzes + 1 : state.completedQuizzes, // 정답 맞춘 경우 증가
       }));
     } catch (error) {

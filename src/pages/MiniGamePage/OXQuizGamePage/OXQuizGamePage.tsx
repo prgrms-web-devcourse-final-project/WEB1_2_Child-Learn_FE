@@ -29,23 +29,35 @@ const OXQuizGamePage = () => {
       const mappedDifficulty = mapDifficulty(difficulty); // 매핑된 난이도
       fetchQuizzes(userInfo.id, mappedDifficulty); // 난이도에 따라 퀴즈 가져오기
     }
-  }, [difficulty, fetchQuizzes]);
+  }, [difficulty, fetchQuizzes, userInfo]);
 
   const currentQuiz = oxQuizzes[currentIndex];
 
   const handleAnswer = async (userAnswer: 'O' | 'X') => {
     if (currentQuiz) {
+      console.log(`현재 문제 번호: ${currentIndex + 1} / 총 문제 수: ${oxQuizzes.length}`);
       await submitAnswer(currentQuiz.oxQuizDataId, userAnswer);
-    }
+    } 
   };
 
   const handleNextQuestion = () => {
+    console.log(`다음 문제로 이동: 현재 문제 번호 ${currentIndex + 1}`);
+
     if (currentIndex + 1 >= oxQuizzes.length) {
+      console.log('결과 페이지로 이동');
       navigate(`/ox-quiz/result/${difficulty}`); // 결과 페이지로 이동
+      return;
+    } else {
+      // 다음 문제로 이동 (currentIndex 증가)
+      useOXQuizStore.setState((state) => ({
+        currentIndex: state.currentIndex + 1,
+        result: null, // 다음 문제로 넘어갈 때 결과 초기화
+      }));
     }
   };
 
   if (!currentQuiz) return <p>퀴즈가 없습니다.</p>;
+  console.log(`현재 문제: ${currentQuiz.question}, 인덱스: ${currentIndex + 1}`);
 
   return (
     <PageContainer>
@@ -67,7 +79,10 @@ const OXQuizGamePage = () => {
           <ResultEmoji>{result.isCorrect ? '😃' : '😢'}</ResultEmoji>
           <ResultText>{result.isCorrect ? '정답' : '오답'}</ResultText>
           <Explanation>{result.explanation}</Explanation>
-          <NextButton onClick={handleNextQuestion}>다음 문제 넘어가기</NextButton>
+           {/* 다음 문제로 이동 버튼은 답안 제출 후에만 표시 */}
+           {result !== null && (
+            <NextButton onClick={handleNextQuestion}>다음 문제 넘어가기</NextButton>
+          )}
         </ResultContainer>
       )}
     </PageContainer>
