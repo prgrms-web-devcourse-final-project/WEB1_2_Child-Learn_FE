@@ -139,12 +139,12 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
           currentStock.midStockId,
           0,
           'sell',
-          '1'
+          currentStock.midName
         );
         
         if ('earnedPoints' in result) {
           // 매도 수익/손실 포인트 처리
-          await baseApi.post('/wallet/invest', {
+          await baseApi.post('/wallet/stock', {
             memberId: parseInt(localStorage.getItem('userId') || '0'),
             transactionType: "MID",  // 중급 주식
             points: result.earnedPoints ?? 0,
@@ -234,13 +234,13 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
           <ActionButtons>
             <BuyButton 
               onClick={() => handleTradeClick('buy')} 
-              disabled={!tradeAvailability.isPossibleBuy}
+            //   disabled={!tradeAvailability.isPossibleBuy}
             >
               매수
             </BuyButton>
             <SellButton 
               onClick={() => handleTradeClick('sell')}
-              disabled={!tradeAvailability.isPossibleSell}
+            //   disabled={!tradeAvailability.isPossibleSell}
             >
               매도
             </SellButton>
@@ -266,7 +266,10 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
       <BuyModal
         isOpen={showBuyModal}
         onClose={() => setShowBuyModal(false)}
-        onConfirm={handleBuyTrade}
+        onConfirm={async (tradePoint: number) => {
+          const quantity = Math.floor(tradePoint / (currentStockPrices[0]?.avgPrice || 1));
+          await handleBuyTrade(currentStockPrices[0]?.avgPrice || 0, quantity);
+        }}
         stockId={currentStock?.midStockId || 0}
         stockName={currentStock?.midName || ''}
         initialPrice={currentStockPrices[0]?.avgPrice.toString() || ''}

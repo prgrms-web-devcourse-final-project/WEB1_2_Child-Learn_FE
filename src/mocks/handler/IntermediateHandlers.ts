@@ -1,391 +1,204 @@
-// mocks/handlers/intermediateHandlers.ts
-import { http, HttpResponse } from 'msw';
-import { MidStock } from '@/features/Intermediate_chart/model/types/stock';
+import { create } from 'zustand';
+import axios from 'axios';
+import { baseApi } from '@/shared/api/base';
+import { MidStock, StockPrice, TradeDetail, StockWithDetails, TradeAvailability, TradeResponse } from '@/features/Intermediate_chart/model/types/stock';
+import { http, HttpResponse } from 'msw'
 
-const mockStocks: MidStock[] = [
-{ midStockId: 1, midName: "Samsung" },
-{ midStockId: 2, midName: "Hyundai" },
-{ midStockId: 3, midName: "Kakao" }
-];
-
-// 백엔드 데이터 변환 함수
-const convertBackendData = (data: any[]) => {
- return data.map(item => ({
-   highPrice: Math.round(item.highPrice * 7),
-   lowPrice: Math.round(item.lowPrice * 7),
-   avgPrice: Math.round(item.avgPrice * 7),
-   priceDate: item.priceDate.split('T')[0]
- })).reverse();
-};
-
-const backendSamsungData = [
-   {
-       "highPrice": 104,
-       "lowPrice": 91,
-       "avgPrice": 97,
-       "priceDate": "2024-11-11T00:31:25.245316"
-   },
-   {
-       "highPrice": 101,
-       "lowPrice": 92,
-       "avgPrice": 96,
-       "priceDate": "2024-11-12T00:31:25.245316"
-   },
-   {
-       "highPrice": 103,
-       "lowPrice": 91,
-       "avgPrice": 97,
-       "priceDate": "2024-11-13T00:31:25.245316"
-   },
-   {
-       "highPrice": 108,
-       "lowPrice": 94,
-       "avgPrice": 101,
-       "priceDate": "2024-11-14T00:31:25.245316"
-   },
-   {
-       "highPrice": 108,
-       "lowPrice": 99,
-       "avgPrice": 103,
-       "priceDate": "2024-11-15T00:31:25.245316"
-   },
-   {
-       "highPrice": 107,
-       "lowPrice": 93,
-       "avgPrice": 100,
-       "priceDate": "2024-11-16T00:31:25.245316"
-   },
-   {
-       "highPrice": 113,
-       "lowPrice": 97,
-       "avgPrice": 105,
-       "priceDate": "2024-11-17T00:31:25.245316"
-   },
-   {
-       "highPrice": 107,
-       "lowPrice": 104,
-       "avgPrice": 105,
-       "priceDate": "2024-11-18T00:31:25.246315"
-   },
-   {
-       "highPrice": 114,
-       "lowPrice": 98,
-       "avgPrice": 106,
-       "priceDate": "2024-11-19T00:31:25.246315"
-   },
-   {
-       "highPrice": 109,
-       "lowPrice": 105,
-       "avgPrice": 107,
-       "priceDate": "2024-11-20T00:31:25.246315"
-   },
-   {
-       "highPrice": 108,
-       "lowPrice": 104,
-       "avgPrice": 106,
-       "priceDate": "2024-11-21T00:31:25.246315"
-   },
-   {
-       "highPrice": 114,
-       "lowPrice": 106,
-       "avgPrice": 110,
-       "priceDate": "2024-11-22T00:31:25.246315"
-   },
-   {
-       "highPrice": 121,
-       "lowPrice": 108,
-       "avgPrice": 114,
-       "priceDate": "2024-11-23T00:31:25.246315"
-   },
-   {
-       "highPrice": 113,
-       "lowPrice": 112,
-       "avgPrice": 112,
-       "priceDate": "2024-11-24T00:31:25.246315"
-   },
-   {
-       "highPrice": 123,
-       "lowPrice": 110,
-       "avgPrice": 116,
-       "priceDate": "2024-11-25T00:31:25.246315"
-   },
-   {
-       "highPrice": 124,
-       "lowPrice": 109,
-       "avgPrice": 116,
-       "priceDate": "2024-11-26T00:31:25.246315"
-   }
-];
-
-const samsungPrices = convertBackendData(backendSamsungData);
-
-const hyundaiPrices = [
-  {
-    "highPrice": 10062,
-    "lowPrice": 9794,
-    "avgPrice": 9928,
-    "priceDate": "2024-11-11T16:00:44.875599"
-},
-{
-    "highPrice": 10255,
-    "lowPrice": 9227,
-    "avgPrice": 9741,
-    "priceDate": "2024-11-12T16:00:44.875599"
-},
-{
-    "highPrice": 10744,
-    "lowPrice": 9174,
-    "avgPrice": 9959,
-    "priceDate": "2024-11-13T16:00:44.875599"
-},
-{
-    "highPrice": 10680,
-    "lowPrice": 9244,
-    "avgPrice": 9962,
-    "priceDate": "2024-11-14T16:00:44.875599"
-},
-{
-    "highPrice": 10751,
-    "lowPrice": 9250,
-    "avgPrice": 10000,
-    "priceDate": "2024-11-15T16:00:44.875599"
-},
-{
-    "highPrice": 10885,
-    "lowPrice": 9264,
-    "avgPrice": 10074,
-    "priceDate": "2024-11-16T16:00:44.875599"
-},
-{
-    "highPrice": 9949,
-    "lowPrice": 9272,
-    "avgPrice": 9610,
-    "priceDate": "2024-11-17T16:00:44.875599"
-},
-{
-    "highPrice": 10698,
-    "lowPrice": 9364,
-    "avgPrice": 10031,
-    "priceDate": "2024-11-18T16:00:44.875599"
-},
-{
-    "highPrice": 9879,
-    "lowPrice": 9771,
-    "avgPrice": 9825,
-    "priceDate": "2024-11-19T16:00:44.875599"
-},
-{
-    "highPrice": 9899,
-    "lowPrice": 9631,
-    "avgPrice": 9765,
-    "priceDate": "2024-11-20T16:00:44.876606"
-},
-{
-    "highPrice": 9898,
-    "lowPrice": 9841,
-    "avgPrice": 9869,
-    "priceDate": "2024-11-21T16:00:44.876606"
-},
-{
-    "highPrice": 9950,
-    "lowPrice": 9696,
-    "avgPrice": 9823,
-    "priceDate": "2024-11-22T16:00:44.876606"
-},
-{
-    "highPrice": 10401,
-    "lowPrice": 8814,
-    "avgPrice": 9607,
-    "priceDate": "2024-11-23T16:00:44.876606"
-},
-{
-    "highPrice": 10196,
-    "lowPrice": 8626,
-    "avgPrice": 9411,
-    "priceDate": "2024-11-24T16:00:44.876606"
-},
-{
-    "highPrice": 9740,
-    "lowPrice": 8852,
-    "avgPrice": 9296,
-    "priceDate": "2024-11-25T16:00:44.876606"
-},
-{
-    "highPrice": 9087,
-    "lowPrice": 8880,
-    "avgPrice": 8983,
-    "priceDate": "2024-11-26T16:00:44.876606"
+export interface WalletTransactionRequest {
+  memberId: number;
+  transactionType: 'BEGIN' | 'MID' | 'ADDVANCE';
+  points: number;
+  pointType: 'STOCK';
+  stockType: 'BEGIN' | 'MID' | 'ADDVANCE';
+  stockName: string;
 }
-];
 
-const kakaoCorpPrices = [  
-  {
-  "highPrice": 1125065,
-  "lowPrice": 945000,
-  "avgPrice": 1035032,
-  "priceDate": "2024-11-11T16:00:44.895646"
-},
-{
-  "highPrice": 1067433,
-  "lowPrice": 998541,
-  "avgPrice": 1032987,
-  "priceDate": "2024-11-12T16:00:44.895646"
-},
-{
-  "highPrice": 1076013,
-  "lowPrice": 949856,
-  "avgPrice": 1012934,
-  "priceDate": "2024-11-13T16:00:44.896653"
-},
-{
-  "highPrice": 1045461,
-  "lowPrice": 988078,
-  "avgPrice": 1016769,
-  "priceDate": "2024-11-14T16:00:44.896653"
-},
-{
-  "highPrice": 1036008,
-  "lowPrice": 1032932,
-  "avgPrice": 1034470,
-  "priceDate": "2024-11-15T16:00:44.896653"
-},
-{
-  "highPrice": 1137820,
-  "lowPrice": 965678,
-  "avgPrice": 1051749,
-  "priceDate": "2024-11-16T16:00:44.896653"
-},
-{
-  "highPrice": 1132439,
-  "lowPrice": 1075431,
-  "avgPrice": 1103935,
-  "priceDate": "2024-11-17T16:00:44.896653"
-},
-{
-  "highPrice": 1165490,
-  "lowPrice": 1057665,
-  "avgPrice": 1111577,
-  "priceDate": "2024-11-18T16:00:44.896653"
-},
-{
-  "highPrice": 1152515,
-  "lowPrice": 1152163,
-  "avgPrice": 1152339,
-  "priceDate": "2024-11-19T16:00:44.896653"
-},
-{
-  "highPrice": 1286501,
-  "lowPrice": 1123293,
-  "avgPrice": 1204897,
-  "priceDate": "2024-11-20T16:00:44.896653"
-},
-{
-  "highPrice": 1319476,
-  "lowPrice": 1150953,
-  "avgPrice": 1235214,
-  "priceDate": "2024-11-21T16:00:44.896653"
-},
-{
-  "highPrice": 1304596,
-  "lowPrice": 1115673,
-  "avgPrice": 1210134,
-  "priceDate": "2024-11-22T16:00:44.896653"
-},
-{
-  "highPrice": 1225795,
-  "lowPrice": 1120670,
-  "avgPrice": 1173232,
-  "priceDate": "2024-11-23T16:00:44.896653"
-},
-{
-  "highPrice": 1265084,
-  "lowPrice": 1195146,
-  "avgPrice": 1230115,
-  "priceDate": "2024-11-24T16:00:44.896653"
-},
-{
-  "highPrice": 1286722,
-  "lowPrice": 1276937,
-  "avgPrice": 1281829,
-  "priceDate": "2024-11-25T16:00:44.896653"
-},
-{
-  "highPrice": 1383226,
-  "lowPrice": 1187009,
-  "avgPrice": 1285117,
-  "priceDate": "2024-11-26T16:00:44.896653"
+interface WalletResponse {
+  currentPoints: number;
+  currentCoins: number;
 }
-];
+
+interface StockStore {
+  stocks: MidStock[];
+  currentStockPrices: StockPrice[];
+  tradeAvailability: TradeAvailability;
+  stockDetails: StockWithDetails[];
+  tradeDetails: TradeDetail[];
+  isLoading: boolean;
+  error: string | null;
+  fetchStocks: () => Promise<void>;
+  fetchStockPrices: (stockId: number) => Promise<void>;
+  fetchStockDetails: (stockId: number) => Promise<void>;
+  fetchAllStockDetails: () => Promise<void>;
+  checkTradeAvailability: (stockId: number) => Promise<void>;
+  executeTrade: (stockId: number, tradePoint: number, type: 'buy' | 'sell', stockName: string, memberId: number) => Promise<TradeResponse>;
+}
+
+export const useStockStore = create<StockStore>((set, get) => ({
+  stocks: [],
+  currentStockPrices: [],
+  tradeAvailability: {
+    isPossibleBuy: true,
+    isPossibleSell: true
+  },
+  stockDetails: [],
+  tradeDetails: [],
+  isLoading: true,
+  error: null,
+
+  fetchStocks: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await baseApi.get<MidStock[]>('/mid-stocks/list');
+      set({ 
+        stocks: response.data, 
+        isLoading: false 
+      });
+    } catch (error) {
+      set({ 
+        error: '주식 목록 로딩 실패', 
+        isLoading: false,
+        stocks: []
+      });
+      console.error('Failed to fetch stocks:', error);
+    }
+  },
+
+  fetchStockPrices: async (stockId: number) => {
+    try {
+      set({ isLoading: true });
+      const response = await baseApi.get<StockPrice[]>(`/mid-stocks/${stockId}/price`);
+      
+      const formattedPrices = response.data.map(price => ({
+        ...price,
+        priceDate: new Date(price.priceDate).toLocaleDateString()  // Date 객체를 직접 문자열로 변환
+      }));
+      
+      set({ currentStockPrices: formattedPrices, isLoading: false });
+    } catch (error) {
+      set({ error: '주가 데이터 로딩 실패', isLoading: false });
+      console.error('Stock prices fetch error:', error);
+    }
+  },
+
+  fetchStockDetails: async (stockId: number) => {
+    try {
+      set({ isLoading: true });
+      const response = await baseApi.get<StockWithDetails>(`/mid-stocks/${stockId}`);
+      set(state => ({
+        stockDetails: [...state.stockDetails.filter(s => s.midStockId !== stockId), response.data],
+        isLoading: false
+      }));
+    } catch (error) {
+      set({ error: '주식 상세 정보 로딩 실패', isLoading: false });
+    }
+  },
+
+  fetchAllStockDetails: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await baseApi.get<StockWithDetails[]>('/mid-stocks');
+      set({ stockDetails: response.data, isLoading: false });
+    } catch (error) {
+      set({ error: '전체 주식 상세 정보 로딩 실패', isLoading: false });
+    }
+  },
+
+  checkTradeAvailability: async (stockId: number) => {
+    try {
+      const response = await baseApi.get<TradeAvailability>(`/mid-stocks/${stockId}/available`);
+      set({ tradeAvailability: response.data });
+    } catch (error) {
+      console.error('Trade availability check error:', error);
+    }
+  },
+
+  executeTrade: async (stockId: number, tradePoint: number, type: 'buy' | 'sell', stockName: string, memberId: number) => {
+    try {
+      if (type === 'buy') {
+        // 매수 거래 실행
+        const tradeResponse = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
+          tradePoint: Number(tradePoint)
+        });
+
+        // 매수 성공 시 지갑 업데이트
+        try {
+          const walletResponse = await baseApi.post<WalletResponse>('/wallet/stock', {
+            memberId,
+            transactionType: 'MID',
+            points: -tradePoint,
+            pointType: 'STOCK',
+            stockType: 'MID',
+            stockName
+          });
+          
+          console.log('Wallet update response:', walletResponse.data);
+        } catch (walletError) {
+          console.error('Wallet update failed:', walletError);
+          throw new Error('지갑 업데이트에 실패했습니다.');
+        }
+
+        await get().checkTradeAvailability(stockId);
+        return tradeResponse.data;
+
+      } else {
+        // 매도 거래 실행
+        const tradeResponse = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
+
+        // 매도 성공 시 지갑 업데이트
+        if (tradeResponse.data.earnedPoints) {
+          try {
+            const walletResponse = await baseApi.post<WalletResponse>('/wallet/stock', {
+              memberId,
+              transactionType: 'MID',
+              points: tradeResponse.data.earnedPoints,
+              pointType: 'STOCK',
+              stockType: 'MID',
+              stockName
+            });
+            
+            console.log('Wallet update response:', walletResponse.data);
+          } catch (walletError) {
+            console.error('Wallet update failed:', walletError);
+            throw new Error('지갑 업데이트에 실패했습니다.');
+          }
+        }
+
+        await get().checkTradeAvailability(stockId);
+        return tradeResponse.data;
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error('매도할 주식을 찾을 수 없습니다.');
+        } else if (error.response?.status === 400) {
+          throw new Error(error.response.data.message || '거래 처리 중 오류가 발생했습니다.');
+        }
+      }
+      throw error;
+    }
+  }
+}));
 
 export const intermediateHandlers = [
- http.get('/api/v1/mid-stocks/list', () => {
-   console.log('MSW: Stock list request received');
-   console.log('Mock stocks available:', mockStocks);
-   return HttpResponse.json(mockStocks);
- }),
+  http.get('/mid-stocks/list', () => {
+    return HttpResponse.json([
+      {
+        midStockId: 1,
+        stockName: "테스트 주식",
+        currentPrice: 1000,
+        previousPrice: 900,
+        // 필요한 다른 필드들 추가
+      }
+    ])
+  }),
 
- http.get('/api/v1/mid-stocks/:id/price', ({ params }) => {
-   const stockId = Number(params.id);
-   console.log(`MSW: Price request received for stock ID: ${stockId}`);
-   
-   let prices;
-   let stockName = '';
-   
-   switch(stockId) {
-     case 1:
-       prices = samsungPrices;
-       stockName = 'Samsung';
-       break;
-     case 2:
-       prices = hyundaiPrices;
-       stockName = 'Hyundai';
-       break;
-     case 3:
-       prices = kakaoCorpPrices;
-       stockName = 'Kakao';
-       break;
-     default:
-       console.warn(`MSW: Unknown stock ID ${stockId}`);
-       return new HttpResponse(null, { status: 404 });
-   }
-   
-   console.log(`MSW: Returning ${stockName} prices:`, prices.length, 'data points');
-   return HttpResponse.json(prices);
- }),
+  http.get('/mid-stocks/:stockId/price', () => {
+    return HttpResponse.json([
+      // mock price data
+    ])
+  }),
 
- // 거래 가능 여부
- http.get('/api/v1/mid-stocks/:id/available', ({ params }) => {
-   const stockId = Number(params.id);
-   console.log('MSW: Checking availability for stockId:', stockId);
-   
-   return HttpResponse.json({
-     isPossibleBuy: true,
-     isPossibleSell: true
-   });
- }),
 
- // 매수 주문 핸들러
- http.post('/api/v1/mid-stocks/:id/buy', async ({ request }) => {
-   const body = await request.json() as { tradePoint: number };
-   console.log('Buy request:', body);
-   
-   if (body.tradePoint > 10000000) {
-     return new HttpResponse(null, { status: 400 });
-   }
-   
-   return HttpResponse.json({ 
-     warning: false,
-     tradePoint: body.tradePoint  // 실제 거래 금액 반환
-   });
- }),
-
- // 매도 주문 핸들러
- http.post('/api/v1/mid-stocks/:id/sell', async ({ request }) => {
-   const body = await request.json() as { tradePoint: number };
-   console.log('Sell request:', body);
-   
-   return HttpResponse.json({ 
-     earnedPoints: body.tradePoint  // 실제 거래 금액을 포인트로 반환
-   });
- })
-];
+  
+]
