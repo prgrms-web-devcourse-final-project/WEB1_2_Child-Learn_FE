@@ -1,11 +1,20 @@
 import styled from 'styled-components';
 import { SignUpForm } from '@/features/auth/signup/ui/SignUpForm';
+import { useNavigate } from 'react-router-dom'; // 추가
 
 export const SignUpPage = () => {
+  const navigate = useNavigate(); // 추가
+
+  const handleBack = () => {
+    navigate(-1); // 브라우저의 히스토리에서 한 단계 뒤로 이동
+  };
+
   return (
     <PageContainer>
       <ContentContainer>
-        <BackButton>
+        <BackButton onClick={handleBack}>
+          {' '}
+          {/* onClick 추가 */}
           <img src="/img/out.png" alt="뒤로가기" />
         </BackButton>
         <LogoContainer>

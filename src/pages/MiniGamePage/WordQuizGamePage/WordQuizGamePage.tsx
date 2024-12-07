@@ -1,151 +1,194 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import useWordQuizStore from './store/useWordQuizStore';
-
-const sharedWords = [
-  { word: '시장', explanation: '기업의 주식 발행 가격 총액을 뜻하는 단어', hint: '첫 글자는 "시"입니다.' },
-  { word: '경제', explanation: '사람들의 재화와 서비스 교환에 대한 활동을 뜻하는 단어', hint: '첫 글자는 "경"입니다.' },
-  { word: '투자', explanation: '미래의 이익을 기대하며 자산을 구매하는 활동', hint: '첫 글자는 "투"입니다.' },
-];
+import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
+import { WordQuizResponse } from '@/features/minigame/wordquizgame/types/wordTypes';
+import { Header } from '@/features/minigame/wordquizgame/ui/Header';
+import { Question } from '@/features/minigame/wordquizgame/ui/Question';
+import { Answer } from '@/features/minigame/wordquizgame/ui/Answer';
+import { Keyboard } from '@/features/minigame/wordquizgame/ui/KeyBoard';
+import { Popup } from '@/features/minigame/wordquizgame/ui/Popup';
+import { wordQuizApi } from '@/shared/api/minigames';
 
 const WordQuizGamePage = () => {
-  const { level } = useParams();
-  const { incrementCorrectAnswers, decrementLives, resetQuiz, lives } = useWordQuizStore();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
+  const {
+    incrementCorrectAnswers,
+    decrementLives,
+    setCurrentWord,
+    setLives,
+    setPhase,
+    resetQuiz,
+    lives,
+    currentWord,
+    currentPhase,
+  } = useWordQuizStore();
+
   const [timeLeft, setTimeLeft] = useState(60);
   const [userAnswer, setUserAnswer] = useState<string[]>([]);
   const [showHint, setShowHint] = useState(false);
   const [showCorrectPopup, setShowCorrectPopup] = useState(false);
   const [showIncorrectPopup, setShowIncorrectPopup] = useState(false);
+
   const navigate = useNavigate();
+  const correctWord = currentWord?.word || '';
 
-  const alphabet = '가나다라마바사아자차카타파하';
-  const correctWord = sharedWords[currentQuestionIndex]?.word;
+    // 키보드 글자 생성
+    const alphabet = '가나다라마바사아자차카타파하';
+    const keyboardLetters = useMemo(() => {
+      if (!correctWord) return [];
+      const uniqueLetters = new Set<string>(correctWord.split('')); // 정답 단어의 모든 글자를 추가
+      while (uniqueLetters.size < 12) {
+        const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
+        uniqueLetters.add(randomLetter);
+      }
+      return Array.from(uniqueLetters).sort(() => Math.random() - 0.5); // 랜덤 섞음
+    }, [correctWord]);  
 
-  // 키보드 글자 생성 (currentQuestionIndex 변경 시 새로 생성)
-  const keyboardLetters = useMemo(() => {
-    const uniqueLetters = new Set<string>(correctWord.split('')); // 정답 단어의 모든 글자를 먼저 추가
-    while (uniqueLetters.size < 10) {
-      const randomLetter = alphabet[Math.floor(Math.random() * alphabet.length)];
-      uniqueLetters.add(randomLetter);
-    }
-    return Array.from(uniqueLetters).sort(() => Math.random() - 0.5); // 랜덤으로 섞음
-  }, [currentQuestionIndex]); // currentQuestionIndex가 변경될 때마다 갱신
-
+  // 초기 데이터 로드
   useEffect(() => {
-    let initialTime = 60;
-    if (level === 'medium') initialTime = 40;
-    if (level === 'advanced') initialTime = 20;
+    const fetchQuizData = async () => {
+      if (!difficulty) return;
 
-    setTimeLeft(initialTime);
-  }, [level]);
+      const difficultyMapping: Record<'begin' | 'mid' | 'adv', 'EASY' | 'NORMAL' | 'HARD'> = {
+        begin: 'EASY',
+        mid: 'NORMAL',
+        adv: 'HARD',
+      };
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev === 1) {
-          clearInterval(timer);
-          navigate(`/word-quiz/result/${level}`); // 타이머 종료 시 결과 페이지로 이동
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      try {
+        const quiz = await wordQuizApi.getQuizByDifficulty(difficultyMapping[difficulty]);
+        setCurrentWord({
+          word: quiz.word,
+          explanation: quiz.explanation,
+          hint: quiz.hint,
+        });
+        setLives(quiz.remainLife || 3);
+        setPhase(quiz.currentPhase || 1);
+      } catch (error) {
+        console.error('Failed to fetch quiz data:', error);
+      }
+    };
+
+    fetchQuizData();
+  }, [difficulty, setCurrentWord, setLives, setPhase]);
+
+    // 타이머 초기화
+    useEffect(() => {
+      let initialTime = 60;
+      if (difficulty === 'mid') initialTime = 40;
+      if (difficulty === 'adv') initialTime = 20;
+      setTimeLeft(initialTime);
+    }, [difficulty]);
+
+    useEffect(() => {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev === 1) {
+            clearInterval(timer);
+            navigate(`/word-quiz/result/${difficulty}`); // 타이머 종료 시 결과 페이지로 이동
+          }
+          return prev - 1;
+        });
+      }, 1000);
   
-    return () => clearInterval(timer);
-  }, [navigate, level]);  
+      return () => clearInterval(timer);
+    }, [navigate, difficulty]);
 
-  const handleSelectLetter = (letter: string) => {
+  // 키보드 입력 처리
+  const handleSelectLetter = async (letter: string) => {
     if (!correctWord || userAnswer.length >= correctWord.length) return;
 
     const updatedAnswer = [...userAnswer, letter];
     setUserAnswer(updatedAnswer);
 
     if (updatedAnswer.join('') === correctWord) {
-      incrementCorrectAnswers(); // 맞춘 문제 증가
+      incrementCorrectAnswers();
       setShowCorrectPopup(true);
-    } else if (updatedAnswer.join('').length === correctWord.length) {
-      decrementLives(); // 목숨 감소
+
+        // 다음 문제 상태를 미리 갱신
+    try {
+      const response = await wordQuizApi.submitAnswer(true);
+      if (!response) {
+        console.error("Game may have ended unexpectedly.");
+        navigate(`/word-quiz/result/${difficulty}`);
+        return;
+      }
+
+      // 게임 종료 여부 확인
+     if (response.currentPhase === 3 && currentPhase === 3) {
+      navigate(`/word-quiz/result/${difficulty}`);
+      return;
+    }
+
+      // 다음 문제 상태 업데이트
+      setCurrentWord({
+        word: response.word,
+        explanation: response.explanation,
+        hint: response.hint,
+      });
+      setLives(response.remainLife);
+      setPhase(response.currentPhase);
+    } catch (error) {
+      console.error("Failed to fetch next question:", error);
+    }
+    } else if (updatedAnswer.length === correctWord.length) {
+      decrementLives();
       setShowIncorrectPopup(true);
+
+      try {
+        const response = await wordQuizApi.submitAnswer(false);
+  
+        // 게임 종료 상태 처리
+        if (!response) {
+          navigate(`/word-quiz/result/${difficulty}`);
+          return;
+        }
+  
+        // 다음 문제 상태 갱신
+        setCurrentWord({
+          word: response.word,
+          explanation: response.explanation,
+          hint: response.hint,
+        });
+        setLives(response.remainLife || 3);
+      } catch (error) {
+        console.error('Failed to submit incorrect answer:', error);
+      }
     }
   };
 
+  // 다음 문제로 이동
   const handleNextQuestion = () => {
     setShowCorrectPopup(false);
-    setShowIncorrectPopup(false);
     setUserAnswer([]);
-
-    if (currentQuestionIndex + 1 < sharedWords.length) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      navigate(`/word-quiz/result/${level}`); // 모든 문제를 다 풀었을 때 결과 페이지로 이동
-    }
   };
 
+  // 팝업 닫기 핸들러
+const handleCloseIncorrectPopup = () => {
+  setShowIncorrectPopup(false);
+  setUserAnswer([]); // 팝업 닫힐 때 답안 초기화
+};
+
+  // 목숨이 0이 되면 결과 페이지로 이동
   useEffect(() => {
     if (lives === 0) {
-      navigate(`/word-quiz/result/${level}`); // 목숨이 0이 되었을 때 결과 페이지로 이동
+      navigate(`/word-quiz/result/${difficulty}`);
+      resetQuiz();
     }
-  }, [lives, level, navigate]);
-
-  const handleCloseIncorrectPopup = () => {
-    setShowIncorrectPopup(false);
-    setUserAnswer([]);
-  };
-
-  const handleRestart = () => {
-    resetQuiz();
-    setCurrentQuestionIndex(0);
-    setTimeLeft(60);
-    setUserAnswer([]);
-  };
-
-  const currentWord = sharedWords[currentQuestionIndex];
+  }, [lives, difficulty, navigate, resetQuiz]);
 
   return (
     <PageContainer>
-      <Header>
-        <LivesContainer>
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Heart key={index} filled={index < lives} />
-          ))}
-        </LivesContainer>
-        <Timer>⏰ {timeLeft < 10 ? `0${timeLeft}` : timeLeft}</Timer>
-      </Header>
-      <QuestionContainer>
-        <QuestionText>{currentWord?.explanation}</QuestionText>
-      </QuestionContainer>
-      <AnswerContainer>
-        {Array.from({ length: currentWord?.word.length || 0 }).map((_, index) => (
-          <AnswerBox key={index}>{userAnswer[index] || ''}</AnswerBox>
-        ))}
-      </AnswerContainer>
-      <HintButton onClick={() => setShowHint(true)}>💡 힌트</HintButton>
-      {showHint && (
-        <Popup>
-          <p>{currentWord?.hint}</p>
-          <PopupButton onClick={() => setShowHint(false)}>알 것 같아요!</PopupButton>
-        </Popup>
-      )}
-      <Keyboard>
-        {keyboardLetters.map((letter, index) => (
-          <LetterButton key={index} onClick={() => handleSelectLetter(letter)}>
-            {letter}
-          </LetterButton>
-        ))}
-      </Keyboard>
-      {showCorrectPopup && (
-        <Popup>
-          <p>😃 정답!</p>
-          <PopupButton onClick={handleNextQuestion}>다음 문제</PopupButton>
-        </Popup>
-      )}
-      {showIncorrectPopup && (
-        <Popup>
-          <p>😢 오답!</p>
-          <PopupButton onClick={handleCloseIncorrectPopup}>다시 도전해보세요!</PopupButton>
-        </Popup>
-      )}
+       <BackgroundContainer />
+      <Header timeLeft={timeLeft} currentPhase={currentPhase} />
+      <Question question={currentWord?.explanation || ''} />
+      <Answer answerLength={correctWord.length} userAnswer={userAnswer} />
+      <HintIcon onClick={() => setShowHint(true)}>💡</HintIcon>
+      {showHint && <Popup message={currentWord?.hint || ''} buttonText="알 것 같아요!" onClose={() => setShowHint(false)} />}
+      {showCorrectPopup && <Popup message="😃 정답!" buttonText="다음 문제" onClose={handleNextQuestion} />}
+      {showIncorrectPopup && <Popup message="😢 오답!" buttonText="다시 도전해봐요!" onClose={handleCloseIncorrectPopup} />}
+      <Keyboard letters={keyboardLetters} onSelect={handleSelectLetter} />
     </PageContainer>
   );
 };
@@ -154,125 +197,41 @@ export default WordQuizGamePage;
 
 // Styled Components
 const PageContainer = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   width: 100%;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #fff;
   padding: 20px;
 `;
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 390px;
+const BackgroundContainer = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 630px;
+  background-color: #DEf9C4;
+  z-index: 0;
 `;
 
-const LivesContainer = styled.div`
-  display: flex;
-  gap: 5px;
-`;
-interface HeartProps {
-  filled: boolean;
-}
-
-const Heart = styled.div<HeartProps>`
-  width: 20px;
-  height: 20px;
-  background-color: ${(props) => (props.filled ? 'red' : 'lightgray')};
-  clip-path: polygon(50% 0%, 100% 38%, 81% 100%, 50% 81%, 19% 100%, 0% 38%);
-`;
-
-const Timer = styled.div`
-  font-size: 18px;
-  font-weight: bold;
-`;
-
-const QuestionContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-`;
-
-const QuestionText = styled.p`
-  margin-top: 10px;
-  font-size: 16px;
-  text-align: center;
-`;
-
-const AnswerContainer = styled.div`
-  display: flex;
-  gap: 10px;
-  margin: 20px 0;
-`;
-
-const AnswerBox = styled.div`
-  width: 40px;
-  height: 40px;
-  border: 2px solid #ccc;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 18px;
-  font-weight: bold;
-`;
-
-const HintButton = styled.button`
-  background-color: #50b498;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
+const HintIcon = styled.button`
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  transform: translateX(50%);
   cursor: pointer;
-`;
-
-const Keyboard = styled.div`
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 20px;
-`;
-
-const LetterButton = styled.button`
-  width: 50px;
-  height: 50px;
-  border: none;
-  background-color: #ddd;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #bbb;
+  background: none; /* 배경 제거 */
+  border: none; /* 테두리 제거 */
+  padding: 0; /* 기본 여백 제거 */
+  img {
+    width: 32px;
+    height: 32px;
   }
-`;
-
-const Popup = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  text-align: center;
-`;
-
-const PopupButton = styled.button`
-  margin-top: 10px;
-  padding: 10px 20px;
-  border: none;
-  background-color: #50b498;
-  color: white;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
+  &:focus {
+    outline: none; /* 버튼 클릭 시 나타나는 테두리 제거 */
+  }
 `;

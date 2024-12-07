@@ -1,11 +1,47 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { AuthInput } from '@/shared/ui/AuthInput/AuthInput';
 import { AuthButton } from '@/shared/ui/AuthButton/AuthButton';
+import { useLogin } from '../lib/queries';
+import { LoginRequest } from '../model/types';
+import showToast from '@/shared/lib/toast'; // 변경
 
 export const LoginForm = () => {
+  const navigate = useNavigate();
+  const { mutate, isPending } = useLogin();
+
+  const [formData, setFormData] = useState<LoginRequest>({
+    loginId: '',
+    pw: '',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // 로그인 로직
+    mutate(formData, {
+      onSuccess: () => {
+        showToast.success('로그인에 성공하였습니다!');
+        setTimeout(() => {
+          // 👈 약간의 딜레이 추가
+          navigate('/main');
+        }, 100);
+      },
+      onError: (error) => {
+        showToast.error(error.message || '로그인에 실패했습니다.'); // 👈 변경
+        setFormData((prev) => ({
+          ...prev,
+          pw: '',
+        }));
+      },
+    });
   };
 
   return (
@@ -13,6 +49,9 @@ export const LoginForm = () => {
       <InputGroup>
         <Label>아이디</Label>
         <AuthInput
+          name="loginId"
+          value={formData.loginId}
+          onChange={handleChange}
           width="80%"
           placeholder="아이디를 입력해주세요."
           autoComplete="username"
@@ -22,6 +61,9 @@ export const LoginForm = () => {
       <InputGroup>
         <Label>비밀번호</Label>
         <AuthInput
+          name="pw"
+          value={formData.pw}
+          onChange={handleChange}
           width="80%"
           type="password"
           placeholder="비밀번호를 입력해주세요."
@@ -29,7 +71,9 @@ export const LoginForm = () => {
         />
       </InputGroup>
 
-      <AuthButton type="submit">로그인</AuthButton>
+      <AuthButton type="submit" disabled={isPending}>
+        {isPending ? '로그인 중...' : '로그인'}
+      </AuthButton>
 
       <OrText>또는 계정 연동</OrText>
 
@@ -47,10 +91,10 @@ export const LoginForm = () => {
 
       <SignupContainer>
         <span>아직 계정이 없으신가요?</span>
-        <SignupLink href="/auth/register">회원가입하기</SignupLink>
+        <SignupLink href="/auth/signup">회원가입하기</SignupLink>
       </SignupContainer>
 
-      <FindAccountLink href="/auth/register">
+      <FindAccountLink href="/auth/find-id">
         계정이 기억나지 않아요
       </FindAccountLink>
     </Form>
