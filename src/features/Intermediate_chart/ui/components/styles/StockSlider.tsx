@@ -268,7 +268,10 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
       <BuyModal
         isOpen={showBuyModal}
         onClose={() => setShowBuyModal(false)}
-        onConfirm={handleBuyTrade}
+        onConfirm={async (tradePoint: number) => {
+          const quantity = Math.floor(tradePoint / (currentStockPrices[0]?.avgPrice || 1));
+          await handleBuyTrade(currentStockPrices[0]?.avgPrice || 0, quantity);
+        }}
         stockId={currentStock?.midStockId || 0}
         stockName={currentStock?.midName || ''}
         initialPrice={currentStockPrices[0]?.avgPrice.toString() || ''}
