@@ -105,7 +105,7 @@ export class StockWebSocket {
 
       try {
         const url = new URL(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`);
-        url.searchParams.append('authorization', `Bearer ${token}`);
+        url.searchParams.append('Authorization', `Bearer ${token}`);
 
         console.log('Connecting to WebSocket:', url.toString());
         this.ws = new WebSocket(url.toString());
@@ -203,7 +203,7 @@ export class StockWebSocket {
   public async sendMessage(type: WebSocketActions, data?: any) {
     try {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        console.log('WebSocket not connected, attempting to connect...');
+        console.log('WebSocket not connected, attempting to connect…');
         await this.connect();
       }
 
