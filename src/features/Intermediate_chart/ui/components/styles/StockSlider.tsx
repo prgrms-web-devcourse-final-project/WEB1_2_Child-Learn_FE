@@ -81,8 +81,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         currentStock.midStockId,
         tradePoint,
         'buy',
-        buyQuantity.toString(),
-        parseInt(localStorage.getItem('userId') || '0')
+        buyQuantity.toString()
       );  
 
       if ('warning' in result) {
@@ -140,8 +139,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
           currentStock.midStockId,
           0,
           'sell',
-          currentStock.midName,
-          parseInt(localStorage.getItem('userId') || '0')
+          currentStock.midName
         );
         
         if ('earnedPoints' in result) {
