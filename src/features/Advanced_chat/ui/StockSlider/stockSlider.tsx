@@ -117,10 +117,10 @@ export const StockSlider: React.FC = () => {
   });
 
   useEffect(() => {
-    const ws = StockWebSocket.initializeWebSocket();
+    const ws = new StockWebSocket();
     setWebSocket(ws);
     
-    const initializeWebSocket = async () => {
+    const connectWebSocket = async () => {
       try {
         await ws.connect();
         
@@ -153,14 +153,14 @@ export const StockSlider: React.FC = () => {
           }
         };
 
-        ws.onMessage(messageHandler);
+        ws.onMessage(messageHandler as any);
         ws.sendMessage(WebSocketActions.REFERENCE_DATA, { gameId });
       } catch (error) {
         console.error('Failed to initialize WebSocket:', error);
       }
     };
 
-    initializeWebSocket();
+    connectWebSocket();
 
     return () => {
       ws.disconnect();
