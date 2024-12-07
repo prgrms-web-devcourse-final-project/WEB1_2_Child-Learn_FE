@@ -5,7 +5,7 @@ export interface OXQuiz {
   content: string; // 질문 내용
   isCorrect: boolean | null; // 정답 여부 (null은 아직 답하지 않음)
   priority: 'LOW' | 'HIGH'; // 우선순위
-  level: 'beginner' | 'medium' | 'advanced'; // 난이도
+  difficulty: 'begin' | 'mid' | 'adv'; // 난이도
 }
 
 interface OXQuizState {

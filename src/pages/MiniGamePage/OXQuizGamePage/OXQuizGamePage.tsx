@@ -6,7 +6,7 @@ import useOXQuizStore from './store/useOXQuizStore';
 import { useUserStore } from '../../../app/providers/state/zustand/userStore';
 
 const OXQuizGamePage = () => {
-  const { level } = useParams<{ level: 'beginner' | 'medium' | 'advanced' }>(); // level 파라미터
+  const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>(); // level 파라미터
   const { oxQuizzes, submitAnswer, fetchInitialQuizzes } = useOXQuizStore();
   const { addPoints } = useUserStore();
   const navigate = useNavigate();
@@ -18,36 +18,36 @@ const OXQuizGamePage = () => {
 
   // 레벨별 퀴즈 3개를 초기화
   useEffect(() => {
-    if (level) {
+    if (difficulty) {
       // level에 따라 퀴즈 데이터를 준비합니다.
       const quizzesForLevel: OXQuiz[] = [
         {
           id: 1,
-          content: `이것은 ${level} 레벨의 질문 1입니다.`,
+          content: `이것은 ${difficulty} 레벨의 질문 1입니다.`,
           isCorrect: null,
           priority: 'HIGH',
-          level,
+          difficulty,
         },
         {
           id: 2,
-          content: `이것은 ${level} 레벨의 질문 2입니다.`,
+          content: `이것은 ${difficulty} 레벨의 질문 2입니다.`,
           isCorrect: null,
           priority: 'LOW',
-          level,
+          difficulty,
         },
         {
           id: 3,
-          content: `이것은 ${level} 레벨의 질문 3입니다.`,
+          content: `이것은 ${difficulty} 레벨의 질문 3입니다.`,
           isCorrect: null,
           priority: 'HIGH',
-          level,
+          difficulty,
         },
       ];
 
       // 초기화
       fetchInitialQuizzes(quizzesForLevel);
     }
-  }, [level, fetchInitialQuizzes]);
+  }, [difficulty, fetchInitialQuizzes]);
 
   const handleAnswer = (isCorrect: boolean) => {
     if (!currentQuiz) return;
@@ -67,7 +67,7 @@ const OXQuizGamePage = () => {
       // 3개의 문제까지만 진행
       setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      navigate(`/ox-quiz/result/${level}`); // 모든 문제를 다 풀었을 때 결과 페이지로 이동
+      navigate(`/ox-quiz/result/${difficulty}`); // 모든 문제를 다 풀었을 때 결과 페이지로 이동
     }
   };
 

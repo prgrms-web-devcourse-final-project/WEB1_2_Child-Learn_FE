@@ -14,6 +14,7 @@ const HIDDEN_HEADER_PATHS = [
   /^\/flip-card\/[^/]+$/,
   /^\/word-quiz\/[^/]+$/,
   /^\/word-quiz\/result\/[^/]+$/,
+  /^\/ox-quiz\/[^/]+$/,
   '/exchange',
   '/fast-navigation',
   '/avatar',
@@ -29,6 +30,7 @@ const HIDDEN_GNB_PATHS = [
   /^\/flip-card\/[^/]+$/,
   /^\/word-quiz\/[^/]+$/,
   /^\/word-quiz\/result\/[^/]+$/,
+  /^\/ox-quiz\/[^/]+$/,
   '/exchange',
   '/fast-navigation',
   '/avatar',
@@ -41,6 +43,7 @@ const HIDDEN_GNB_PATHS = [
 const SHOW_BACK_BUTTON_PATHS = [
   /^\/flip-card\/[^/]+$/,
   /^\/word-quiz\/[^/]+$/,
+  /^\/ox-quiz\/[^/]+$/,
   '/exchange',
   '/avatar',
   /^\/avatar\/details\/[^/]+\/[^/]+$/,
