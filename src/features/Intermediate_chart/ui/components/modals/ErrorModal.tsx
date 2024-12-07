@@ -76,11 +76,13 @@ export const TradeComponent: React.FC = () => {
   
     const handleTrade = async (tradeData: TradeData) => {
       try {
-        const { stockId, tradePoint = 0, type } = tradeData;
-        const result = await executeTrade(stockId, tradePoint, type);
+        const result = await executeTrade(
+          tradeData.stockId, 
+          tradeData.tradePoint || 0, 
+          tradeData.type
+        );
         
-        // 성공 처리
-        if (type === 'sell' && 'earnedPoints' in result) {
+        if (tradeData.type === 'sell' && 'earnedPoints' in result) {
           console.log(`Earned points: ${result.earnedPoints}`);
         }
       } catch (error: any) {
@@ -102,14 +104,14 @@ export const TradeComponent: React.FC = () => {
     return (
       <div>
         <button onClick={() => handleTrade({ 
-          stockId: 1, // 실제 stockId 값
-          tradePoint: 1000, // 매수할 때만 필요
+          stockId: 1,
+          tradePoint: 1000,
           type: 'buy'
         })}>
           매수
         </button>
         <button onClick={() => handleTrade({ 
-          stockId: 1, // 실제 stockId 값
+          stockId: 1,
           type: 'sell'
         })}>
           매도
