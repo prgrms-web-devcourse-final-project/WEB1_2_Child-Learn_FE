@@ -31,6 +31,11 @@ export interface FriendListResponse {
   empty: boolean;
 }
 
+interface RespondToFriendRequestParams {
+  requestId: number;
+  status: 'ACCEPT' | 'REJECT';
+}
+
 export const friendApi = {
   getFriendsList: async (
     page: number = 0,
@@ -49,5 +54,29 @@ export const friendApi = {
 
   removeFriend: async (friendId: number): Promise<void> => {
     await baseApi.delete(`${API_CONFIG.endpoints.friendRemove}/${friendId}`);
-  }
+  },
+
+  // 친구 요청 수락/거절
+  respondToFriendRequest: async ({
+    requestId,
+    status,
+  }: RespondToFriendRequestParams): Promise<void> => {
+    await baseApi.post(`${API_CONFIG.endpoints.friendRequest}/${requestId}`, {
+      status: status,
+    });
+  },
+
+  // 보낸 친구 요청 목록 조회
+  getSentFriendRequests: async () => {
+    const response = await baseApi.get(API_CONFIG.endpoints.friendRequestSent);
+    return response.data;
+  },
+
+  // 받은 친구 요청 목록 조회
+  getReceivedFriendRequests: async () => {
+    const response = await baseApi.get(
+      API_CONFIG.endpoints.friendRequestReceived
+    );
+    return response.data;
+  },
 };

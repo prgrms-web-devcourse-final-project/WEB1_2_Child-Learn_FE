@@ -15,7 +15,7 @@ interface FriendListResponse {
 
 export const FRIEND_KEYS = {
   all: ['friends'] as const,
-  list: (page: number, searchKeyword?: string) => 
+  list: (page: number, searchKeyword?: string) =>
     [...FRIEND_KEYS.all, 'list', page, searchKeyword] as const,
 };
 
@@ -39,6 +39,27 @@ export const useRemoveFriend = () => {
     },
     onError: () => {
       showToast.error('친구 삭제에 실패했습니다.');
-    }
+    },
+  });
+};
+
+// 새로 추가하는 친구 요청 응답 hook
+export const useRespondToFriendRequest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: friendApi.respondToFriendRequest,
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: FRIEND_KEYS.all });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      showToast.success(
+        status === 'ACCEPT'
+          ? '친구 요청을 수락했습니다.'
+          : '친구 요청을 거절했습니다.'
+      );
+    },
+    onError: () => {
+      showToast.error('친구 요청 처리에 실패했습니다.');
+    },
   });
 };
