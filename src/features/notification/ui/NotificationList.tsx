@@ -1,8 +1,8 @@
-// features/notification/ui/NotificationList.tsx
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { NotificationItem } from '@/features/notification/ui/NotificationItem';
 import { notificationApi } from '@/features/notification/api/notificationApi';
+import { useRespondToFriendRequest } from '@/features/freind/lib/quries';
 
 export const NotificationList = () => {
   const { data, isLoading } = useQuery({
@@ -10,10 +10,14 @@ export const NotificationList = () => {
     queryFn: () => notificationApi.getNotifications(),
   });
 
+  const respondToRequest = useRespondToFriendRequest();
+
   const handleAccept = async (notificationId: number) => {
     try {
-      // TODO: 친구 수락 API 호출
-      console.log('수락:', notificationId);
+      await respondToRequest.mutateAsync({
+        requestId: notificationId,
+        status: 'ACCEPT',
+      });
     } catch (error) {
       console.error('친구 수락 실패:', error);
     }
@@ -21,8 +25,10 @@ export const NotificationList = () => {
 
   const handleReject = async (notificationId: number) => {
     try {
-      // TODO: 친구 거절 API 호출
-      console.log('거절:', notificationId);
+      await respondToRequest.mutateAsync({
+        requestId: notificationId,
+        status: 'REJECT',
+      });
     } catch (error) {
       console.error('친구 거절 실패:', error);
     }
