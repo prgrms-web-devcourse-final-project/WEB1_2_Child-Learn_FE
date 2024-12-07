@@ -3,14 +3,6 @@ import axios from 'axios';
 import { baseApi } from '@/shared/api/base';
 import { MidStock, StockPrice, TradeDetail, StockWithDetails, TradeAvailability, TradeResponse } from '@/features/Intermediate_chart/model/types/stock';
 
-export interface WalletTransactionRequest {
- transactionType: 'BEGIN' | 'MID' | 'ADDVANCE';
- points: number;
- pointType: 'STOCK';
- stockType: 'BEGIN' | 'MID' | 'ADDVANCE';
- stockName: string;
-}
-
 interface WalletResponse {
  currentPoints: number;
  currentCoins: number;
@@ -30,13 +22,14 @@ interface StockStore {
  fetchAllStockDetails: () => Promise<void>;
  checkTradeAvailability: (stockId: number) => Promise<void>;
  executeTrade: (stockId: number, tradePoint: number, type: 'buy' | 'sell', stockName: string) => Promise<TradeResponse>;
+ fetchCurrentPoints: () => Promise<number>;
 }
 
 export const useStockStore = create<StockStore>((set, get) => ({
  stocks: [],
  currentStockPrices: [],
  tradeAvailability: {
-   isPossibleBuy: false,
+   isPossibleBuy: true,
    isPossibleSell: true
  },
  stockDetails: [],
@@ -61,7 +54,7 @@ export const useStockStore = create<StockStore>((set, get) => ({
      set({ 
        error: '주식 목록 로딩 실패', 
        isLoading: false,
-       stocks: [] // 실패 시 빈 배열로 초기화
+       stocks: []
      });
      console.error('Failed to fetch stocks:', error);
    }
@@ -93,7 +86,7 @@ export const useStockStore = create<StockStore>((set, get) => ({
        isLoading: false
      }));
    } catch (error) {
-     set({ error: '주식 상세 정보 로딩 ���패', isLoading: false });
+     set({ error: '주식 상세 정보 로딩 실패', isLoading: false });
    }
  },
 
@@ -109,61 +102,34 @@ export const useStockStore = create<StockStore>((set, get) => ({
 
  checkTradeAvailability: async (stockId: number) => {
    try {
-     const response = await baseApi.get<TradeAvailability>(
-       `/mid-stocks/${stockId}/available`
-     );
+     const response = await baseApi.get<TradeAvailability>(`/mid-stocks/${stockId}/available`);
      set({ tradeAvailability: {
        isPossibleBuy: true,
-       isPossibleSell: response.data.isPossibleSell
+       isPossibleSell: true  
      }});
+     console.log('Trade availability response:', response.data);
    } catch (error) {
      console.error('Trade availability check error:', error);
+     set({ tradeAvailability: {
+       isPossibleBuy: true,
+       isPossibleSell: true
+     }});
    }
  },
 
  executeTrade: async (stockId: number, tradePoint: number, type: 'buy' | 'sell', stockName: string) => {
    try {
      if (type === 'buy') {
-       // 1. 매수 거래 실행
+       // 매수 실행
        const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
          tradePoint: Number(tradePoint)
        });
 
-       // 2. 매수 성공 시 지갑 업데이트
-       try {
-         await baseApi.post<WalletResponse>('/wallet/stock', {
-           transactionType: 'MID',
-           points: tradePoint,
-           pointType: 'STOCK',
-           stockType: 'MID',
-           stockName: stockName
-         });
-       } catch (walletError) {
-         console.error('Wallet update failed:', walletError);
-         // 지갑 업데이트 실패해도 거래는 성공 처리
-       }
-
        await get().checkTradeAvailability(stockId);
        return response.data;
-
      } else {
-       // 1. 매도 거래 실행
+       // 매도 실행
        const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
-
-       // 2. 매도 성공하고 earnedPoints가 있으면 지갑 업데이트
-       if (response.data.earnedPoints) {
-         try {
-           await baseApi.post<WalletResponse>('/wallet/stock', {
-             transactionType: 'MID',
-             points: response.data.earnedPoints,
-             pointType: 'STOCK',
-             stockType: 'MID',
-             stockName: stockName
-           });
-         } catch (walletError) {
-           console.error('Wallet update failed:', walletError);
-         }
-       }
 
        await get().checkTradeAvailability(stockId);
        return response.data;
@@ -173,9 +139,22 @@ export const useStockStore = create<StockStore>((set, get) => ({
        if (error.response?.status === 404) {
          throw new Error('매도할 주식을 찾을 수 없습니다.');
        } else if (error.response?.status === 400) {
-         throw new Error(error.response.data.message || '거래 처리 중 오류가 발생했습니다.');
+         const errorMessage = error.response.data.message || '거래 처리 중 오류가 발생했습니다.';
+         console.error('거래 실패:', errorMessage);
+         throw new Error(errorMessage);
        }
      }
+     console.error('예상치 못한 오류:', error);
+     throw error;
+   }
+ },
+
+ fetchCurrentPoints: async () => {
+   try {
+     const response = await baseApi.get<WalletResponse>('/wallet/current');
+     return response.data.currentPoints;
+   } catch (error) {
+     console.error('포인트 조회 실패:', error);
      throw error;
    }
  }
