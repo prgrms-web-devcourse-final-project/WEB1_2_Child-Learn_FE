@@ -119,11 +119,13 @@ export class StockWebSocket {
       this.connectionStatus = 'connecting';
 
       try {
-        const url = new URL(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`);
-        url.searchParams.append('authorization', `Bearer ${token}`);
-
-        console.log('Connecting to WebSocket:', url.toString());
-        this.ws = new WebSocket(url.toString());
+        const headers = {
+          'Authorization': `Bearer ${token}`
+        };
+        
+        this.ws = new WebSocket(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`, {
+          headers: headers
+        });
 
         const timeout = setTimeout(() => {
           reject(new Error('Connection timeout'));
@@ -144,7 +146,7 @@ export class StockWebSocket {
         this.ws.onerror = (error) => {
           clearTimeout(timeout);
           this.connectionStatus = 'disconnected';
-          console.error('WebSocket error:', error);
+          console.error('WebSocket connection error:', error);
           reject(error);
           this.connectPromise = null;
           this.handleReconnect();
@@ -152,6 +154,7 @@ export class StockWebSocket {
 
       } catch (error) {
         this.connectionStatus = 'disconnected';
+        console.error('WebSocket connection failed:', error);
         reject(error);
         this.connectPromise = null;
         this.handleReconnect();
@@ -200,7 +203,7 @@ export class StockWebSocket {
     }
 
     const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
-    console.log(`Reconnecting in ${timeout}ms (attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
+    console.log(`Attempting reconnection ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts} in ${timeout}ms`);
     
     await new Promise(resolve => setTimeout(resolve, timeout));
     
@@ -250,7 +253,7 @@ export class StockWebSocket {
       1005: "상태 코드 없음",
       1006: "비정상 종료",
       1007: "잘못된 데이터 형식",
-      1008: "정책 위반",
+      1008: "정 위반",
       1009: "메시지 크기 초과",
       1010: "필수 확장 기능 누락",
       1011: "내부 서버 오류",
