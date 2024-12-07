@@ -114,18 +114,22 @@ export const useStockStore = create<StockStore>((set, get) => ({
         const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
           tradePoint: Number(tradePoint)
         });
-        
         await get().checkTradeAvailability(stockId);
         return response.data;
       } else {
+        // tradePoint 제거
         const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
         await get().checkTradeAvailability(stockId);
         return response.data;
       }
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 400) {
-        const errorMessage = error.response.data.message || '거래 처리 중 오류가 발생했습니다.';
-        throw new Error(errorMessage);
+      // 에러 처리 개선
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error('매도할 주식을 찾을 수 없습니다.');
+        } else if (error.response?.status === 400) {
+          throw new Error(error.response.data.message || '거래 처리 중 오류가 발생했습니다.');
+        }
       }
       throw error;
     }

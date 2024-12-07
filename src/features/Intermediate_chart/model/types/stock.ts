@@ -34,9 +34,7 @@ export interface TradeResponse {
 }
 
 export interface TradeResult {
-  tradeType: 'buy' | 'sell';
-  stockName: string;
-  quantity: number;
-  totalPrice: number;
+  earnedPoints?: number;  // 매도 응답
+  warning?: boolean;      // 매수 응답
 }
 
