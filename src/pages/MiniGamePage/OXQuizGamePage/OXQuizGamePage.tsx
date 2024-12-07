@@ -3,14 +3,29 @@ import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import useOXQuizStore from './store/useOXQuizStore';
 
+// 난이도 매핑 함수
+const mapDifficulty = (paramDifficulty: 'begin' | 'mid' | 'adv'): 'EASY' | 'MEDIUM' | 'HARD' => {
+  switch (paramDifficulty) {
+    case 'begin':
+      return 'EASY';
+    case 'mid':
+      return 'MEDIUM';
+    case 'adv':
+      return 'HARD';
+    default:
+      throw new Error(`Invalid difficulty parameter: ${paramDifficulty}`);
+  }
+};
+
 const OXQuizGamePage = () => {
-  const { difficulty } = useParams<{ difficulty: 'EASY' | 'MEDIUM' | 'HARD' }>();
+  const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
   const { oxQuizzes, currentIndex, fetchQuizzes, submitAnswer, result, loading } = useOXQuizStore();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (difficulty) {
-      fetchQuizzes(difficulty); // 난이도에 따라 퀴즈 가져오기
+      const mappedDifficulty = mapDifficulty(difficulty); // 매핑된 난이도
+      fetchQuizzes(mappedDifficulty); // 난이도에 따라 퀴즈 가져오기
     }
   }, [difficulty, fetchQuizzes]);
 
