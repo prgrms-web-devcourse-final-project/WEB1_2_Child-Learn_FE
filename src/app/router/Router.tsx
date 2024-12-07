@@ -10,6 +10,7 @@ import FlipCardGamePage from '@/pages/MiniGamePage/FlipCardGamePage/FlipCardGame
 import WordQuizGamePage from '@/pages/MiniGamePage/WordQuizGamePage/WordQuizGamePage';
 import WordQuizResultPage from '@/pages/MiniGamePage/WordQuizGamePage/WordQuizResultPage';
 import OXQuizGamePage from '@/pages/MiniGamePage/OXQuizGamePage/OXQuizGamePage';
+import OXQuizResultPage from '@/pages/MiniGamePage/OXQuizGamePage/OXQuizResultPage';
 import AvatarPage from '@/pages/AvatarPage/AvatarPage';
 import AvatarDetailPage from '@/pages/AvatarPage/AvatarDetailPage';
 import ExchangePage from '@/pages/exchangePage/ExchangePage';
@@ -115,6 +116,14 @@ export default function Router() {
         element={
           <PrivateRoute>
             <OXQuizGamePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/ox-quiz/result/:difficulty"
+        element={
+          <PrivateRoute>
+            <OXQuizResultPage />
           </PrivateRoute>
         }
       />

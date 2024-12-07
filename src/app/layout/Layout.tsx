@@ -31,6 +31,7 @@ const HIDDEN_GNB_PATHS = [
   /^\/word-quiz\/[^/]+$/,
   /^\/word-quiz\/result\/[^/]+$/,
   /^\/ox-quiz\/[^/]+$/,
+  /^\/ox-quiz\/result\/[^/]+$/,
   '/exchange',
   '/fast-navigation',
   '/avatar',
@@ -50,7 +51,7 @@ const SHOW_BACK_BUTTON_PATHS = [
 ];
 
 // BackButton을 숨길 페이지 경로 추가
-const HIDDEN_BACK_BUTTON_PATHS = [/^\/word-quiz\/result\/[^/]+$/];
+const HIDDEN_BACK_BUTTON_PATHS = [/^\/word-quiz\/result\/[^/]+$/, /^\/ox-quiz\/result\/[^/]+$/,];
 
 // 정확한 경로 매칭을 위한 함수
 const isExactPath = (currentPath: string, targetPath: string | RegExp) => {
