@@ -25,7 +25,7 @@ const OXQuizResultPage = () => {
       try {
         const transaction: MiniGameTransaction = {
           memberId: userInfo.id,
-          gameType: 'WORD_QUIZ', // 고정 값
+          gameType: 'OX_QUIZ', 
           points: totalPoints,
           pointType: 'GAME', // 고정 값
           isWin: totalPoints > 0, // 포인트가 0보다 크면 승리
