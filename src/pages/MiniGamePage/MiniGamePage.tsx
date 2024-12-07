@@ -6,6 +6,8 @@ import { walletApi } from '@/shared/api/wallets';
 import { MiniGameTransaction, PointTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
 import { useLotteryStore } from '@/app/providers/state/zustand/useLotteryStore';
+import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
+import { AvatarCard } from '@/features/minigame/ui/AvatarCard';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -203,28 +205,15 @@ const MiniGamePage = () => {
           <p>안녕하세요, {userInfo?.username || '사용자'} 님!</p>
           <h1>오늘은 어떤 게임을 즐겨보시겠어요?</h1>
         </GreetingContainer>
-        <PointsContainer>
-          <img src="/icons/coins 1.png" alt="Coin Icon" />
-          {userInfo?.currentPoints} P
-        </PointsContainer>
+        <PointBadge />
       </Header>
 
       {/* 메인 콘텐츠 */}
       <MainContent>
+        <AvatarCard
+        onClick={() => navigate('/avatar')}
+        />
         <TopSection>
-          <div>
-            <p>획득한 포인트로</p>
-            <p>나를 꾸며볼까요?</p>
-            <StyledLink to="/avatar">내 캐릭터 꾸미러 가기</StyledLink>
-          </div>
-        </TopSection>
-
-        <TopSection>
-        <div>
-    <p>오늘 미니게임으로</p>
-    <p>획득한 포인트</p>
-    <h2>{todayPoints} Points</h2>
-  </div>
           <StyledLink to="/exchange">환전하러 가기</StyledLink>
         </TopSection>
 
@@ -358,23 +347,19 @@ const MiniGamePage = () => {
 export default MiniGamePage;
 
 const PageContainer = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #fff;
+  height: 100%;
+  background-color: #fff; // 상단 흰색
 `;
 
 const BackgroundContainer = styled.div`
   position: absolute;
-  bottom: 0;
   left: 0;
   right: 0;
-  top: 250px;
-  background-color: #def9c4; /* 연두색 배경 */
-  border-top-left-radius: 30px;
-  border-top-right-radius: 30px;
+  bottom: 0;
+  height: 60%;
+  background-color: #def9c4;
+  border-radius: 24px 24px 0 0;
+  z-index: 0;
 `;
 
 const Header = styled.header`
@@ -410,36 +395,13 @@ const GreetingContainer = styled.div`
   }
 `;
 
-const PointsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /*position: absolute;*/
-  top: 15px;
-  right: 20px;
-  width: 91px;
-  height: 34px;
-  background-color: #50b498;
-  border-radius: 20px; /* 둥근 모서리 */
-  font-weight: bold;
-  color: #ffffff;
-  font-size: 11px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  img {
-    width: 24px;
-    height: 24px;
-    margin-right: 5px; /* 이미지와 텍스트 간격 */
-  }
-`;
-
 const MainContent = styled.main`
-  width: 100%;
-  max-width: 390px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
+   padding: 20px;
+  position: relative;
+  & > * {
+    position: relative;
+    z-index: 1; // 모든 직접적인 자식 요소들에 z-index 적용
+  }
 `;
 
 const TopSection = styled.div`

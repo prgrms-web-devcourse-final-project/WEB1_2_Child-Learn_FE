@@ -1,52 +1,21 @@
-import { useState } from 'react';
 import styled from 'styled-components';
-import { useAttendance } from '@/features/mainpage/lib/queries';
 
-interface AttendanceCardProps {
-  title: string;
-  userId: number;
-}
+interface AvatarCardProps {
+    onClick?: () => void;
+  }
 
-export const AttendanceCard = ({ userId }: AttendanceCardProps) => {
-  const [isChecked, setIsChecked] = useState(false);
-  const { attendanceMutation, isAttendanceChecked } = useAttendance();
-
-  const handleAttendance = () => {
-    if (
-      !isChecked &&
-      !attendanceMutation.isPending &&
-      userId &&
-      !isAttendanceChecked
-    ) {
-      attendanceMutation.mutate(userId, {
-        onSuccess: () => {
-          setIsChecked(true);
-        },
-      });
-    }
-  };
+export const AvatarCard = ({ onClick }: AvatarCardProps) => {
 
   return (
     <CardContainer>
       <CardContent>
-        <Title $isChecked={isChecked}>
-          {isChecked ? (
-            <div className="complete-text">
-              출석 완료! <br /> 내일도 잊지 말아요!
-            </div>
-          ) : (
-            <>
-              <div className="main-text">매일 출석하고</div>
-              <div className="sub-text">100 Point 받기</div>
-            </>
-          )}
+        <Title>
+              <div className="main-text">획득한 포인트로</div>
+              <div className="sub-text">나를 꾸며볼까요?</div>
         </Title>
-        {!isChecked && (
-          <ActionButton onClick={handleAttendance}>출석하기</ActionButton>
-        )}
+          <ActionButton onClick={onClick}>내 캐릭터 꾸미러 가기</ActionButton>
       </CardContent>
-      {!isChecked && <IconImage src="/img/calendar.png" alt="calendar" />}
-      {isChecked && <Overlay />}
+      <IconImage src="/img/gift.png" alt="gift" />
     </CardContainer>
   );
 };
@@ -73,20 +42,10 @@ const CardContent = styled.div`
   position: relative; // 자식 요소의 absolute 포지셔닝을 위해
 `;
 
-const Title = styled.div<{ $isChecked: boolean }>`
+const Title = styled.div`
   color: white;
   transition: all 0.3s ease;
-  text-align: ${(props) => (props.$isChecked ? 'center' : 'left')};
-  ${(props) =>
-    props.$isChecked &&
-    `
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    z-index: 3;
-  `}
+  text-align: left;
 
   .complete-text {
     font-size: 16px;
