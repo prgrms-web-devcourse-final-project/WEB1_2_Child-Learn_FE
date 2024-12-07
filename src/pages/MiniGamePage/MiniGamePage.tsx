@@ -32,6 +32,12 @@ const MiniGamePage = () => {
     isNormalPlayAvailable: false,
     isHardPlayAvailable: false,
   });  
+
+  const [oxQuizAvailability, setOxQuizAvailability] = useState({
+    isEasyPlayAvailable: true,
+    isNormalPlayAvailable: true,
+    isHardPlayAvailable: true,
+  });
   
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
@@ -158,7 +164,12 @@ const MiniGamePage = () => {
     ) => {
         navigate(`/word-quiz/${difficulty}`);
     };  
-
+    
+    // OX 퀴즈 플레이 핸들러
+    const handleOxQuizPlay = async (difficulty: 'begin' | 'mid' | 'adv') => {
+      navigate(`/ox-quiz/${difficulty}`);
+    };
+  
   // 로또(숫자를 맞혀라) 플레이 핸들러
   const handleLotteryPlay = () => {
     if (isLotteryPlayable()) {
@@ -307,6 +318,31 @@ const MiniGamePage = () => {
                   difficulty="adv"
                   onClick={() => handleWordQuizPlay('adv')}
                   disabled={!wordQuizAvailability.isHardPlayAvailable}
+                >
+                  어려움
+                </ModalButton>
+              </>
+            )}
+            {selectedGame === 'OX 퀴즈' && (
+              <>
+                <ModalButton
+                  difficulty="begin"
+                  onClick={() => handleOxQuizPlay('begin')}
+                  disabled={!oxQuizAvailability.isEasyPlayAvailable}
+                >
+                  쉬움
+                </ModalButton>
+                <ModalButton
+                  difficulty="mid"
+                  onClick={() => handleOxQuizPlay('mid')}
+                  disabled={!oxQuizAvailability.isNormalPlayAvailable}
+                >
+                  보통
+                </ModalButton>
+                <ModalButton
+                  difficulty="adv"
+                  onClick={() => handleOxQuizPlay('adv')}
+                  disabled={!oxQuizAvailability.isHardPlayAvailable}
                 >
                   어려움
                 </ModalButton>
