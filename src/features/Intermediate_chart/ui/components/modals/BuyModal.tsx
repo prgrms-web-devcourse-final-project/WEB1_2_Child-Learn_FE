@@ -82,7 +82,8 @@ export const BuyModal: React.FC<BuyModalProps> = ({
         stockId,
         tradePoint,
         'buy',
-        stockName
+        stockName,
+        parseInt(localStorage.getItem('userId') || '0')
       );
   
       // 성공 시 처리
