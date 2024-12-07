@@ -212,8 +212,3 @@ const NextButton = styled.button`
     background-color: #3d937b;
   }
 `;
-
-const LoadingText = styled.p`
-  font-size: 18px;
-  color: #666;
-`;
