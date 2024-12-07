@@ -234,13 +234,13 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
           <ActionButtons>
             <BuyButton 
               onClick={() => handleTradeClick('buy')} 
-              disabled={!tradeAvailability.isPossibleBuy}
+            //   disabled={!tradeAvailability.isPossibleBuy}
             >
               매수
             </BuyButton>
             <SellButton 
               onClick={() => handleTradeClick('sell')}
-              disabled={!tradeAvailability.isPossibleSell}
+            //   disabled={!tradeAvailability.isPossibleSell}
             >
               매도
             </SellButton>
