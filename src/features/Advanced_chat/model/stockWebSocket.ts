@@ -42,10 +42,10 @@ export class StockWebSocket {
   private static readonly BASE_URL = 'ws://43.202.106.45';
   private static readonly WS_PATH = '/api/v1/advanced-invest';
   private connectPromise: Promise<void> | null = null;
+  private initialized = false;
 
   private constructor() {
     this.connectionId = generateUUID();
-    console.log('WebSocket instance created:', this.connectionId);
   }
 
   public static getInstance(): StockWebSocket {
@@ -53,6 +53,15 @@ export class StockWebSocket {
       StockWebSocket.instance = new StockWebSocket();
     }
     return StockWebSocket.instance;
+  }
+
+  public static initializeWebSocket(): StockWebSocket {
+    const instance = StockWebSocket.getInstance();
+    if (!instance.initialized) {
+      console.log('Initializing WebSocket instance:', instance.connectionId);
+      instance.initialized = true;
+    }
+    return instance;
   }
 
   private getAuthToken(): string | null {
@@ -83,6 +92,11 @@ export class StockWebSocket {
   }
 
   public async connect() {
+    if (!this.initialized) {
+      console.error('WebSocket not initialized. Call initializeWebSocket first.');
+      return Promise.reject(new Error('WebSocket not initialized'));
+    }
+
     if (this.connectPromise) {
       return this.connectPromise;
     }
@@ -201,6 +215,11 @@ export class StockWebSocket {
   }
 
   public async sendMessage(type: WebSocketActions, data?: any) {
+    if (!this.initialized) {
+      console.error('WebSocket not initialized. Call initializeWebSocket first.');
+      return;
+    }
+
     try {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
         console.log('WebSocket not connected, attempting to connect...');
@@ -247,6 +266,7 @@ export class StockWebSocket {
     console.log('Disconnecting WebSocket');
     this.connectionStatus = 'disconnected';
     this.connectPromise = null;
+    this.initialized = false;
     
     if (this.ws) {
       this.ws.close(1000, '정상 종료');
@@ -257,4 +277,5 @@ export class StockWebSocket {
   }
 }
 
-export const webSocket = StockWebSocket.getInstance();
+// 인스턴스를 직접 생성하지 않고 getter 함수만 export
+export const getWebSocketInstance = StockWebSocket.getInstance;
