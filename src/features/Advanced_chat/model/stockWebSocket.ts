@@ -17,12 +17,12 @@ export interface Stock {
 export interface WebSocketMessage {
   type: WebSocketActions;
   data?: {
-    symbol: string;
-    timestamp: number;
-    closePrice: string;
-    openPrice: string;
-    highPrice: string;
-    lowPrice: string;
+    symbol?: string;
+    timestamp?: number;
+    closePrice?: string;
+    openPrice?: string;
+    highPrice?: string;
+    lowPrice?: string;
     change?: number;
     volume?: number;
     stocks?: Stock[];
@@ -46,6 +46,7 @@ export class StockWebSocket {
 
   private constructor() {
     this.connectionId = generateUUID();
+    console.log('WebSocket instance created:', this.connectionId);
   }
 
   public static getInstance(): StockWebSocket {
@@ -277,5 +278,4 @@ export class StockWebSocket {
   }
 }
 
-// 인스턴스를 직접 생성하지 않고 getter 함수만 export
 export const getWebSocketInstance = StockWebSocket.getInstance;
