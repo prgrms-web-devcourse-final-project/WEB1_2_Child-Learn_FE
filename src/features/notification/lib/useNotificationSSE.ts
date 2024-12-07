@@ -22,11 +22,10 @@ export const useNotificationSSE = () => {
   const handleSSEEvent = useCallback(
     (eventData: SSEEvent | NotificationStateEvent) => {
       if ('event' in eventData && eventData.event === 'notification') {
-        // 새 알림 이벤트 처리
+        // 새 알림이 오면 알림 목록 쿼리 갱신
         queryClient.invalidateQueries({ queryKey: ['notifications'] });
-        // TODO: 토스트 메시지 표시
       } else if ('type' in eventData) {
-        // 상태 변경 이벤트 처리
+        // READ, DELETE 등 상태 변경 시에도 알림 목록 쿼리 갱신
         switch (eventData.type) {
           case 'READ':
           case 'READ_ALL':

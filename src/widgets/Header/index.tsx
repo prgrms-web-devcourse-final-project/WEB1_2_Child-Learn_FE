@@ -1,10 +1,19 @@
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { notificationApi } from '@/features/notification/api/notificationApi';
 
 const Header = () => {
   const navigate = useNavigate();
+  const { data: notifications } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => notificationApi.getNotifications(),
+  });
 
-  // 채팅이나 알림 클릭 시 페이지 이동을 처리하는 핸들러
+  const hasUnreadNotifications = notifications?.content.some(
+    (notification) => !notification.isRead
+  );
+
   const handleChatClick = () => {
     navigate('/chat');
   };
@@ -22,9 +31,10 @@ const Header = () => {
         <IconButton onClick={handleChatClick}>
           <Icon src="/img/chat.png" alt="Chat" />
         </IconButton>
-        <IconButton onClick={handleNotificationClick}>
+        <NotificationButton onClick={handleNotificationClick}>
           <Icon src="/img/bell.png" alt="Notifications" />
-        </IconButton>
+          {hasUnreadNotifications && <NotificationBadge />}
+        </NotificationButton>
       </IconsWrapper>
     </HeaderContainer>
   );
@@ -80,4 +90,18 @@ const IconButton = styled.button`
 const Icon = styled.img`
   width: 20px;
   height: 20px;
+`;
+
+const NotificationButton = styled(IconButton)`
+  position: relative;
+`;
+
+const NotificationBadge = styled.div`
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff4444;
+  border-radius: 50%;
 `;
