@@ -58,32 +58,42 @@ export const BuyModal: React.FC<BuyModalProps> = ({
  };
 
  const handleConfirm = async () => {
-   try {
-     const buyPrice = parseInt(price.replace(/,/g, '')); 
-     const totalAmount = buyPrice * quantity;
-
-     if (totalAmount > points) {
-       setErrorMessage('보유 포인트가 부족합니다.');
-       setShowError(true);
-       return;
-     }
-
-     // 매수 처리
-     await executeTrade(
-       stockId,
-       tradePoint,
-       'buy',
-       stockName
-     );
-
-     await onConfirm(buyPrice, quantity);
-     onClose();
-   } catch (error: any) {
-     console.error('매수 실패:', error);
-     setErrorMessage(error.message || '매수 처리 중 오류가 발생했습니다.');
-     setShowError(true);
-   }
- };
+    try {
+      // 가격과 수량에서 tradePoint 계산
+      const pricePerStock = parseInt(price.replace(/,/g, ''));
+      const tradePoint = pricePerStock * quantity;
+  
+      // 포인트 부족 체크
+      if (tradePoint > points) {
+        setErrorMessage('보유 포인트가 부족합니다.');
+        setShowError(true);
+        return;
+      }
+  
+      console.log('매수 요청 데이터:', {
+        stockId,
+        tradePoint,
+        price: pricePerStock,
+        quantity
+      });
+  
+      // 매수 요청 실행
+      await executeTrade(
+        stockId,
+        tradePoint,
+        'buy',
+        stockName
+      );
+  
+      // 성공 시 처리
+      await onConfirm(pricePerStock, quantity);
+      onClose();
+    } catch (error: any) {
+      console.error('매수 실패:', error);
+      setErrorMessage(error.message || '매수 처리 중 오류가 발생했습니다.');
+      setShowError(true);
+    }
+  };
 
  const isDisabled = !price || 
    price === '0' || 

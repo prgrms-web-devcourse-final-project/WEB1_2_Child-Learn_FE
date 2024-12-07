@@ -77,7 +77,6 @@ export const useAdvancedGameStore = create<AdvancedGameStore>((set, get) => ({
    }
 
    const url = `ws://43.202.106.45/api/v1/advanced-invest?authorization=${encodeURIComponent(`Bearer ${token}`)}`;
-
    try {
      const ws = new WebSocket(url);
      await new Promise((resolve, reject) => {
