@@ -9,6 +9,8 @@ import MiniGamePage from '@/pages/MiniGamePage/MiniGamePage';
 import FlipCardGamePage from '@/pages/MiniGamePage/FlipCardGamePage/FlipCardGamePage';
 import WordQuizGamePage from '@/pages/MiniGamePage/WordQuizGamePage/WordQuizGamePage';
 import WordQuizResultPage from '@/pages/MiniGamePage/WordQuizGamePage/WordQuizResultPage';
+import OXQuizGamePage from '@/pages/MiniGamePage/OXQuizGamePage/OXQuizGamePage';
+import OXQuizResultPage from '@/pages/MiniGamePage/OXQuizGamePage/OXQuizResultPage';
 import AvatarPage from '@/pages/AvatarPage/AvatarPage';
 import AvatarDetailPage from '@/pages/AvatarPage/AvatarDetailPage';
 import ExchangePage from '@/pages/exchangePage/ExchangePage';
@@ -109,7 +111,22 @@ export default function Router() {
           </PrivateRoute>
         }
       />
-
+      <Route
+        path="/ox-quiz/:difficulty"
+        element={
+          <PrivateRoute>
+            <OXQuizGamePage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/ox-quiz/result/:difficulty"
+        element={
+          <PrivateRoute>
+            <OXQuizResultPage />
+          </PrivateRoute>
+        }
+      />
       {/* 아바타/프로필 관련 라우트 */}
       <Route
         path="/avatar"
