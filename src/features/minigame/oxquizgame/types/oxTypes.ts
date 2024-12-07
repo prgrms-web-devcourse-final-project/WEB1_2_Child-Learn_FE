@@ -16,5 +16,5 @@ export interface QuizRequestDto {
   export interface QuizAnswerResponseDto {
     oxQuizDataId: number;
     explanation: string;
-    isCorrect: boolean;
+    correct: boolean;
   }

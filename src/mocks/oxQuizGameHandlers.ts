@@ -184,7 +184,7 @@ export const oxQuizHandlers = [
     const response: QuizAnswerResponseDto = {
       oxQuizDataId: quiz.id,
       explanation: quiz.explanation,
-      isCorrect,
+      correct: isCorrect
     };
 
     return HttpResponse.json(response, { status: 200 });

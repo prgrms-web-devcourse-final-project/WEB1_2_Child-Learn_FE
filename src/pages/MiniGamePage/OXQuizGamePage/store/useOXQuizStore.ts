@@ -40,7 +40,7 @@ const useOXQuizStore = create<OXQuizState>((set) => ({
       set((state) => ({
         result: response,
         currentIndex: state.currentIndex,
-        completedQuizzes: response.isCorrect ? state.completedQuizzes + 1 : state.completedQuizzes, // 정답 맞춘 경우 증가
+        completedQuizzes: response.correct ? state.completedQuizzes + 1 : state.completedQuizzes, // 정답 맞춘 경우 증가
       }));
     } catch (error) {
       console.error('Failed to submit answer:', error);

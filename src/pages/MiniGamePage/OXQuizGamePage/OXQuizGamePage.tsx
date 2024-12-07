@@ -76,8 +76,8 @@ const OXQuizGamePage = () => {
         </ButtonContainer>
       ) : (
         <ResultContainer>
-          <ResultEmoji>{result.isCorrect ? '😃' : '😢'}</ResultEmoji>
-          <ResultText>{result.isCorrect ? '정답' : '오답'}</ResultText>
+          <ResultEmoji>{result.correct ? '😃' : '😢'}</ResultEmoji>
+          <ResultText>{result.correct ? '정답' : '오답'}</ResultText>
           <Explanation>{result.explanation}</Explanation>
            {/* 다음 문제로 이동 버튼은 답안 제출 후에만 표시 */}
            {result !== null && (
