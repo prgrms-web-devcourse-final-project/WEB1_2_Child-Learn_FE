@@ -2,9 +2,20 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import backIcon from '/img/exit.png';
 import checkIcon from '/img/box-check.png';
+import { useMarkAllAsRead } from '@/features/notification/lib/queries';
+import { NotificationList } from '@/features/notification/ui/NotificationList';
 
 const NotificationPage = () => {
   const navigate = useNavigate();
+  const { mutateAsync: markAllAsRead } = useMarkAllAsRead();
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await markAllAsRead();
+    } catch (error) {
+      console.error('전체 읽음 처리 실패:', error);
+    }
+  };
 
   return (
     <PageContainer>
@@ -13,13 +24,14 @@ const NotificationPage = () => {
           <IconImage src={backIcon} alt="back" />
         </BackButton>
         <PageTitle>
-          <img src="/img/3d-bell.png" alt="bell" width="24" height="24" />
+          <img src="/img/bell.png" alt="bell" width="24" height="24" />
           알림
         </PageTitle>
-        <CheckButton>
+        <CheckButton onClick={handleMarkAllAsRead}>
           <IconImage src={checkIcon} alt="check all" />
         </CheckButton>
       </Header>
+      <NotificationList />
     </PageContainer>
   );
 };
