@@ -153,7 +153,7 @@ export const StockSlider: React.FC = () => {
           }
         };
 
-        ws.onMessage(messageHandler);
+        ws.onMessage(messageHandler as any);
         ws.sendMessage(WebSocketActions.REFERENCE_DATA, { gameId });
       } catch (error) {
         console.error('Failed to initialize WebSocket:', error);
