@@ -93,14 +93,3 @@ const IconImage = styled.img`
   height: 60px; // 48px에서 축소
   z-index: 1;
 `;
-
-const Overlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.2); // 투명도를 0.3에서 0.2로 줄임
-  transition: all 0.3s ease;
-  z-index: 2;
-`;

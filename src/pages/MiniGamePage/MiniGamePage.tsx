@@ -8,6 +8,7 @@ import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQui
 import { useLotteryStore } from '@/app/providers/state/zustand/useLotteryStore';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { AvatarCard } from '@/features/minigame/ui/AvatarCard';
+import { ExchangeCard } from '@/features/minigame/ui/ExchangeCard';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -213,9 +214,7 @@ const MiniGamePage = () => {
         <AvatarCard
         onClick={() => navigate('/avatar')}
         />
-        <TopSection>
-          <StyledLink to="/exchange">환전하러 가기</StyledLink>
-        </TopSection>
+        <ExchangeCard points={todayPoints} />
 
         <GameGrid> 
           {/* 낱말 퀴즈 */}
@@ -396,67 +395,11 @@ const GreetingContainer = styled.div`
 `;
 
 const MainContent = styled.main`
-   padding: 20px;
+  padding: 20px;
   position: relative;
   & > * {
     position: relative;
     z-index: 1; // 모든 직접적인 자식 요소들에 z-index 적용
-  }
-`;
-
-const TopSection = styled.div`
-  display: flex;
-  flex-direction: column; /* 세로 정렬 */
-  justify-content: center; /* 중앙 정렬 */
-  align-items: center; /* 중앙 정렬 */
-  background-color: rgba(80, 180, 152, 0.8); /* #50B498의 opacity 80% */
-  color: white; /* 텍스트 색상 흰색 */
-  border-radius: 15px; /* 모서리를 둥글게 */
-  width: 310px; /* 고정된 너비 */
-  height: 107px; /* 고정된 높이 */
-  padding: 15px; /* 내부 여백 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
-  position: relative; /* 텍스트 정렬 및 추가 요소를 위한 기준 */
-
-  h2 {
-    font-size: 20px; /* 포인트 숫자 크기 */
-    font-weight: bold;
-    margin: 0;
-    margin-top: 10px; /* 숫자 위 여백 추가 */
-  }
-
-  p {
-    font-size: 14px; /* 텍스트 크기 */
-    font-weight: bold;
-    margin: 0;
-    text-align: center; /* 텍스트 중앙 정렬 */
-  }
-
-  img {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px; /* 아이콘 크기 */
-    height: 30px; /* 아이콘 크기 */
-  }
-`;
-
-const StyledLink = styled(Link)`
-  display: flex; /* 텍스트와 가운데 정렬을 위한 플렉스 박스 */
-  justify-content: center;
-  align-items: center;
-  width: 110px; /* 버튼 너비 */
-  height: 30px; /* 버튼 높이 */
-  background-color: #ffffff; /* 흰색 배경 */
-  border-radius: 10px; /* 둥근 모서리 */
-  font-size: 12px; /* 텍스트 크기 */
-  font-weight: bold; /* 텍스트 굵기 */
-  color: #50b498; /* 텍스트 색상 */
-  text-decoration: none; /* 링크 밑줄 제거 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
-
-  &:hover {
-    background-color: #f0f0f0; /* 호버 시 약간 밝은 회색 */
   }
 `;
 
