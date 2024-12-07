@@ -1,14 +1,58 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
+import { useUserInfo } from '@/entities/User/lib/queries';
+import { MiniGameTransaction } from '@/features/minigame/points/types/pointTypes';
 import useOXQuizStore from './store/useOXQuizStore';
+import { walletApi } from '@/shared/api/wallets';
 
 const OXQuizResultPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
   const { oxQuizzes, completedQuizzes } = useOXQuizStore();
 
   // 점수 계산 (퀴즈당 10포인트)
-  const totalPoints = completedQuizzes * 10;
+  const totalPoints = completedQuizzes * 100;
+
+  useEffect(() => {
+    const processPoints = async () => {
+      if (!userInfo || !userInfo.id) {
+        console.error('User ID is not available');
+        return;
+      }
+      try {
+        const transaction: MiniGameTransaction = {
+          memberId: userInfo.id,
+          gameType: 'WORD_QUIZ', // 고정 값
+          points: totalPoints,
+          pointType: 'GAME', // 고정 값
+          isWin: totalPoints > 0, // 포인트가 0보다 크면 승리
+        };
+
+        // API 호출
+        const updatedWallet = await walletApi.processMiniGamePoints(transaction);
+        console.log("Wallet updated successfully:", updatedWallet);
+
+        // React Query의 캐시를 갱신
+        queryClient.setQueryData(['userInfo'], (oldData: any) => {
+          if (oldData) {
+            return {
+              ...oldData,
+              currentPoints: oldData.currentPoints + totalPoints,
+            };
+          }
+          return oldData;
+        });
+
+      } catch (error) {
+        console.error("Failed to process mini-game points:", error);
+      }
+    };
+
+    processPoints();
+  }, [totalPoints, queryClient, userInfo]);
 
   // 스타 표시 (완료된 문제 수를 기준으로)
   const stars = Array(3)
