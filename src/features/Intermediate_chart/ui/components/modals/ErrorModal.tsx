@@ -78,8 +78,9 @@ export const TradeComponent: React.FC = () => {
       try {
         const result = await executeTrade(
           tradeData.stockId, 
-          tradeData.tradePoint || 0, 
-          tradeData.type
+          tradeData.tradePoint || 0,
+          tradeData.type,
+          new Date().toISOString()
         );
         
         if (tradeData.type === 'sell' && 'earnedPoints' in result) {
