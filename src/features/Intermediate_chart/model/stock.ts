@@ -131,7 +131,7 @@ export const useStockStore = create<StockStore>((set, get) => ({
 
        // 2. 매수 성공 시 지갑 업데이트
        try {
-         await baseApi.post<WalletResponse>('/wallet/invest', {
+         await baseApi.post<WalletResponse>('/wallet/stock', {
            transactionType: 'MID',
            points: tradePoint,
            pointType: 'STOCK',
@@ -153,7 +153,7 @@ export const useStockStore = create<StockStore>((set, get) => ({
        // 2. 매도 성공하고 earnedPoints가 있으면 지갑 업데이트
        if (response.data.earnedPoints) {
          try {
-           await baseApi.post<WalletResponse>('/wallet/invest', {
+           await baseApi.post<WalletResponse>('/wallet/stock', {
              transactionType: 'MID',
              points: response.data.earnedPoints,
              pointType: 'STOCK',
