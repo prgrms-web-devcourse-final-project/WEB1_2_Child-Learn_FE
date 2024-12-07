@@ -1,4 +1,4 @@
-// features/Intermediate_chart/ui/components/modals/styles/index.ts
+
 import styled from 'styled-components';
 
 export const ModalOverlay = styled.div`

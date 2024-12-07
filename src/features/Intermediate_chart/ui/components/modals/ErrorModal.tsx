@@ -55,7 +55,7 @@ const ModalMessage = styled.p`
 `;
 
 const ModalButton = styled.button`
-  background-color: #7FBA7A;
+  background-color: #50B498;
   color: white;
   border: none;
   border-radius: 5px;
@@ -64,13 +64,13 @@ const ModalButton = styled.button`
   font-size: 14px;
 
   &:hover {
-    background-color: #6ca968;
+    background-color: #50B498;
   }
 `;
 
 // TradeComponent에 에러 처리 추가
 export const TradeComponent: React.FC = () => {
-    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
     const executeTrade = useStockStore(state => state.executeTrade);
   
