@@ -1,6 +1,5 @@
 import React from 'react';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
-import { TradeDetail } from '@/features/Intermediate_chart/model/types/stock';
 
 interface TradeResult {
   tradeType: 'buy' | 'sell';
@@ -33,7 +32,7 @@ interface CompletionModalProps {
               {`${tradeResult.stockName}
               ${tradeResult.quantity}주를 
               ${tradeResult.totalPrice.toLocaleString()}포인트에 
-              매도하였습니다.`}
+              매수하였습니다.`}
             </S.CompletionMessage>
             <S.CompletionButtonGroup>
               <S.SingleButton 

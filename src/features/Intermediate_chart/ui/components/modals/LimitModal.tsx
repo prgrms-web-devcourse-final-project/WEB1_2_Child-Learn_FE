@@ -23,9 +23,9 @@ export const LimitModal: React.FC<LimitModalProps> = ({
         <S.ModalTitle>거래 제한</S.ModalTitle>
         <S.CompletionModalContent>
           <S.CompletionMessage>
-            {tradeType === 'buy' 
+            {message || (tradeType === 'buy' 
               ? '오늘은 더 이상 매수를 할 수 없습니다.' 
-              : '내일 다시 도전하세요!'}
+              : '내일 다시 도전하세요!')}
           </S.CompletionMessage>
           <S.ResultButtonGroup>
             <S.SingleButton color="#50b498" onClick={onClose}>

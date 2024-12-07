@@ -1,5 +1,4 @@
 import React from 'react';
-import { useStockStore } from '@/features/Intermediate_chart/model/stock';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
 
 interface SellModalProps {

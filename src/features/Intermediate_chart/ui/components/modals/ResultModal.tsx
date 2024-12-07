@@ -1,6 +1,5 @@
 import React from 'react';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
-import { TradeDetail } from '@/features/Intermediate_chart/model/types/stock';
 
 interface TradeResult {
   tradeType: 'buy' | 'sell';

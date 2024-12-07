@@ -8,11 +8,13 @@ import { useFlipCardLogic } from '@/features/minigame/flipcardgame/lib/useFlipCa
 import { walletApi } from '@/shared/api/wallets';
 import { MiniGameTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 const FlipCardGamePage = () => {
   const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
   console.log('Difficulty from URL:', difficulty); 
   const { data: userInfo, isLoading: isUserInfoLoading } = useUserInfo();
+  const queryClient = useQueryClient();
   const {
     flippedCards,
     setFlippedCards,
@@ -75,13 +77,24 @@ const FlipCardGamePage = () => {
           const transaction: MiniGameTransaction = {
             memberId: userInfo.id,
             gameType: 'CARD_FLIP',
-            points: 100, // 성공 시 부여할 포인트
+            points: 1000, // 성공 시 부여할 포인트
             pointType: 'GAME',
             isWin: true,
           };
           const updatedWallet = await walletApi.processMiniGamePoints(transaction);
           console.log('Updated wallet:', updatedWallet);
           setEarnedPoints(transaction.points);
+
+          // React Query를 사용해 userInfo 갱신
+          queryClient.setQueryData(['userInfo'], (oldData: any) => {
+            if (oldData) {
+              return {
+                ...oldData,
+                currentPoints: oldData.currentPoints + transaction.points,
+              };
+            }
+            return oldData;
+          });
         } catch (error) {
           console.error('Failed to update points after game success:', error);
         }

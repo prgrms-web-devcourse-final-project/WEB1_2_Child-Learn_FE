@@ -42,27 +42,39 @@ export const BuyModal: React.FC<BuyModalProps> = ({
     }
     const numValue = parseInt(value);
     setPrice(numValue.toLocaleString());
+    setTotalPrice(numValue * quantity); // 총 금액 업데이트
   };
-
+  
   const handleQuantityChange = (delta: number) => {
     const newQuantity = Math.max(1, quantity + delta);
     setQuantity(newQuantity);
+    if (price) {
+      const priceNum = parseInt(price.replace(/,/g, ''));
+      setTotalPrice(priceNum * newQuantity); // 수량 변경시 총 금액 업데이트
+    }
   };
 
 
   const handleConfirm = async () => {
     try {
-      const buyPrice = parseInt(price.replace(/,/g, '')); // 매수가격 (100원)
-      const buyQuantity = quantity; // 수량 (2주)
-      const tradePoint = buyPrice * buyQuantity; // 총 포인트 (100 * 2 = 200P)
-      
-      const response = await executeTrade(stockId, tradePoint, 'buy');
-      onConfirm(buyPrice, buyQuantity); // 매수가격과 수량 전달
+      const buyPrice = parseInt(price.replace(/,/g, '')); // 콤마 제거하고 숫자로 변환
+      const totalAmount = buyPrice * quantity; // 총 거래 금액 계산
   
+      // 거래 금액 로깅
+      console.log('매수 요청 데이터:', {
+        stockId: stockId,
+        tradePoint: totalAmount,
+        price: buyPrice,
+        quantity: quantity
+      });
+  
+      await onConfirm(buyPrice, quantity);
     } catch (error) {
       console.error('매수 실패:', error);
     }
   };
+
+  
 
   if (!isOpen) return null;
 
