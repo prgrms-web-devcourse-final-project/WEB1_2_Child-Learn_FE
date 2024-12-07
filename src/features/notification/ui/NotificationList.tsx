@@ -35,10 +35,12 @@ export const NotificationList = () => {
   };
 
   if (isLoading) return <LoadingContainer>로딩중...</LoadingContainer>;
+  if (!data?.content?.length)
+    return <EmptyMessage>알림이 없습니다.</EmptyMessage>;
 
   return (
     <ListContainer>
-      {data?.content.map((notification) => (
+      {data.content.map((notification) => (
         <NotificationItem
           key={notification.notificationId}
           notification={notification}
@@ -46,9 +48,6 @@ export const NotificationList = () => {
           onReject={handleReject}
         />
       ))}
-      {data?.content.length === 0 && (
-        <EmptyMessage>알림이 없습니다.</EmptyMessage>
-      )}
     </ListContainer>
   );
 };

@@ -10,9 +10,9 @@ const Header = () => {
     queryFn: () => notificationApi.getNotifications(),
   });
 
-  const hasUnreadNotifications = notifications?.content.some(
-    (notification) => !notification.isRead
-  );
+  const hasUnreadNotifications =
+    notifications?.content?.some((notification) => !notification.isRead) ??
+    false; // notifications이 undefined일 때 false 반환
 
   const handleChatClick = () => {
     navigate('/chat');

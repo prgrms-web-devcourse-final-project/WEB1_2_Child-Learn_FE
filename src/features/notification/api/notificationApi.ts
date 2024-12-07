@@ -9,7 +9,7 @@ export const notificationApi = {
         Accept: 'text/event-stream',
         'Cache-Control': 'no-cache',
       },
-      responseType: 'stream',
+      responseType: 'text',
     });
   },
 

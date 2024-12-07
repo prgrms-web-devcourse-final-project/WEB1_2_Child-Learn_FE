@@ -43,27 +43,18 @@ export const useNotificationSSE = () => {
 
     try {
       const response = await notificationApi.subscribeToSSE();
-      const reader = response.data.getReader();
-      const decoder = new TextDecoder();
+      const lines = response.data.split('\n');
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            try {
-              const eventData = JSON.parse(line.slice(5));
-              handleSSEEvent(eventData);
-            } catch (error) {
-              console.error('Failed to parse SSE message:', error);
-            }
+      lines.forEach((line: string) => {
+        if (line.startsWith('data: ')) {
+          try {
+            const eventData = JSON.parse(line.slice(6));
+            handleSSEEvent(eventData);
+          } catch (error) {
+            console.error('Failed to parse SSE message:', error);
           }
         }
-      }
+      });
     } catch (error) {
       console.error('SSE error:', error);
       setTimeout(connectSSE, 5000);

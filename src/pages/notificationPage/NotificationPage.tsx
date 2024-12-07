@@ -24,7 +24,7 @@ const NotificationPage = () => {
           <IconImage src={backIcon} alt="back" />
         </BackButton>
         <PageTitle>
-          <img src="/img/bell.png" alt="bell" width="24" height="24" />
+          <img src="/img/3d-bell.png" alt="bell" width="24" height="24" />
           알림
         </PageTitle>
         <CheckButton onClick={handleMarkAllAsRead}>
