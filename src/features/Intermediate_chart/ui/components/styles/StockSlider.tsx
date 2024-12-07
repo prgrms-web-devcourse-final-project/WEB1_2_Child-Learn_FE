@@ -80,7 +80,8 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
       const result = await executeTrade(
         currentStock.midStockId,
         tradePoint,
-        'buy'
+        'buy',
+        buyQuantity.toString()
       );  
 
       if ('warning' in result) {
@@ -137,7 +138,8 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         const result = await executeTrade(
           currentStock.midStockId,
           0,
-          'sell'
+          'sell',
+          '1'
         );
         
         if ('earnedPoints' in result) {
