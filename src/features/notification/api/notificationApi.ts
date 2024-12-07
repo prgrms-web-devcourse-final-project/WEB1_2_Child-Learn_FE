@@ -1,29 +1,5 @@
 import { baseApi } from '@/shared/api/base';
-
-interface Notification {
-  notificationId: number;
-  senderLoginId: number;
-  senderUsername: string;
-  title: string;
-  content: string;
-  type: 'MESSAGE' | 'FRIEND_REQUEST' | 'FRIEND_ACCEPT';
-  isRead: boolean;
-  createdAt: string;
-  profileImageUrl: string | null;
-  elapsedTime: string;
-}
-
-interface NotificationResponse {
-  content: Notification[];
-  pageable: {
-    last: boolean;
-    number: number;
-    size: number;
-    numberOfElements: number;
-    first: boolean;
-    empty: boolean;
-  };
-}
+import { NotificationResponse } from '@/features/notification/model/types';
 
 export const notificationApi = {
   // SSE 연결

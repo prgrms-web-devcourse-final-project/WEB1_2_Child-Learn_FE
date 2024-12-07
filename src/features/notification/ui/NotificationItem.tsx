@@ -1,16 +1,10 @@
-// NotificationItem.tsx
 import styled from 'styled-components';
+import { Notification } from '@/features/notification/model/types';
 
 interface NotificationItemProps {
-  notification: {
-    notificationId: number;
-    senderUsername: string;
-    elapsedTime: string;
-    isRead: boolean;
-    type: 'FRIEND_REQUEST' | 'FRIEND_ACCEPT';
-  };
-  onAccept?: () => void;
-  onReject?: () => void;
+  notification: Notification;
+  onAccept: (notificationId: number) => void;
+  onReject: (notificationId: number) => void;
 }
 
 export const NotificationItem = ({
@@ -18,23 +12,57 @@ export const NotificationItem = ({
   onAccept,
   onReject,
 }: NotificationItemProps) => {
+  const renderMessage = () => {
+    switch (notification.type) {
+      case 'FRIEND_REQUEST':
+        return (
+          <>
+            <Message>
+              {notification.senderUsername}님이 친구 요청을 보냈습니다.
+            </Message>
+            <ButtonGroup>
+              <ActionButton
+                onClick={() => onAccept(notification.notificationId)}
+              >
+                수락하기
+              </ActionButton>
+              <ActionButton
+                onClick={() => onReject(notification.notificationId)}
+              >
+                거절하기
+              </ActionButton>
+            </ButtonGroup>
+          </>
+        );
+      case 'FRIEND_ACCEPT':
+        return (
+          <Message>
+            {notification.senderUsername}님이 친구 요청을 수락했습니다.
+          </Message>
+        );
+      case 'MESSAGE':
+        return (
+          <Message>
+            {notification.senderUsername}님이 메시지를 보냈습니다:{' '}
+            {notification.content}
+          </Message>
+        );
+    }
+  };
+
   return (
     <ItemContainer>
       <ProfileContainer>
-        <ProfileImage />
+        {notification.profileImageUrl ? (
+          <ProfileImage src={notification.profileImageUrl} alt="profile" />
+        ) : (
+          <ProfileImagePlaceholder />
+        )}
       </ProfileContainer>
       <ContentContainer>
-        <Message>
-          {notification.senderUsername}님이 친구 요청을 보냈습니다.
-        </Message>
+        {renderMessage()}
         <Time>{notification.elapsedTime}</Time>
       </ContentContainer>
-      {notification.type === 'FRIEND_REQUEST' && (
-        <ButtonGroup>
-          <ActionButton onClick={onAccept}>수락하기</ActionButton>
-          <ActionButton onClick={onReject}>거절하기</ActionButton>
-        </ButtonGroup>
-      )}
     </ItemContainer>
   );
 };
@@ -51,7 +79,14 @@ const ProfileContainer = styled.div`
   margin-right: 12px;
 `;
 
-const ProfileImage = styled.div`
+const ProfileImage = styled.img`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+const ProfileImagePlaceholder = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 50%;
