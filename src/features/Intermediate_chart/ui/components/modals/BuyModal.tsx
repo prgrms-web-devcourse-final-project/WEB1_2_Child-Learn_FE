@@ -71,7 +71,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
      // 매수 처리
      await executeTrade(
        stockId,
-       totalAmount,
+       tradePoint,
        'buy',
        stockName
      );
