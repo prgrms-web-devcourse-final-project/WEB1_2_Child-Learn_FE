@@ -46,23 +46,28 @@ export const useStockStore = create<StockStore>((set, get) => ({
   fetchStocks: async () => {
     try {
       set({ isLoading: true });
-      const response = await baseApi.get<MidStock[]>('/mid-stocks/list');
+      const response = await baseApi.get('/mid-stocks/list');
       
-      if (Array.isArray(response.data)) {
+      if (response.data) {
         set({ 
           stocks: response.data, 
           isLoading: false 
         });
       } else {
-        throw new Error('Invalid response format');
+        console.error('Empty response data');
+        set({
+          error: '데이터를 불러올 수 없습니다',
+          isLoading: false,
+          stocks: []
+        });
       }
     } catch (error) {
+      console.error('Failed to fetch stocks:', error);
       set({ 
         error: '주식 목록 로딩 실패', 
         isLoading: false,
         stocks: []
       });
-      console.error('Failed to fetch stocks:', error);
     }
   },
 
