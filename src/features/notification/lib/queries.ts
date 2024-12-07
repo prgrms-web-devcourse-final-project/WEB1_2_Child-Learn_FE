@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationApi } from '@/features/notification/api/notificationApi';
-import showToast from '@/shared/lib/toast';
 
 export const NOTIFICATION_KEYS = {
   all: ['notifications'] as const,
@@ -33,7 +32,6 @@ export const useMarkAllAsRead = () => {
     mutationFn: notificationApi.markAllAsRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
-      showToast.success('모든 알림을 읽음 처리했습니다.');
     },
   });
 };
@@ -45,7 +43,17 @@ export const useDeleteNotification = () => {
     mutationFn: notificationApi.deleteNotification,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
-      showToast.success('알림이 삭제되었습니다.');
+    },
+  });
+};
+
+export const useSendFriendAcceptNotification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: notificationApi.sendFriendAcceptNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 };

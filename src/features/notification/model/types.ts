@@ -1,4 +1,5 @@
 export type NotificationType = 'MESSAGE' | 'FRIEND_REQUEST' | 'FRIEND_ACCEPT';
+export type NotificationStatus = 'ACCEPT' | 'REJECT' | undefined;
 
 export interface Notification {
   notificationId: number;
@@ -7,6 +8,7 @@ export interface Notification {
   title: string;
   content: string;
   type: NotificationType;
+  status?: NotificationStatus; // 추가
   isRead: boolean;
   createdAt: string;
   profileImageUrl: string | null;

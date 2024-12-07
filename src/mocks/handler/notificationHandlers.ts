@@ -1,4 +1,3 @@
-// mocks/handlers/notificationHandlers.ts
 import { http } from 'msw';
 
 const BASE_URL = '/api/v1';
@@ -7,8 +6,7 @@ interface FriendRequestResponse {
   status: 'ACCEPT' | 'REJECT';
 }
 
-// 모의 알림 데이터
-const mockNotifications = {
+let notifications = {
   content: [
     {
       notificationId: 1,
@@ -58,9 +56,8 @@ const mockNotifications = {
 };
 
 export const notificationHandlers = [
-  // GET: 알림 목록 조회
   http.get(`${BASE_URL}/notifications`, () => {
-    return new Response(JSON.stringify(mockNotifications), {
+    return new Response(JSON.stringify(notifications), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +65,6 @@ export const notificationHandlers = [
     });
   }),
 
-  // SSE 연결
   http.get(`${BASE_URL}/notifications/subscribe`, () => {
     return new Response(
       `data: {"event":"notification","id":"user123_1638245678901","data":"EventStream Created. [username=user123]"}`,
@@ -83,18 +79,12 @@ export const notificationHandlers = [
     );
   }),
 
-  // PATCH: 단일 알림 읽음 처리
-  http.patch(`${BASE_URL}/notifications/:notificationId/read`, () => {
-    return new Response(JSON.stringify({ message: '알림 읽음 처리 완료' }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }),
-
-  // PATCH: 전체 알림 읽음 처리
   http.patch(`${BASE_URL}/notifications/all/read`, () => {
+    notifications.content = notifications.content.map((notification) => ({
+      ...notification,
+      isRead: true,
+    }));
+
     return new Response(
       JSON.stringify({ message: '모든 알림 읽음 처리 완료' }),
       {
@@ -106,8 +96,16 @@ export const notificationHandlers = [
     );
   }),
 
-  // DELETE: 알림 삭제
-  http.delete(`${BASE_URL}/notifications/:notificationId`, () => {
+  http.delete(`${BASE_URL}/notifications/:notificationId`, ({ params }) => {
+    const notificationId = Number(params.notificationId);
+
+    notifications.content = notifications.content.filter(
+      (notification) => notification.notificationId !== notificationId
+    );
+
+    notifications.pageable.numberOfElements = notifications.content.length;
+    notifications.pageable.empty = notifications.content.length === 0;
+
     return new Response(JSON.stringify({ message: '알림 삭제 완료' }), {
       status: 200,
       headers: {
@@ -116,23 +114,39 @@ export const notificationHandlers = [
     });
   }),
 
-  // POST: 친구 요청 응답 (수락/거절)
-  http.post(`${BASE_URL}/friends/request/:requestId`, async ({ request }) => {
-    const { status } = (await request.json()) as FriendRequestResponse;
+  http.post(
+    `${BASE_URL}/friends/request/:requestId`,
+    async ({ request, params }) => {
+      const { status } = (await request.json()) as FriendRequestResponse;
+      const requestId = Number(params.requestId);
 
-    return new Response(
-      JSON.stringify({
-        message:
-          status === 'ACCEPT'
-            ? '친구 요청을 수락했습니다.'
-            : '친구 요청을 거절했습니다.',
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  }),
+      // notifications 상태 업데이트 - type은 변경하지 않고 status만 추가
+      notifications.content = notifications.content.map((notification) =>
+        notification.notificationId === requestId
+          ? {
+              ...notification,
+              status: status, // 상태만 추가
+              isRead: true,
+            }
+          : notification
+      );
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message:
+            status === 'ACCEPT'
+              ? '친구 요청을 수락했습니다.'
+              : '친구 요청을 거절했습니다.',
+          status: status,
+        }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
+  ),
 ];

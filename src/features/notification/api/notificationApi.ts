@@ -44,4 +44,12 @@ export const notificationApi = {
     const response = await baseApi.delete(`/notifications/${notificationId}`);
     return response.data;
   },
+
+  sendFriendAcceptNotification: async (
+    notificationId: number
+  ): Promise<void> => {
+    await baseApi.post(`/notifications/friend-accept`, {
+      notificationId,
+    });
+  },
 };
