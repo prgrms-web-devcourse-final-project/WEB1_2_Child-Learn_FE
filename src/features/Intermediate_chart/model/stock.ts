@@ -4,158 +4,180 @@ import { baseApi } from '@/shared/api/base';
 import { MidStock, StockPrice, TradeDetail, StockWithDetails, TradeAvailability, TradeResponse } from '@/features/Intermediate_chart/model/types/stock';
 
 interface WalletResponse {
- currentPoints: number;
- currentCoins: number;
+  currentPoints: number;
+  currentCoins: number;
 }
 
 interface StockStore {
- stocks: MidStock[];
- currentStockPrices: StockPrice[];
- tradeAvailability: TradeAvailability;
- stockDetails: StockWithDetails[];
- tradeDetails: TradeDetail[];
- isLoading: boolean;
- error: string | null;
- fetchStocks: () => Promise<void>;
- fetchStockPrices: (stockId: number) => Promise<void>;
- fetchStockDetails: (stockId: number) => Promise<void>;
- fetchAllStockDetails: () => Promise<void>;
- checkTradeAvailability: (stockId: number) => Promise<void>;
- executeTrade: (stockId: number, tradePoint: number, type: 'buy' | 'sell', stockName: string) => Promise<TradeResponse>;
- fetchCurrentPoints: () => Promise<number>;
+  stocks: MidStock[];
+  currentStockPrices: StockPrice[];
+  tradeAvailability: TradeAvailability;
+  stockDetails: StockWithDetails[];
+  tradeDetails: TradeDetail[];
+  isLoading: boolean;
+  error: string | null;
+  fetchStocks: () => Promise<void>;
+  fetchStockPrices: (stockId: number) => Promise<void>;
+  fetchStockDetails: (stockId: number) => Promise<void>;
+  fetchAllStockDetails: () => Promise<void>;
+  checkTradeAvailability: (stockId: number) => Promise<void>;
+  executeTrade: (
+    stockId: number, 
+    tradePoint: number, 
+    type: 'buy' | 'sell', 
+    stockName: string,
+    quantity?: number
+  ) => Promise<TradeResponse>;
+  fetchCurrentPoints: () => Promise<number>;
 }
 
 export const useStockStore = create<StockStore>((set, get) => ({
- stocks: [],
- currentStockPrices: [],
- tradeAvailability: {
-   isPossibleBuy: true,
-   isPossibleSell: true
- },
- stockDetails: [],
- tradeDetails: [],
- isLoading: true,
- error: null,
+  stocks: [],
+  currentStockPrices: [],
+  tradeAvailability: {
+    isPossibleBuy: true,
+    isPossibleSell: true
+  },
+  stockDetails: [],
+  tradeDetails: [],
+  isLoading: true,
+  error: null,
 
- fetchStocks: async () => {
-   try {
-     set({ isLoading: true });
-     const response = await baseApi.get('/mid-stocks/list');
-     
-     if (response.status === 200 && response.data) {
-       set({ 
-         stocks: response.data, 
-         isLoading: false 
-       });
-     } else {
-       throw new Error('Invalid response format');
-     }
-   } catch (error) {
-     set({ 
-       error: '주식 목록 로딩 실패', 
-       isLoading: false,
-       stocks: []
-     });
-     console.error('Failed to fetch stocks:', error);
-   }
- },
+  fetchStocks: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await baseApi.get('/mid-stocks/list');
+      
+      if (response.data) {
+        set({ 
+          stocks: response.data, 
+          isLoading: false 
+        });
+      } else {
+        console.error('Empty response data');
+        set({
+          error: '데이터를 불러올 수 없습니다',
+          isLoading: false,
+          stocks: []
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch stocks:', error);
+      set({ 
+        error: '주식 목록 로딩 실패', 
+        isLoading: false,
+        stocks: []
+      });
+    }
+  },
 
- fetchStockPrices: async (stockId: number) => {
-   try {
-     set({ isLoading: true });
-     const response = await baseApi.get<StockPrice[]>(`/mid-stocks/${stockId}/price`);
-     
-     const formattedPrices = response.data.map(price => ({
-       ...price,
-       priceDate: new Date(price.priceDate).toLocaleDateString()
-     }));
-     
-     set({ currentStockPrices: formattedPrices, isLoading: false });
-   } catch (error) {
-     set({ error: '주가 데이터 로딩 실패', isLoading: false });
-     console.error('Stock prices fetch error:', error);
-   }
- },
+  fetchStockPrices: async (stockId: number) => {
+    try {
+      set({ isLoading: true });
+      const response = await baseApi.get<StockPrice[]>(`/mid-stocks/${stockId}/price`);
+      
+      const formattedPrices = response.data.map(price => ({
+        ...price,
+        priceDate: new Date(price.priceDate).toLocaleDateString()
+      }));
+      
+      set({ currentStockPrices: formattedPrices, isLoading: false });
+    } catch (error) {
+      set({ error: '주가 데이터 로딩 실패', isLoading: false });
+      console.error('Stock prices fetch error:', error);
+    }
+  },
 
- fetchStockDetails: async (stockId: number) => {
-   try {
-     set({ isLoading: true });
-     const response = await baseApi.get<StockWithDetails>(`/mid-stocks/${stockId}`);
-     set(state => ({
-       stockDetails: [...state.stockDetails.filter(s => s.midStockId !== stockId), response.data],
-       isLoading: false
-     }));
-   } catch (error) {
-     set({ error: '주식 상세 정보 로딩 실패', isLoading: false });
-   }
- },
+  fetchStockDetails: async (stockId: number) => {
+    try {
+      set({ isLoading: true });
+      const response = await baseApi.get<StockWithDetails>(`/mid-stocks/${stockId}`);
+      set(state => ({
+        stockDetails: [...state.stockDetails.filter(s => s.midStockId !== stockId), response.data],
+        isLoading: false
+      }));
+    } catch (error) {
+      set({ error: '주식 상세 정보 로딩 실패', isLoading: false });
+    }
+  },
 
- fetchAllStockDetails: async () => {
-   try {
-     set({ isLoading: true });
-     const response = await baseApi.get<StockWithDetails[]>('/mid-stocks');
-     set({ stockDetails: response.data, isLoading: false });
-   } catch (error) {
-     set({ error: '전체 주식 상세 정보 로딩 실패', isLoading: false });
-   }
- },
+  fetchAllStockDetails: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await baseApi.get<StockWithDetails[]>('/mid-stocks');
+      set({ stockDetails: response.data, isLoading: false });
+    } catch (error) {
+      set({ error: '전체 주식 상세 정보 로딩 실패', isLoading: false });
+    }
+  },
 
- checkTradeAvailability: async (stockId: number) => {
-   try {
-     const response = await baseApi.get<TradeAvailability>(`/mid-stocks/${stockId}/available`);
-     set({ tradeAvailability: {
-       isPossibleBuy: true,
-       isPossibleSell: true  
-     }});
-     console.log('Trade availability response:', response.data);
-   } catch (error) {
-     console.error('Trade availability check error:', error);
-     set({ tradeAvailability: {
-       isPossibleBuy: true,
-       isPossibleSell: true
-     }});
-   }
- },
+  checkTradeAvailability: async (stockId: number) => {
+    try {
+      const response = await baseApi.get<TradeAvailability>(`/mid-stocks/${stockId}/available`);
+      set({ tradeAvailability: response.data });
+    } catch (error) {
+      console.error('Trade availability check error:', error);
+      // 에러 시에도 거래는 가능하도록 설정
+      set({ tradeAvailability: {
+        isPossibleBuy: true,
+        isPossibleSell: true
+      }});
+    }
+  },
 
- executeTrade: async (stockId: number, tradePoint: number, type: 'buy' | 'sell', stockName: string) => {
-   try {
-     if (type === 'buy') {
-       // 매수 실행
-       const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
-         tradePoint: Number(tradePoint)
-       });
+  executeTrade: async (
+    stockId: number, 
+    tradePoint: number, 
+    type: 'buy' | 'sell', 
+    stockName: string,
+    quantity?: number
+  ) => {
+    try {
+      if (type === 'buy') {
+        // 매수 거래 실행
+        const tradeResponse = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
+          tradePoint: Number(tradePoint),
+          quantity: quantity || Math.floor(tradePoint / (get().currentStockPrices[0]?.avgPrice || 1))
+        });
 
-       await get().checkTradeAvailability(stockId);
-       return response.data;
-     } else {
-       // 매도 실행
-       const response = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
+        // 매수 성공 시 거래 가능 여부 재확인
+        await get().checkTradeAvailability(stockId);
+        await get().fetchStockDetails(stockId);
+        
+        return tradeResponse.data;
 
-       await get().checkTradeAvailability(stockId);
-       return response.data;
-     }
-   } catch (error) {
-     if (axios.isAxiosError(error)) {
-       if (error.response?.status === 404) {
-         throw new Error('매도할 주식을 찾을 수 없습니다.');
-       } else if (error.response?.status === 400) {
-         const errorMessage = error.response.data.message || '거래 처리 중 오류가 발생했습니다.';
-         console.error('거래 실패:', errorMessage);
-         throw new Error(errorMessage);
-       }
-     }
-     console.error('예상치 못한 오류:', error);
-     throw error;
-   }
- },
+      } else {
+        // 매도 거래 실행
+        const tradeResponse = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
 
- fetchCurrentPoints: async () => {
-   try {
-     const response = await baseApi.get<WalletResponse>('/wallet/current');
-     return response.data.currentPoints;
-   } catch (error) {
-     console.error('포인트 조회 실패:', error);
-     throw error;
-   }
- }
+        // 매도 성공 시 거래 가능 여부 재확인
+        await get().checkTradeAvailability(stockId);
+        await get().fetchStockDetails(stockId);
+        
+        return tradeResponse.data;
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          throw new Error('매도할 주식을 찾을 수 없습니다.');
+        } else if (error.response?.status === 400) {
+          const errorMessage = error.response.data.message || '거래 처리 중 오류가 발생했습니다.';
+          console.error('거래 실패:', errorMessage);
+          throw new Error(errorMessage);
+        }
+      }
+      console.error('예상치 못한 오류:', error);
+      throw error;
+    }
+  },
+
+  fetchCurrentPoints: async () => {
+    try {
+      const response = await baseApi.get<WalletResponse>('/wallet/current');
+      return response.data.currentPoints;
+    } catch (error) {
+      console.error('포인트 조회 실패:', error);
+      throw error;
+    }
+  }
 }));
