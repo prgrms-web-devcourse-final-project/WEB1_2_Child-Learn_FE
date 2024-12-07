@@ -81,7 +81,8 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         currentStock.midStockId,
         tradePoint,
         'buy',
-        buyQuantity.toString()
+        buyQuantity.toString(),
+        parseInt(localStorage.getItem('userId') || '0')
       );  
 
       if ('warning' in result) {
@@ -139,12 +140,13 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
           currentStock.midStockId,
           0,
           'sell',
-          '1'
+          currentStock.midName,
+          parseInt(localStorage.getItem('userId') || '0')
         );
         
         if ('earnedPoints' in result) {
           // 매도 수익/손실 포인트 처리
-          await baseApi.post('/wallet/invest', {
+          await baseApi.post('/wallet/stock', {
             memberId: parseInt(localStorage.getItem('userId') || '0'),
             transactionType: "MID",  // 중급 주식
             points: result.earnedPoints ?? 0,

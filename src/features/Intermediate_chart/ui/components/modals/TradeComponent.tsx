@@ -26,7 +26,8 @@ export const TradeComponent: React.FC = () => {
         tradeData.stockId, 
         tradeData.tradePoint || 0,
         tradeData.type,
-        stock.midName
+        stock.midName,
+        memberId
       );
       
       if (tradeData.type === 'sell' && 'earnedPoints' in result) {

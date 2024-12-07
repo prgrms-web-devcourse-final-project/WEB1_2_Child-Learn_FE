@@ -2,6 +2,7 @@ import React from 'react';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
 import { useStockStore } from '@/features/Intermediate_chart/model/stock';
 
+
 interface SellModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -64,4 +65,4 @@ export const SellModal: React.FC<SellModalProps> = ({
       </S.ModalContainer>
     </>
   );
-};
+};  
