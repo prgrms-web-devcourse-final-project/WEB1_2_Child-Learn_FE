@@ -1,6 +1,7 @@
 import { baseApi } from "./base";
 import { Card } from "@/features/minigame/flipcardgame/types/cardTypes";
 import { WordQuizResponse, WordQuizRequest } from "@/features/minigame/wordquizgame/types/wordTypes";
+import { QuizRequestDto, QuizResponseDto, QuizAnswerRequestDto, QuizAnswerResponseDto } from '@/features/minigame/oxquizgame/types/oxTypes';
 
 interface DifficultyAvailability {
   isBegin: boolean;
@@ -112,4 +113,57 @@ submitAnswer: async (
   // 게임 상태 업데이트
   return response.data as WordQuizResponse;
 },
+};
+
+export const oxQuizApi = {
+  // 퀴즈 시작 (난이도별 퀴즈 조회)
+  startQuiz: async (difficulty: 'EASY' | 'MEDIUM' | 'HARD'): Promise<QuizResponseDto[]> => {
+    const response = await baseApi.post(
+      `/ox-quiz/start`,
+      { difficulty },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data; // QuizResponseDto[] 반환
+  },
+
+  // 답안 제출
+  submitAnswer: async (
+    oxQuizDataId: number,
+    userAnswer: 'O' | 'X'
+  ): Promise<QuizAnswerResponseDto> => {
+    const body = { userAnswer };
+
+    const response = await baseApi.post(
+      `/ox-quiz/${oxQuizDataId}/answer`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    return response.data; // QuizAnswerResponseDto 반환
+  },
+
+  // 사용자 진행 상태 확인
+  checkProgress: async (): Promise<{
+    completed: number; // 완료된 퀴즈 수
+    total: number; // 총 퀴즈 수
+    isQuizAvailable: boolean; // 퀴즈 시작 가능 여부
+  }> => {
+    const response = await baseApi.get(`/ox-quiz/progress`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // JWT 인증
+      },
+    });
+
+    return response.data; // 진행 상태 정보 반환
+  },
 };
