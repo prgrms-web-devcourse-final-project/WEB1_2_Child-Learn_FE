@@ -1,103 +1,55 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
-import { OXQuiz } from './store/useOXQuizStore';
 import useOXQuizStore from './store/useOXQuizStore';
-import { useUserStore } from '../../../app/providers/state/zustand/userStore';
 
 const OXQuizGamePage = () => {
-  const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>(); // level 파라미터
-  const { oxQuizzes, submitAnswer, fetchInitialQuizzes } = useOXQuizStore();
-  const { addPoints } = useUserStore();
+  const { difficulty } = useParams<{ difficulty: 'EASY' | 'MEDIUM' | 'HARD' }>();
+  const { oxQuizzes, currentIndex, fetchQuizzes, submitAnswer, result, loading } = useOXQuizStore();
   const navigate = useNavigate();
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [showResult, setShowResult] = useState<'correct' | 'incorrect' | null>(null);
-
-  const currentQuiz = oxQuizzes[currentQuestionIndex];
-
-  // 레벨별 퀴즈 3개를 초기화
   useEffect(() => {
     if (difficulty) {
-      // level에 따라 퀴즈 데이터를 준비합니다.
-      const quizzesForLevel: OXQuiz[] = [
-        {
-          id: 1,
-          content: `이것은 ${difficulty} 레벨의 질문 1입니다.`,
-          isCorrect: null,
-          priority: 'HIGH',
-          difficulty,
-        },
-        {
-          id: 2,
-          content: `이것은 ${difficulty} 레벨의 질문 2입니다.`,
-          isCorrect: null,
-          priority: 'LOW',
-          difficulty,
-        },
-        {
-          id: 3,
-          content: `이것은 ${difficulty} 레벨의 질문 3입니다.`,
-          isCorrect: null,
-          priority: 'HIGH',
-          difficulty,
-        },
-      ];
-
-      // 초기화
-      fetchInitialQuizzes(quizzesForLevel);
+      fetchQuizzes(difficulty); // 난이도에 따라 퀴즈 가져오기
     }
-  }, [difficulty, fetchInitialQuizzes]);
+  }, [difficulty, fetchQuizzes]);
 
-  const handleAnswer = (isCorrect: boolean) => {
-    if (!currentQuiz) return;
+  const currentQuiz = oxQuizzes[currentIndex];
 
-    submitAnswer(currentQuiz.id, isCorrect);
-    setShowResult(isCorrect ? 'correct' : 'incorrect');
-
-    if (isCorrect) {
-      addPoints(10); // 정답 시 포인트 추가
+  const handleAnswer = async (userAnswer: 'O' | 'X') => {
+    if (currentQuiz) {
+      await submitAnswer(currentQuiz.oxQuizDataId, userAnswer);
     }
   };
 
   const handleNextQuestion = () => {
-    setShowResult(null);
-
-    if (currentQuestionIndex + 1 < 3) {
-      // 3개의 문제까지만 진행
-      setCurrentQuestionIndex((prev) => prev + 1);
-    } else {
-      navigate(`/ox-quiz/result/${difficulty}`); // 모든 문제를 다 풀었을 때 결과 페이지로 이동
+    if (currentIndex + 1 >= oxQuizzes.length) {
+      navigate(`/ox-quiz/result/${difficulty}`); // 결과 페이지로 이동
     }
   };
+
+  if (!currentQuiz) return <p>퀴즈가 없습니다.</p>;
 
   return (
     <PageContainer>
       <ProgressBar>
         {oxQuizzes.map((_, index) => (
-          <ProgressStep key={index} active={index <= currentQuestionIndex} />
+          <ProgressStep key={index} active={index <= currentIndex} />
         ))}
       </ProgressBar>
       <QuestionContainer>
-        <Question>{currentQuiz.content}</Question>
+        <Question>{currentQuiz.question}</Question>
       </QuestionContainer>
-      {showResult === null ? (
+      {result === null ? (
         <ButtonContainer>
-          <AnswerButton onClick={() => handleAnswer(true)}>O</AnswerButton>
-          <AnswerButton onClick={() => handleAnswer(false)}>X</AnswerButton>
+          <AnswerButton onClick={() => handleAnswer('O')}>O</AnswerButton>
+          <AnswerButton onClick={() => handleAnswer('X')}>X</AnswerButton>
         </ButtonContainer>
-      ) : showResult === 'correct' ? (
-        <ResultContainer>
-          <ResultEmoji>😃</ResultEmoji>
-          <ResultText>정답</ResultText>
-          <Explanation>{currentQuiz.content}에 대한 설명입니다.</Explanation>
-          <NextButton onClick={handleNextQuestion}>다음 문제 넘어가기</NextButton>
-        </ResultContainer>
       ) : (
         <ResultContainer>
-          <ResultEmoji>😢</ResultEmoji>
-          <ResultText>오답</ResultText>
-          <Explanation>{currentQuiz.content}에 대한 설명입니다.</Explanation>
+          <ResultEmoji>{result.isCorrect ? '😃' : '😢'}</ResultEmoji>
+          <ResultText>{result.isCorrect ? '정답' : '오답'}</ResultText>
+          <Explanation>{result.explanation}</Explanation>
           <NextButton onClick={handleNextQuestion}>다음 문제 넘어가기</NextButton>
         </ResultContainer>
       )}
