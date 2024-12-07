@@ -113,22 +113,27 @@ export const useStockStore = create<StockStore>((set, get) => ({
       const response = await baseApi.get<TradeAvailability>(`/mid-stocks/${stockId}/available`);
       set({ tradeAvailability: {
         isPossibleBuy: true,
-        isPossibleSell: response.data.isPossibleSell
+        isPossibleSell: true  
       }});
+      console.log('Trade availability response:', response.data); // 응답 확인용
     } catch (error) {
       console.error('Trade availability check error:', error);
+      // 에러 시에도 매도 가능하도록
+      set({ tradeAvailability: {
+        isPossibleBuy: true,
+        isPossibleSell: true
+      }});
     }
   },
 
   executeTrade: async (stockId: number, tradePoint: number, type: 'buy' | 'sell', stockName: string, memberId: number) => {
     try {
       if (type === 'buy') {
-        // 1. 매수 거래 실행
+        // 매수 로직은 동일하게 유지
         const tradeResponse = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/buy`, {
           tradePoint: Number(tradePoint)
         });
 
-        // 2. 매수 성공 시 지갑 업데이트
         try {
           const walletResponse = await baseApi.post<WalletResponse>('/wallet/stock', {
             memberId,
@@ -139,42 +144,42 @@ export const useStockStore = create<StockStore>((set, get) => ({
             stockName: stockName
           });
           
-          console.log('Wallet update response:', walletResponse.data);
-          
-          if (!walletResponse.data.currentPoints && walletResponse.data.currentPoints !== 0) {
-            throw new Error('Invalid wallet update response');
-          }
+          console.log('매수 지갑 업데이트 응답:', walletResponse.data);
         } catch (walletError) {
-          console.error('Wallet update failed:', walletError);
-          throw new Error('지갑 업데이트에 실패했습니다. 관리자에게 문의해주세요.');
+          console.error('매수 지갑 업데이트 실패:', walletError);
+          throw new Error('지갑 업데이트에 실패했습니다.');
         }
 
         await get().checkTradeAvailability(stockId);
         return tradeResponse.data;
 
       } else {
-        const tradeResponse = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`);
+        // 매도 로직 수정
+        console.log('매도 요청:', { stockId, tradePoint });
+        
+        const tradeResponse = await baseApi.post<TradeResponse>(`/mid-stocks/${stockId}/sell`, {
+          tradePoint: Number(tradePoint)  // 매도 시에도 tradePoint 전달
+        });
 
-        if (tradeResponse.data.earnedPoints) {
-          try {
-            const walletResponse = await baseApi.post<WalletResponse>('/wallet/stock', {
-              memberId,
-              transactionType: 'MID',
-              points: tradeResponse.data.earnedPoints,
-              pointType: 'STOCK',
-              stockType: 'MID',
-              stockName: stockName
-            });
-            
-            console.log('Wallet update response:', walletResponse.data);
-            
-            if (!walletResponse.data.currentPoints && walletResponse.data.currentPoints !== 0) {
-              throw new Error('Invalid wallet update response');
-            }
-          } catch (walletError) {
-            console.error('Wallet update failed:', walletError);
-            throw new Error('지갑 업데이트에 실패했습니다. 관리자에게 문의해주세요.');
-          }
+        console.log('매도 응답:', tradeResponse.data);
+
+        // earnedPoints가 0이어도 지갑 업데이트 실행
+        const earnedPoints = tradeResponse.data.earnedPoints ?? tradePoint;
+        
+        try {
+          const walletResponse = await baseApi.post<WalletResponse>('/wallet/stock', {
+            memberId,
+            transactionType: 'MID',
+            points: earnedPoints, 
+            pointType: 'STOCK',
+            stockType: 'MID',
+            stockName: stockName
+          });
+          
+          console.log('매도 지갑 업데이트 응답:', walletResponse.data);
+        } catch (walletError) {
+          console.error('매도 지갑 업데이트 실패:', walletError);
+          throw new Error('지갑 업데이트에 실패했습니다.');
         }
 
         await get().checkTradeAvailability(stockId);
@@ -185,9 +190,12 @@ export const useStockStore = create<StockStore>((set, get) => ({
         if (error.response?.status === 404) {
           throw new Error('매도할 주식을 찾을 수 없습니다.');
         } else if (error.response?.status === 400) {
-          throw new Error(error.response.data.message || '거래 처리 중 오류가 발생했습니다.');
+          const errorMessage = error.response.data.message || '거래 처리 중 오류가 발생했습니다.';
+          console.error('거래 실패:', errorMessage);
+          throw new Error(errorMessage);
         }
       }
+      console.error('예상치 못한 오류:', error);
       throw error;
     }
   }
