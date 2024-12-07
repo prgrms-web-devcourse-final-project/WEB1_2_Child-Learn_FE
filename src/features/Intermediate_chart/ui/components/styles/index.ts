@@ -1,4 +1,3 @@
-
 import styled from 'styled-components';
 
 export const ModalOverlay = styled.div`
@@ -197,4 +196,11 @@ export const StockInfo = styled.div`
   flex-direction: column;
   gap: 10px;
   margin-bottom: 20px;
+`;
+
+export const ErrorMessage = styled.div`
+  color: #ff0000;
+  margin: 10px 0;
+  font-size: 14px;
+  text-align: center;
 `;
