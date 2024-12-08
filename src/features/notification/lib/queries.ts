@@ -2,10 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationApi } from '@/features/notification/api/notificationApi';
 import { friendApi } from '@/features/freind/api/friendApi';
 
-export const NOTIFICATION_KEYS = {
+type NotificationKeys = {
+  all: readonly ['notifications'];
+  list: (page: number) => readonly ['notifications', 'list', number];
+  friendRequests: readonly ['notifications', 'friendRequests', 'received'];
+};
+
+export const NOTIFICATION_KEYS: NotificationKeys = {
   all: ['notifications'] as const,
-  list: (page: number) => [...NOTIFICATION_KEYS.all, 'list', page] as const,
-  friendRequests: ['friendRequests', 'received'] as const, // 추가
+  list: (page: number) => ['notifications', 'list', page] as const,
+  friendRequests: ['notifications', 'friendRequests', 'received'] as const,
 };
 
 interface FriendRequest {

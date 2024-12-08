@@ -27,8 +27,11 @@ export const useNotificationSSE = () => {
 
       if ('event' in eventData && eventData.event === 'notification') {
         console.log('새 알림 수신');
+        // 전체 알림 목록 쿼리 무효화
         queryClient.invalidateQueries({
-          queryKey: NOTIFICATION_KEYS.list(0),
+          queryKey: NOTIFICATION_KEYS.all, // 모든 알림 관련 쿼리 무효화
+          refetchType: 'active', // 활성 쿼리만 즉시 리패치
+          exact: false, // 하위 쿼리도 포함
         });
       } else if ('type' in eventData) {
         console.log('알림 상태 변경:', eventData.type);
@@ -37,7 +40,9 @@ export const useNotificationSSE = () => {
           case 'READ_ALL':
           case 'DELETE':
             queryClient.invalidateQueries({
-              queryKey: NOTIFICATION_KEYS.list(0),
+              queryKey: NOTIFICATION_KEYS.all,
+              refetchType: 'active',
+              exact: false,
             });
             break;
         }
@@ -65,6 +70,7 @@ export const useNotificationSSE = () => {
       console.log('SSE 연결 성공');
     };
 
+    // 일반 알림 이벤트 핸들러
     const handleNotification = (event: MessageEvent) => {
       // connected 메시지 처리
       if (event.data === 'connected') {
@@ -81,7 +87,20 @@ export const useNotificationSSE = () => {
       }
     };
 
+    // 하트비트 이벤트 핸들러
+    const handleHeartbeat = (event: MessageEvent) => {
+      console.log('하트비트 수신:', event.data);
+    };
+
+    // 재연결 이벤트 핸들러
+    const handleRetry = (event: MessageEvent) => {
+      console.log('재연결 시도:', event.data);
+    };
+
+    // 이벤트 리스너 등록
     eventSource.addEventListener('notification', handleNotification);
+    eventSource.addEventListener('heartbeat', handleHeartbeat);
+    eventSource.addEventListener('retry', handleRetry);
 
     eventSource.onerror = () => {
       console.error('SSE 연결 에러');
@@ -93,6 +112,10 @@ export const useNotificationSSE = () => {
 
     return () => {
       console.log('SSE 연결 종료');
+      // 이벤트 리스너 제거
+      eventSource.removeEventListener('notification', handleNotification);
+      eventSource.removeEventListener('heartbeat', handleHeartbeat);
+      eventSource.removeEventListener('retry', handleRetry);
       eventSource.close();
     };
   }, [isAuthenticated, accessToken, handleSSEEvent]);
