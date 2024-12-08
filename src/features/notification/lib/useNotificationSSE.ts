@@ -2,6 +2,8 @@ import { useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/entities/User/model/store/authStore';
 import { NOTIFICATION_KEYS } from '@/features/notification/lib/queries';
+import { EventSourcePolyfill } from 'event-source-polyfill';
+import EventSource from 'eventsource';
 
 interface SSEEvent {
   event?: 'notification';
@@ -17,7 +19,7 @@ interface NotificationStateEvent {
 
 export const useNotificationSSE = () => {
   const queryClient = useQueryClient();
-  const { isAuthenticated, accessToken } = useAuthStore(); // accessToken 추가
+  const { isAuthenticated, accessToken } = useAuthStore();
 
   const handleSSEEvent = useCallback(
     (eventData: SSEEvent | NotificationStateEvent) => {
@@ -45,25 +47,25 @@ export const useNotificationSSE = () => {
   );
 
   const connectSSE = useCallback(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !accessToken) return;
 
-    // URL에서 인증 토큰을 쿼리 파라미터로 포함
-    const eventSource = new EventSource(
-      `/api/v1/notifications/subscribe?token=${accessToken}`,
+    const eventSource = new EventSourcePolyfill(
+      '/api/v1/notifications/subscribe',
       {
-        withCredentials: true, // 인증 정보 포함
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
       }
-    );
+    ) as unknown as EventSource;
 
     console.log('SSE 연결 시도');
 
-    // 연결 성공 시
     eventSource.onopen = () => {
       console.log('SSE 연결 성공');
     };
 
-    // notification 이벤트 리스너
-    eventSource.addEventListener('notification', (event) => {
+    const handleNotification = (event: MessageEvent) => {
       try {
         const eventData = JSON.parse(event.data);
         console.log('알림 이벤트 수신:', eventData);
@@ -71,35 +73,35 @@ export const useNotificationSSE = () => {
       } catch (error) {
         console.error('SSE 메시지 파싱 실패:', error);
       }
-    });
+    };
 
-    // 재연결 이벤트 리스너
-    eventSource.addEventListener('retry', () => {
+    const handleRetry = () => {
       console.log('SSE 재연결 시도');
-    });
+    };
 
-    eventSource.onerror = (error) => {
-      console.error('SSE 연결 에러:', error);
+    eventSource.addEventListener('notification', handleNotification);
+    eventSource.addEventListener('retry', handleRetry);
+
+    eventSource.onerror = () => {
+      console.error('SSE 연결 에러');
       eventSource.close();
-      // 인증된 상태일 때만 재연결 시도
-      if (isAuthenticated) {
+      if (isAuthenticated && accessToken) {
         setTimeout(connectSSE, 3000);
       }
     };
 
     return () => {
       console.log('SSE 연결 종료');
+      eventSource.removeEventListener('notification', handleNotification);
+      eventSource.removeEventListener('retry', handleRetry);
       eventSource.close();
     };
-  }, [isAuthenticated, handleSSEEvent]);
+  }, [isAuthenticated, accessToken, handleSSEEvent]);
 
   useEffect(() => {
     const cleanup = connectSSE();
     return () => {
-      if (cleanup) {
-        cleanup();
-        console.log('SSE 연결 정상 종료');
-      }
+      cleanup?.();
     };
-  }, [connectSSE, isAuthenticated]); // isAuthenticated 의존성 추가
+  }, [connectSSE]);
 };
