@@ -35,39 +35,39 @@ export const useQuizStore = create<QuizStore>((set) => ({
       console.error('Quiz fetch error:', error);
     }
   },
+// quiz.store.ts
+submitAnswer: async (answer: string) => {
+  try {
+    const quizResponse = await baseApi.post('/begin-stocks/submissions', {
+      answer  // 단순화된 요청
+    });
 
-  submitAnswer: async (answer: string) => {
-    try {
-      // 퀴즈 답변 제출
-      const quizResponse = await baseApi.post('/begin-stocks/submissions', {
-        answer: answer
+    set({ selectedAnswer: answer });
+
+    if (quizResponse.data.correct) {  // 'correct' 키로 변경
+      // 포인트 적립 요청 수정
+      await baseApi.post('/wallet/stock', {
+        points: 100,
+        pointType: "STOCK",
+        stockType: "BEGIN",
+        isWin: true
       });
 
-      set({ selectedAnswer: answer });
-
-      const isCorrect = quizResponse.data.isCorrect;
-
-      if (isCorrect) {
-        // 포인트 적립 요청 - 수정된 부분
-        const pointResponse = await baseApi.post('/wallet/stock', {
-          points: 100,
-          pointType: "QUIZ",
-          quizType: "BEGIN",
-          quizName: "초급주식퀴즈"
-        });
-
-        return {
-          isCorrect: true,
-          points: pointResponse.data.currentPoints
-        };
-      }
-
       return {
-        isCorrect: false
+        isCorrect: true,
+        points: 100 // 고정값 사용
       };
-    } catch (error) {
-      console.error('Answer submission error:', error);
-      throw error;
+    }
+
+    return {
+      isCorrect: false
+    };
+  } catch (error) {
+    console.error('Answer submission error:', error);
+    // 에러를 throw하지 않고 기본값 반환
+    return {
+      isCorrect: false
+    };
     }
   }
 }));
