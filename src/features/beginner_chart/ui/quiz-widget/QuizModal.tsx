@@ -11,15 +11,7 @@ interface QuizModalProps {
   earnedPoints?: number;
 }
 
-const QuizModal: React.FC<QuizModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  isCorrect,
-  earnedPoints = 0
-}) => {
-  if (!isOpen) return null;
-
-  const ModalOverlay = styled.div`
+const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
   left: 0;
@@ -68,15 +60,25 @@ const ConfirmButton = styled.button`
   }
 `;
 
+const QuizModal: React.FC<QuizModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  isCorrect,
+  earnedPoints = 0
+}) => {
+  if (!isOpen) return null;
+
+  console.log('Modal Props:', { isCorrect, earnedPoints });
+
   return (
     <ModalOverlay>
       <ModalContent>
         <ModalText>
           {isCorrect ? '정답입니다!' : '내일 다시 도전해봐요!'}
         </ModalText>
-        {earnedPoints > 0 && (
+        {isCorrect && earnedPoints > 0 && (
           <PointText>
-            +{earnedPoints} 포인트를 획득했습니다!
+            100 포인트를 획득했습니다!
           </PointText>
         )}
         <ConfirmButton onClick={onClose}>

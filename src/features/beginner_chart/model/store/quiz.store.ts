@@ -12,17 +12,6 @@ interface QuizStore {
   submitAnswer: (answer: string) => Promise<{ isCorrect: boolean; points?: number }>;
 }
 
-interface QuizResponse {
-  quiz: BeginQuiz[];
-  isCorrect: boolean;
-}
-
-interface PointResponse {
-  memberId: number;
-  currentPoints: number;
-  currentCoins: number;
-}
-
 export const useQuizStore = create<QuizStore>((set) => ({
   quizzes: [],
   currentQuiz: null,
@@ -38,47 +27,47 @@ export const useQuizStore = create<QuizStore>((set) => ({
       if (response.data.quiz?.[0]) {
         set({
           currentQuiz: response.data.quiz[0],
-          isLoading: true
+          isLoading: false
         });
       }
     } catch (error) {
-      set({ error: '퀴즈 데이터 로딩 실패', isLoading: true });
+      set({ error: '퀴즈 데이터 로딩 실패', isLoading: false });
       console.error('Quiz fetch error:', error);
     }
   },
+// quiz.store.ts
+submitAnswer: async (answer: string) => {
+  try {
+    const quizResponse = await baseApi.post('/begin-stocks/submissions', {
+      answer  // 단순화된 요청
+    });
 
-  submitAnswer: async (answer: string) => {
-    try {
-      // Submit quiz answer without requiring userId
-      const quizResponse = await baseApi.post<QuizResponse>('/begin-stocks/submissions', {
-        answer: answer
+    set({ selectedAnswer: answer });
+
+    if (quizResponse.data.correct) {  // 'correct' 키로 변경
+      // 포인트 적립 요청 수정
+      await baseApi.post('/wallet/stock', {
+        points: 100,
+        pointType: "STOCK",
+        stockType: "BEGIN",
+        isWin: true
       });
 
-      set({ selectedAnswer: answer });
-
-      if (quizResponse.data.isCorrect) {
-        // Submit points if answer is correct
-        const pointRequest = {
-          points: 200,
-          pointType: "GAME",
-          gameType: "OX_QUIZ",
-          isWin: true
-        };
-
-        const pointResponse = await baseApi.post<PointResponse>('/wallet/game', pointRequest);
-
-        return {
-          isCorrect: true,
-          points: pointResponse.data.currentPoints
-        };
-      }
-
       return {
-        isCorrect: false
+        isCorrect: true,
+        points: 100 // 고정값 사용
       };
-    } catch (error) {
-      console.error('Answer submission error:', error);
-      throw error;
+    }
+
+    return {
+      isCorrect: false
+    };
+  } catch (error) {
+    console.error('Answer submission error:', error);
+    // 에러를 throw하지 않고 기본값 반환
+    return {
+      isCorrect: false
+    };
     }
   }
 }));

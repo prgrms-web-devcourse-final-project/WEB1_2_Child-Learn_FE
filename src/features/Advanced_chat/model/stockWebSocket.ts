@@ -58,16 +58,21 @@ export class StockWebSocket {
   private getAuthToken(): string | null {
     try {
       const authStorageStr = localStorage.getItem('auth-storage');
+      console.log('Raw auth storage:', authStorageStr);  // 디버깅을 위한 로그
+      
       if (!authStorageStr) {
-        console.error('No auth-storage found in localStorage');
+        console.warn('No auth-storage found in localStorage');
         return null;
       }
 
       const authStorage = JSON.parse(authStorageStr);
+      console.log('Parsed auth storage:', authStorage);  // 디버깅을 위한 로그
+      
       const token = authStorage?.state?.accessToken;
+      console.log('Extracted token:', token);  // 디버깅을 위한 로그
       
       if (!token) {
-        console.error('No token found in auth-storage state');
+        console.warn('No token found in auth-storage state');
         return null;
       }
 
@@ -105,7 +110,8 @@ export class StockWebSocket {
 
       try {
         const url = new URL(`${StockWebSocket.BASE_URL}${StockWebSocket.WS_PATH}`);
-        url.searchParams.append('Authorization', `Bearer ${token}`);
+        // 'access_token' 파라미터로 변경
+        url.searchParams.append('access_token', token);
 
         console.log('Connecting to WebSocket:', url.toString());
         this.ws = new WebSocket(url.toString());
@@ -193,7 +199,7 @@ export class StockWebSocket {
     try {
       await this.connect();
       if (this.ws?.readyState === WebSocket.OPEN) {
-        this.sendMessage(WebSocketActions.REFERENCE_DATA);
+        await this.sendMessage(WebSocketActions.REFERENCE_DATA);
       }
     } catch (error) {
       console.error('Reconnection failed:', error);
@@ -203,7 +209,6 @@ export class StockWebSocket {
   public async sendMessage(type: WebSocketActions, data?: any) {
     try {
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        console.log('WebSocket not connected, attempting to connect…');
         await this.connect();
       }
 
@@ -218,6 +223,7 @@ export class StockWebSocket {
       }
     } catch (error) {
       console.error('Failed to send message:', error);
+      throw error;
     }
   }
 

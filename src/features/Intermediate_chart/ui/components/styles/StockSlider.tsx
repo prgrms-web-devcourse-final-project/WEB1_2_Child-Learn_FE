@@ -45,7 +45,6 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
   const {
     fetchStockPrices,
     checkTradeAvailability,
-    tradeAvailability,
     currentStockPrices,
     executeTrade
   } = useStockStore();
@@ -486,4 +485,4 @@ const OutButton = styled.button`
   }
 `;
 
-export default StockSlider;
+export default StockSlider

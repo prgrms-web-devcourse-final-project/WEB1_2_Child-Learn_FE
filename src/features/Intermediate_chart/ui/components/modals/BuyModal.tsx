@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useStockStore } from '@/features/Intermediate_chart/model/stock';
 import * as S from '@/features/Intermediate_chart/ui/components/styles';
+import styled from 'styled-components';
 
 interface BuyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (tradePoint: number) => Promise<void>;
+  onConfirm: (tradePoint: number, quantity: number, stockId: number) => Promise<void>;
   stockId: number;
   stockName: string;
   initialPrice: string;
   points: number;
 }
+
+export const ErrorMessage = styled.div`
+  color: red;
+  font-size: 14px;
+  margin: 8px 0;
+`;
 
 export const BuyModal: React.FC<BuyModalProps> = ({
   isOpen,
@@ -22,27 +29,59 @@ export const BuyModal: React.FC<BuyModalProps> = ({
   points
 }) => {
   const [tradePoint, setTradePoint] = useState('');
-  const executeTrade = useStockStore(state => state.executeTrade);
+  const [quantity, setQuantity] = useState(0);
+  const [error, setError] = useState<string>('');
+  const currentStockPrices = useStockStore(state => state.currentStockPrices);
+
+  // 현재 주식 가격
+  const currentPrice = currentStockPrices[0]?.avgPrice || Number(initialPrice) || 0;
+
+  useEffect(() => {
+    if (tradePoint) {
+      const calculatedQuantity = Math.floor(Number(tradePoint) / currentPrice);
+      setQuantity(calculatedQuantity);
+    } else {
+      setQuantity(0);
+    }
+  }, [tradePoint, currentPrice]);
 
   const handleTradePointChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
     setTradePoint(value);
+    setError('');
+  };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Math.floor(Number(e.target.value.replace(/[^0-9]/g, '')));
+    setQuantity(value);
+    setTradePoint((value * currentPrice).toString());
+    setError('');
   };
 
   const handleConfirm = async () => {
     try {
       const point = Number(tradePoint);
+      
       if (point > points) {
-        throw new Error('보유 포인트가 부족합니다.');
+        setError('포인트가 부족합니다.');
+        return;
       }
 
-      // 매수 실행
-      await executeTrade(stockId, point, 'buy', stockName, Number(initialPrice));
-      await onConfirm(point);
+      if (point === points) {
+        // 경고 모달 표시 로직
+        const confirmAllIn = window.confirm('보유한 포인트를 모두 사용하시겠습니까?');
+        if (!confirmAllIn) {
+          return;
+        }
+      }
+
+      await onConfirm(point, quantity, stockId);
+      setTradePoint('');
+      setQuantity(0);
+      setError('');
       onClose();
     } catch (error: any) {
-      console.error('매수 실패:', error);
-      // 에러 처리...
+      setError(error.message || '매수 처리 중 오류가 발생했습니다.');
     }
   };
 
@@ -55,7 +94,23 @@ export const BuyModal: React.FC<BuyModalProps> = ({
         <S.ModalTitle>매수하기</S.ModalTitle>
         <S.ModalContent>
           <S.FormGroup>
-            <S.Label>{stockName}</S.Label>
+            <S.Label>종목명</S.Label>
+            <div>{stockName}</div>
+          </S.FormGroup>
+
+          <S.FormGroup>
+            <S.Label>현재가</S.Label>
+            <div>{currentPrice.toLocaleString()}P</div>
+          </S.FormGroup>
+
+          <S.FormGroup>
+            <S.Label>수량</S.Label>
+            <S.Input
+              type="text"
+              value={quantity}
+              onChange={handleQuantityChange}
+              placeholder="수량을 입력하세요"
+            />
           </S.FormGroup>
 
           <S.FormGroup>
@@ -68,6 +123,8 @@ export const BuyModal: React.FC<BuyModalProps> = ({
             />
           </S.FormGroup>
 
+          {error && <ErrorMessage>{error}</ErrorMessage>}
+
           <S.ButtonGroup>
             <S.ConfirmButton 
               type="buy"
@@ -77,7 +134,7 @@ export const BuyModal: React.FC<BuyModalProps> = ({
               매수하기
             </S.ConfirmButton>
             <S.CancelButton onClick={onClose}>
-              나가기
+              취소
             </S.CancelButton>
           </S.ButtonGroup>
         </S.ModalContent>
