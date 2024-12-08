@@ -2,13 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart'; 
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
 import { StockWebSocket } from '@/features/Advanced_chat/model/stockWebSocket';
-import { WebSocketActions } from '@/features/Advanced_chat/model/stockWebSocket';
 import { 
-  WebSocketMessage, 
   Stock,
   StockPrice
 } from '@/features/Advanced_chat/types/stock';
-import { generateUUID } from '@/features/Advanced_chat/utils/uuid';
 import {  
   SlideContainer,
   TimeDisplay,
@@ -22,20 +19,17 @@ import {
   Indicator
 } from './styled';
 
+// Custom Hook for Game Timer
 const useGameTimer = ({ 
   isPlaying, 
-  gameId, 
-  webSocket, 
   onGameEnd 
 }: {
   isPlaying: boolean;
-  gameId: string;
-  webSocket: StockWebSocket | null;
   onGameEnd?: () => void;
 }) => {
   const [gameTime, setGameTime] = useState(0);
   const lastUpdateTime = useRef<number | null>(null);
-  const MAX_GAME_TIME = 420;
+  const MAX_GAME_TIME = 420; // 7 minutes in seconds
 
   useEffect(() => {
     let animationFrameId: number;
@@ -51,8 +45,7 @@ const useGameTimer = ({
             setGameTime(prev => {
               const newTime = prev + deltaTime;
               
-              if (newTime >= MAX_GAME_TIME && webSocket) {
-                webSocket.sendMessage(WebSocketActions.END_GAME, { gameId });
+              if (newTime >= MAX_GAME_TIME) {
                 onGameEnd?.();
                 return MAX_GAME_TIME;
               }
@@ -81,7 +74,7 @@ const useGameTimer = ({
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [isPlaying, gameId, webSocket, onGameEnd]);
+  }, [isPlaying, onGameEnd]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -91,12 +84,12 @@ const useGameTimer = ({
 
   return {
     gameTime,
-    formattedTime: formatTime(gameTime)
+    formattedTime: formatTime(gameTime),
+    isTimeUp: gameTime >= MAX_GAME_TIME
   };
 };
 
 export const StockSlider: React.FC = () => {
-  const [gameId] = useState<string>(generateUUID());
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showActions, setShowActions] = useState(false);
   const [selectedStock, setSelectedStock] = useState<number | null>(null);
@@ -104,92 +97,74 @@ export const StockSlider: React.FC = () => {
   const [stockData, setStockData] = useState<Record<string, StockPrice[]>>({});
   const [showTradeModal, setShowTradeModal] = useState(false);
   const [availableStocks, setAvailableStocks] = useState<Stock[]>([]);
-  const [webSocket, setWebSocket] = useState<StockWebSocket | null>(null);
+  const wsRef = useRef(StockWebSocket.getInstance());
 
-  const { formattedTime } = useGameTimer({
+  const { formattedTime, isTimeUp } = useGameTimer({
     isPlaying,
-    gameId,
-    webSocket,
     onGameEnd: () => {
       setIsPlaying(false);
-      setShowActions(true);
     }
   });
 
   useEffect(() => {
-    const ws = new StockWebSocket();
-    setWebSocket(ws);
+    const ws = wsRef.current;
     
-    const connectWebSocket = async () => {
-      try {
-        await ws.connect();
-        
-        const messageHandler = (message: WebSocketMessage) => {
-          if (!message.action) {
-            console.error("Invalid message: missing action");
-            return;
+    const messageHandler = (message: any) => {
+      console.log('Received message:', message);
+      
+      switch (message.action) {
+        case 'REFERENCE_DATA':
+          if (message.data?.stocks) {
+            setAvailableStocks(message.data.stocks);
           }
-          console.log(`Received message (GameID: ${gameId}):`, message);
-          
-          switch (message.type) {
-            case WebSocketActions.REFERENCE_DATA:
-              if (message.data?.stocks) {
-                setAvailableStocks(message.data.stocks);
-              }
-              if (message.data) {
-                handleStockData(message.data);
-              }
-              break;
-
-            case WebSocketActions.LIVE_DATA:
-              if (message.data) {
-                handleStockData(message.data);
-              }
-              break;
-
-            case WebSocketActions.END_GAME:
-              setIsPlaying(false);
-              break;
+          if (message.data) {
+            handleStockData(message.data);
           }
-        };
+          break;
 
-        ws.onMessage(messageHandler as any);
-        ws.sendMessage(WebSocketActions.REFERENCE_DATA, { gameId });
-      } catch (error) {
-        console.error('Failed to initialize WebSocket:', error);
+        case 'LIVE_DATA':
+          if (message.data) {
+            handleStockData(message.data);
+          }
+          break;
+
+        case 'END_GAME':
+          setIsPlaying(false);
+          break;
       }
     };
 
-    connectWebSocket();
-
-    return () => {
-      ws.disconnect();
+    const handleStockData = (data: any) => {
+      if (!data) return;
+      
+      setStockData(prevData => {
+        const newData = { ...prevData };
+        const newPrice = {
+          timestamp: new Date(data.timestamp * 1000).toISOString(),
+          price: data.closePrice,
+          open: data.openPrice,
+          high: data.highPrice,
+          low: data.lowPrice,
+          close: data.closePrice,
+          change: data.change || 0,
+          volume: data.volume || 0
+        };
+        
+        newData[data.symbol] = newData[data.symbol] 
+          ? [newPrice, ...newData[data.symbol]]
+          : [newPrice];
+        
+        return newData;
+      });
     };
-  }, [gameId]);
 
-  const handleStockData = (data: WebSocketMessage['data']) => {
-    if (!data) return;
-    
-    setStockData(prevData => {
-      const newData = { ...prevData };
-      const newPrice = {
-        timestamp: new Date(data.timestamp * 1000).toISOString(),
-        price: data.closePrice,
-        open: data.openPrice,
-        high: data.highPrice,
-        low: data.lowPrice,
-        close: data.closePrice,
-        change: data.change || 0,
-        volume: data.volume || 0
-      };
-      
-      newData[data.symbol] = newData[data.symbol] 
-        ? [newPrice, ...newData[data.symbol]]
-        : [newPrice];
-      
-      return newData;
-    });
-  };
+    ws.onMessage(messageHandler);
+
+    // START_GAME은 connect()시 자동으로 전송됨
+    ws.connect();
+
+    return () => ws.disconnect();
+  }, []);
 
   const handlePrevSlide = () => {
     setCurrentSlide(prev => Math.max(0, prev - 1));
@@ -200,15 +175,7 @@ export const StockSlider: React.FC = () => {
   };
 
   const handlePlayClick = () => {
-    if (!webSocket) return;
-
-    if (!isPlaying) {
-      webSocket.sendMessage(WebSocketActions.START_GAME, { gameId });
-      setIsPlaying(true);
-    } else {
-      webSocket.sendMessage(WebSocketActions.PAUSE_GAME, { gameId });
-      setIsPlaying(false);
-    }
+    setIsPlaying(!isPlaying);
   };
 
   if (availableStocks.length === 0) {

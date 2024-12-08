@@ -1,22 +1,9 @@
 import { generateUUID } from '@/features/Advanced_chat/utils/uuid';
 
-export enum WebSocketActions {
-  START_GAME = 'START_GAME',
-  PAUSE_GAME = 'PAUSE_GAME',
-  END_GAME = 'END_GAME',
-  REFERENCE_DATA = 'REFERENCE_DATA',
-  LIVE_DATA = 'LIVE_DATA'
-}
-
-export interface WebSocketMessage {
-  action: WebSocketActions;
-  memberId: number;
-}
-
 export class StockWebSocket {
   private static instance: StockWebSocket | null = null;
   private ws: WebSocket | null = null;
-  private messageHandler?: (message: WebSocketMessage) => void;
+  private messageHandler?: (message: any) => void;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private connectionId: string;
@@ -132,23 +119,41 @@ export class StockWebSocket {
           this.connectionStatus = 'connected';
           this.reconnectAttempts = 0;
           console.log('WebSocket connected successfully');
-          this.setupWebSocketHandlers();
-
-          // 연결 직후 START_GAME 메시지 자동 전송
+          
           const memberId = this.getMemberId();
           if (memberId) {
             const message = {
-              action: WebSocketActions.START_GAME,
+              action: "START_GAME",
               memberId
             };
-            console.log('Sending START_GAME message:', message);
             this.ws?.send(JSON.stringify(message));
-          } else {
-            console.error('Could not send START_GAME: memberId not available');
           }
-
+          
           resolve();
           this.connectPromise = null;
+        };
+
+        this.ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            console.log('Received message:', message);
+            
+            if (this.messageHandler) {
+              this.messageHandler(message);
+            }
+          } catch (error) {
+            console.error('Failed to parse message:', error);
+          }
+        };
+
+        this.ws.onclose = (event) => {
+          this.connectionStatus = 'disconnected';
+          this.connectPromise = null;
+          console.log(`WebSocket closed: ${event.code} (${this.getCloseReason(event.code)})`);
+          
+          if (event.code === 1006) {
+            this.handleReconnect();
+          }
         };
 
         this.ws.onerror = (error) => {
@@ -170,38 +175,6 @@ export class StockWebSocket {
     });
 
     return this.connectPromise;
-  }
-
-  private setupWebSocketHandlers() {
-    if (!this.ws) return;
-
-    this.ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data) as WebSocketMessage;
-        console.log('Received message:', message);
-        
-        if (this.messageHandler) {
-          this.messageHandler(message);
-        }
-      } catch (error) {
-        console.error('Failed to parse message:', error);
-      }
-    };
-
-    this.ws.onclose = (event) => {
-      this.connectionStatus = 'disconnected';
-      this.connectPromise = null;
-      console.log(`WebSocket closed: ${event.code} (${this.getCloseReason(event.code)})`);
-      
-      if (event.code === 1006) {
-        this.handleReconnect();
-      }
-    };
-
-    this.ws.onerror = (error) => {
-      this.connectionStatus = 'disconnected';
-      console.error('WebSocket error:', error);
-    };
   }
 
   private async handleReconnect() {
@@ -241,7 +214,7 @@ export class StockWebSocket {
     return reasons[code] || "알 수 없는 오류";
   }
 
-  public onMessage(handler: (message: WebSocketMessage) => void) {
+  public onMessage(handler: (message: any) => void) {
     this.messageHandler = handler;
   }
 
