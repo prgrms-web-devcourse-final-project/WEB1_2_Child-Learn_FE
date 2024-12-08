@@ -46,10 +46,10 @@ export const notificationApi = {
   },
 
   sendFriendAcceptNotification: async (
-    notificationId: number
+    receiverUsername: string
   ): Promise<void> => {
-    await baseApi.post(`/notifications/friend-accept`, {
-      notificationId,
+    await baseApi.post('/notifications/friend-accept', {
+      receiverUsername,
     });
   },
 
