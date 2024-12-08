@@ -110,7 +110,9 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
           message: '매수 완료',
           tradeType: 'buy',
           stockName: currentStock.midName,
-          totalPrice: tradePoint  // 사용자가 입력한 금액
+          totalPrice: tradePoint,
+          price: currentStockPrices[0]?.avgPrice || 0,
+          quantity: Math.floor(tradePoint / (currentStockPrices[0]?.avgPrice || 1))
         });
   
         setUserPoints(prev => prev - tradePoint);
@@ -130,7 +132,9 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         message: error.message,
         tradeType: 'buy',
         stockName: currentStock.midName,
-        totalPrice: tradePoint
+        totalPrice: tradePoint,
+        price: currentStockPrices[0]?.avgPrice || 0,
+        quantity: Math.floor(tradePoint / (currentStockPrices[0]?.avgPrice || 1))
       });
       setShowBuyModal(false);
       setShowResultModal(true);
@@ -164,7 +168,9 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
           message: '매도 완료',
           tradeType: 'sell',
           stockName: currentStock.midName,
-          totalPrice: result.earnedPoints ?? 0
+          totalPrice: result.earnedPoints ?? 0,
+          price: currentStockPrices[0]?.avgPrice || 0,
+          quantity: Math.floor(result.earnedPoints ?? 0 / (currentStockPrices[0]?.avgPrice || 1))
         });
   
         setUserPoints(prev => prev + (result.earnedPoints ?? 0));
@@ -179,7 +185,9 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         message: error.message,
         tradeType: 'sell',
         stockName: currentStock.midName,
-        totalPrice: 0
+        totalPrice: 0,
+        price: currentStockPrices[0]?.avgPrice || 0,
+        quantity: Math.floor(0 / (currentStockPrices[0]?.avgPrice || 1))
       });
       setShowSellModal(false);
       setShowResultModal(true);
@@ -276,8 +284,7 @@ return (
       isOpen={showBuyModal}
       onClose={() => setShowBuyModal(false)}
       onConfirm={async (tradePoint: number) => {
-        const quantity = Math.floor(tradePoint / (currentStockPrices[0]?.avgPrice || 1));
-        await handleBuyTrade(currentStockPrices[0]?.avgPrice || 0, quantity);
+        await handleBuyTrade(tradePoint);  // tradePoint만 전달
       }}
       stockId={currentStock?.midStockId || 0}
       stockName={currentStock?.midName || ''}
