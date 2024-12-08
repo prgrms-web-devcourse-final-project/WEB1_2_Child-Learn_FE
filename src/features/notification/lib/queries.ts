@@ -107,8 +107,9 @@ export const useSendFriendAcceptNotification = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (receiverUsername: string) =>
-      notificationApi.sendFriendAcceptNotification(receiverUsername),
+    mutationFn: (
+      senderUsername: string // FriendRequest 대신 string을 받도록 수정
+    ) => notificationApi.sendFriendAcceptNotification(senderUsername),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
       queryClient.invalidateQueries({
@@ -120,7 +121,6 @@ export const useSendFriendAcceptNotification = () => {
     },
   });
 };
-
 // 친구 요청 알림 생성
 export const useCreateFriendRequestNotification = () => {
   const queryClient = useQueryClient();
