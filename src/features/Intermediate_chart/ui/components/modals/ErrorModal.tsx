@@ -116,31 +116,4 @@ export const TradeComponent: React.FC = () => {
   );
 };
 
-// Styled components는 이전과 동일하게 유지
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  min-width: 300px;
-  text-align: center;
-`;
-
-export const ModalMessage = styled.p`
-  margin: 0 0 20px 0;
-  font-size: 16px;
-`;
-
 export default TradeComponent;

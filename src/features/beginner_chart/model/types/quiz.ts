@@ -4,3 +4,8 @@ export interface BeginQuiz {
   xContent: string;   // X 답변 내용
   answer: string;     // 정답 ("O" 또는 "X")
 }
+
+export interface QuizSubmissionResponse {
+  isCorrect: boolean;
+  points?: number;
+}

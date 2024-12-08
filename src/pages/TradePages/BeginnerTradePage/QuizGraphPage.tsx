@@ -1,4 +1,3 @@
-// QuizGraphPage.tsx
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
@@ -8,49 +7,8 @@ import { useQuizStore } from '@/features/beginner_chart/model/store/quiz.store';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import QuizModal from '@/features/beginner_chart/ui/quiz-widget/QuizModal';
 
-
-const QuizGraphPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [showArticle, setShowArticle] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<string>();
-  const [showModal, setShowModal] = useState(false);
-  const [earnedPoints, setEarnedPoints] = useState<number>(0);
-  
-  const { stockData, fetchStockData, isLoading } = useGraphStore();
-  const { currentQuiz, submitAnswer, fetchQuizzes } = useQuizStore();
-
-  useEffect(() => {
-    fetchStockData();
-    fetchQuizzes();
-  }, []);
-
-  const handleChartClick = () => {
-    setShowArticle(true);
-  };
-
-  const handleAnswer = async (answer: string) => {
-    try {
-      setSelectedAnswer(answer);
-      const result = await submitAnswer(answer);
-      if (result && 'points' in result) {
-        setEarnedPoints(result.points ?? 0);
-      }
-      setShowModal(true);
-    } catch (error) {
-      console.error('Error submitting answer:', error);
-    }
-  };
-
-  const handleModalClose = () => {
-    setShowModal(false);
-    setShowArticle(false);
-  };
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  const PageContainer = styled.div`
+// Styled components를 컴포넌트 밖으로 이동
+const PageContainer = styled.div`
   padding: 20px;
   background-color: #ffffff;
   min-height: 100vh;
@@ -183,7 +141,51 @@ const AnswerText = styled.span`
   padding-top: 2px;
 `;
 
+const QuizGraphPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [showArticle, setShowArticle] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string>();
+  const [showModal, setShowModal] = useState(false);
+  const [earnedPoints, setEarnedPoints] = useState<number>(0);
+  
+  const { stockData, fetchStockData, isLoading } = useGraphStore();
+  const { currentQuiz, submitAnswer, fetchQuizzes } = useQuizStore();
 
+  useEffect(() => {
+    fetchStockData();
+    fetchQuizzes();
+  }, []);
+
+  const handleChartClick = () => {
+    setShowArticle(true);
+  };
+
+  const handleAnswer = async (answer: string) => {
+    try {
+      setSelectedAnswer(answer);
+      const result = await submitAnswer(answer);
+      console.log('Submit Answer Result:', result);
+      
+      if (result.isCorrect) {  // 여기서 체크
+        setEarnedPoints(200);  // 테스트를 위해 고정값 사용
+      }
+      setShowModal(true);
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+    }
+  };
+  
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    setShowArticle(false);
+    setSelectedAnswer(undefined); // 답변 초기화
+    setEarnedPoints(0); // 획득 포인트 초기화
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <PageContainer>
@@ -232,12 +234,12 @@ const AnswerText = styled.span`
         </ArticleContainer>
       )}
 
-      <QuizModal
-        isOpen={showModal}
-        onClose={handleModalClose}
-        isCorrect={selectedAnswer === currentQuiz?.answer}
-        earnedPoints={earnedPoints}
-      />
+<QuizModal
+  isOpen={showModal}
+  onClose={handleModalClose}
+  isCorrect={selectedAnswer === currentQuiz?.answer}
+  earnedPoints={earnedPoints}
+/>
     </PageContainer>
   );
 };

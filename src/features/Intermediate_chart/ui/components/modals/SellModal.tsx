@@ -72,7 +72,6 @@ export const SellModal: React.FC<SellModalProps> = ({
             <S.ConfirmButton 
               type="sell" 
               onClick={handleConfirm}
-              disabled={quantity <= 0}
             >
               매도하기
             </S.ConfirmButton>

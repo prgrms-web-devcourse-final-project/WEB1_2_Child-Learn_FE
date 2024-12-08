@@ -35,7 +35,7 @@ export const stockApi = {
  sellStock: async (stockId: number) => {  // tradePoint 매개변수 제거
   const response = await baseApi.post<TradeResponse>(
     `/mid-stocks/${stockId}/sell`
-  );  // request body 제거
+  ); 
   return response.data;
 }
 };
