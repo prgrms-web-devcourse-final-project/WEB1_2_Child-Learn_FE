@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm pkg set scripts.build="vite build --force"
+RUN npm pkg set scripts.build="vite build"
 RUN npm run build
 
 # Stage 2: Production
