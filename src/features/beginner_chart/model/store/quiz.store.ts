@@ -35,39 +35,38 @@ export const useQuizStore = create<QuizStore>((set) => ({
       console.error('Quiz fetch error:', error);
     }
   },
-// quiz.store.ts
-submitAnswer: async (answer: string) => {
-  try {
-    const quizResponse = await baseApi.post('/begin-stocks/submissions', {
-      answer  // 단순화된 요청
-    });
 
-    set({ selectedAnswer: answer });
-
-    if (quizResponse.data.correct) {  // 'correct' 키로 변경
-      // 포인트 적립 요청 수정
-      await baseApi.post('/wallet/stock', {
-        points: 100,
-        pointType: "STOCK",
-        stockType: "BEGIN",
-        isWin: true
+  submitAnswer: async (answer: string) => {
+    try {
+      const quizResponse = await baseApi.post('/begin-stocks/submissions', {
+        answer
       });
 
-      return {
-        isCorrect: true,
-        points: 100 // 고정값 사용
-      };
-    }
+      set({ selectedAnswer: answer });
 
-    return {
-      isCorrect: false
-    };
-  } catch (error) {
-    console.error('Answer submission error:', error);
-    // 에러를 throw하지 않고 기본값 반환
-    return {
-      isCorrect: false
-    };
+      if (quizResponse.data.correct) {
+        // 포인트 적립 요청 수정
+        await baseApi.post('/wallet/stock', {
+          points: 100,
+          pointType: "STOCK",
+          stockType: "BEGIN",
+          isWin: true
+        });
+
+        return {
+          isCorrect: true,
+          points: 100
+        };
+      }
+
+      return {
+        isCorrect: false
+      };
+    } catch (error) {
+      console.error('Answer submission error:', error);
+      return {
+        isCorrect: false
+      };
     }
   }
 }));
