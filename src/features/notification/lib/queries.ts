@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationApi } from '@/features/notification/api/notificationApi';
+import { friendApi } from '@/features/freind/api/friendApi';
 
 export const NOTIFICATION_KEYS = {
   all: ['notifications'] as const,
   list: (page: number) => [...NOTIFICATION_KEYS.all, 'list', page] as const,
+  friendRequests: ['friendRequests', 'received'] as const, // 추가
 };
 
 // 알림 목록 조회
@@ -11,6 +13,14 @@ export const useNotifications = (page: number = 0) => {
   return useQuery({
     queryKey: NOTIFICATION_KEYS.list(page),
     queryFn: () => notificationApi.getNotifications(page),
+  });
+};
+
+// 받은 친구 요청 목록 조회
+export const useReceivedFriendRequests = () => {
+  return useQuery({
+    queryKey: NOTIFICATION_KEYS.friendRequests,
+    queryFn: friendApi.getReceivedFriendRequests,
   });
 };
 
@@ -47,13 +57,49 @@ export const useDeleteNotification = () => {
   });
 };
 
+// 친구 요청 응답 (수락/거절)
+export const useRespondToFriendRequest = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      requestId,
+      status,
+    }: {
+      requestId: number;
+      status: 'ACCEPTED' | 'REJECTED';
+    }) => {
+      await friendApi.respondToFriendRequest({ requestId, status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: NOTIFICATION_KEYS.friendRequests,
+      });
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+    },
+    onError: () => {
+      console.error('친구 요청 처리 실패');
+    },
+  });
+};
+
+// 친구 수락 알림 전송
 export const useSendFriendAcceptNotification = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: notificationApi.sendFriendAcceptNotification,
+    // notificationId를 직접 requestId로 사용
+    mutationFn: async (notificationId: number) => {
+      await notificationApi.sendFriendAcceptNotification(notificationId);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+      queryClient.invalidateQueries({
+        queryKey: NOTIFICATION_KEYS.friendRequests,
+      });
+    },
+    onError: () => {
+      console.error('친구 수락 알림 전송 실패');
     },
   });
 };
@@ -65,7 +111,7 @@ export const useCreateFriendRequestNotification = () => {
   return useMutation({
     mutationFn: notificationApi.createFriendRequestNotification,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
     },
     onError: () => {
       console.error('친구 요청 알림 생성 실패');

@@ -4,19 +4,13 @@ import { NotificationItem } from '@/features/notification/ui/NotificationItem';
 import { notificationApi } from '@/features/notification/api/notificationApi';
 import { useRespondToFriendRequest } from '@/features/freind/lib/quries';
 import { Notification } from '@/features/notification/model/types';
+import { NOTIFICATION_KEYS } from '@/features/notification/lib/queries'; // 추가
 
 export const NotificationList = () => {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['notifications'],
+    queryKey: NOTIFICATION_KEYS.list(0), // 쿼리 키 상수 사용
     queryFn: () => notificationApi.getNotifications(),
-    select: (data) => {
-      console.log('알림 데이터:', data);
-      return data;
-    },
   });
-
-  console.log('현재 data:', data);
-  console.log('isLoading:', isLoading);
 
   if (error) {
     console.error('알림 조회 에러:', error);
@@ -27,7 +21,7 @@ export const NotificationList = () => {
   const handleAccept = async (notification: Notification) => {
     try {
       await respondToRequest.mutateAsync({
-        requestId: notification.senderLoginId, // notificationId 대신 senderLoginId 사용
+        requestId: notification.notificationId, // senderLoginId -> notificationId
         status: 'ACCEPTED',
       });
     } catch (error) {
@@ -38,7 +32,7 @@ export const NotificationList = () => {
   const handleReject = async (notification: Notification) => {
     try {
       await respondToRequest.mutateAsync({
-        requestId: notification.senderLoginId, // 여기도 마찬가지로 수정
+        requestId: notification.notificationId, // senderLoginId -> notificationId
         status: 'REJECTED',
       });
     } catch (error) {
@@ -56,8 +50,8 @@ export const NotificationList = () => {
         <NotificationItem
           key={notification.notificationId}
           notification={notification}
-          onAccept={() => handleAccept(notification)} // 전체 notification 객체 전달
-          onReject={() => handleReject(notification)} // 전체 notification 객체 전달
+          onAccept={() => handleAccept(notification)}
+          onReject={() => handleReject(notification)}
         />
       ))}
     </ListContainer>
