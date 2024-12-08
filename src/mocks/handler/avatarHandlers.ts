@@ -10,8 +10,21 @@ import { RemoveRequestDto, RemoveResponseDto } from '@/features/avatar/types/rem
 let mockCoins = 1000; // 회원의 초기 코인 잔액
 
 let mockItems = [
-  { id: 1, name: 'Red Hat', price: 200, category: 'HAT', imageUrl: '/images/red-hat.png', description: 'A stylish red hat.' },
-  { id: 2, name: 'Blue Background', price: 500, category: 'BACKGROUND', imageUrl: '/images/blue-background.png', description: 'A calming blue background.' },
+  { id: 1, name: 'Red Hat', price: 20, category: 'BACKGROUND', imageUrl: '/img/future-city.png', description: 'A stylish red hat.' },
+  { id: 2, name: 'Blue Background', price: 50, category: 'BACKGROUND', imageUrl: '/img/underwater.png', description: 'A calming blue background.' },
+  { id: 3, name: 'Blue Background', price: 50, category: 'BACKGROUND', imageUrl: '/img/space.png', description: 'A calming blue background.' },
+  { id: 4, name: 'Blue Background', price: 50, category: 'BACKGROUND', imageUrl: '/img/sweet-factory.png', description: 'A calming blue background.' },
+  { id: 5, name: 'Blue Background', price: 50, category: 'BACKGROUND', imageUrl: '/img/spooky-castle.png', description: 'A calming blue background.' },
+  { id: 11, name: 'Red Hat', price: 20, category: 'PET', imageUrl: '/img/fire.png', description: 'A stylish red hat.' },
+  { id: 12, name: 'Blue Background', price: 50, category: 'PET', imageUrl: '/img/water.png', description: 'A calming blue background.' },
+  { id: 13, name: 'Blue Background', price: 50, category: 'PET', imageUrl: '/img/starlight.png', description: 'A calming blue background.' },
+  { id: 14, name: 'Blue Background', price: 50, category: 'PET', imageUrl: '/img/plant.png', description: 'A calming blue background.' },
+  { id: 15, name: 'Blue Background', price: 50, category: 'PET', imageUrl: '/img/cloud.png', description: 'A calming blue background.' },
+  { id: 21, name: 'Red Hat', price: 200, category: 'HAT', imageUrl: '/img/wizard.png', description: 'A stylish red hat.' },
+  { id: 22, name: 'Blue Background', price: 50, category: 'HAT', imageUrl: '/img/gentleman.png', description: 'A calming blue background.' },
+  { id: 23, name: 'Blue Background', price: 50, category: 'HAT', imageUrl: '/img/farmer.png', description: 'A calming blue background.' },
+  { id: 24, name: 'Blue Background', price: 50, category: 'HAT', imageUrl: '/img/baseball.png', description: 'A calming blue background.' },
+  { id: 25, name: 'Blue Background', price: 50, category: 'HAT', imageUrl: '/img/tiara.png', description: 'A calming blue background.' },
 ];
 
 let mockAvatar: {
