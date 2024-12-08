@@ -50,7 +50,17 @@ const SearchPage = () => {
       <SearchResultList
         users={searchResults?.content || []}
         isLoading={isLoading}
-        onFriendRequest={sendFriendRequest}
+        onFriendRequest={(receiverUsername: string) => {
+          const user = searchResults?.content.find(
+            (user) => user.username === receiverUsername
+          );
+          if (user) {
+            sendFriendRequest({
+              receiverId: user.id,
+              receiverUsername,
+            });
+          }
+        }}
         isSending={isPending}
         currentPage={currentPage}
         totalPages={searchResults?.totalPages || 0}

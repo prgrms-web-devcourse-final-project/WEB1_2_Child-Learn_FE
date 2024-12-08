@@ -4,7 +4,7 @@ import { SearchedUser } from '@/features/search/model/types';
 interface SearchResultListProps {
   users: SearchedUser[];
   isLoading: boolean;
-  onFriendRequest: (receiverId: number) => void; // string -> number
+  onFriendRequest: (receiverUsername: string) => void;
   isSending: boolean;
   currentPage: number;
   totalPages: number;
@@ -37,7 +37,7 @@ export const SearchResultList = ({
       case 'NOT_FRIEND':
         return (
           <AddFriendButton
-            onClick={() => onFriendRequest(user.id)} // loginId -> id로 변경
+            onClick={() => onFriendRequest(user.username)} // loginId -> id로 변경
             disabled={isSending}
           >
             친구 추가

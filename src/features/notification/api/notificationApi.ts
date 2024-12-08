@@ -55,10 +55,10 @@ export const notificationApi = {
 
   // 친구 요청 알림 생성
   createFriendRequestNotification: async (
-    receiverId: number
+    receiverUsername: string
   ): Promise<void> => {
     await baseApi.post('/notifications/friend-request', {
-      receiverId,
+      receiverUsername,
     });
   },
 };
