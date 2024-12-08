@@ -5,10 +5,21 @@ import { notificationApi } from '@/features/notification/api/notificationApi';
 import { useRespondToFriendRequest } from '@/features/freind/lib/quries';
 
 export const NotificationList = () => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationApi.getNotifications(),
+    select: (data) => {
+      console.log('알림 데이터:', data);
+      return data;
+    },
   });
+
+  console.log('현재 data:', data);
+  console.log('isLoading:', isLoading);
+
+  if (error) {
+    console.error('알림 조회 에러:', error);
+  }
 
   const respondToRequest = useRespondToFriendRequest();
 
