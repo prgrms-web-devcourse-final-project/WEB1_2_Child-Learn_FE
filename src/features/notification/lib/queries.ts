@@ -22,10 +22,12 @@ interface FriendRequest {
 }
 
 // 알림 목록 조회
-export const useNotifications = (page: number = 0) => {
+export const useNotifications = (page: number) => {
   return useQuery({
     queryKey: NOTIFICATION_KEYS.list(page),
-    queryFn: () => notificationApi.getNotifications(page),
+    queryFn: () => notificationApi.getNotifications(page), // 여기를 수정
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 };
 

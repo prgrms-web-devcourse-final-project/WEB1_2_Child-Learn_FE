@@ -4,17 +4,20 @@ import { useAuthStore } from '@/entities/User/model/store/authStore';
 import { NOTIFICATION_KEYS } from '@/features/notification/lib/queries';
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import EventSource from 'eventsource';
+import type { NotificationType } from '@/features/notification/model/types';
 
-interface SSEEvent {
-  event?: 'notification';
-  id?: string;
-  data: string;
-}
-
-interface NotificationStateEvent {
-  type: 'READ' | 'READ_ALL' | 'DELETE';
-  notificationId?: number;
-  memberId?: number;
+// SSE 이벤트 데이터 타입 정의
+interface SSENotification {
+  notificationId: number;
+  senderLoginId: number;
+  senderUsername: string;
+  title: string;
+  content: string;
+  type: NotificationType;
+  isRead: boolean;
+  createdAt: string;
+  profileImageUrl: string | null;
+  elapsedTime: string;
 }
 
 export const useNotificationSSE = () => {
@@ -22,30 +25,27 @@ export const useNotificationSSE = () => {
   const { isAuthenticated, accessToken } = useAuthStore();
 
   const handleSSEEvent = useCallback(
-    (eventData: SSEEvent | NotificationStateEvent) => {
+    (eventData: SSENotification) => {
+      // SSENotification 타입 사용
       console.log('SSE 이벤트 수신:', eventData);
 
-      if ('event' in eventData && eventData.event === 'notification') {
-        console.log('새 알림 수신');
-        // 전체 알림 목록 쿼리 무효화
-        queryClient.invalidateQueries({
-          queryKey: NOTIFICATION_KEYS.all, // 모든 알림 관련 쿼리 무효화
-          refetchType: 'active', // 활성 쿼리만 즉시 리패치
-          exact: false, // 하위 쿼리도 포함
-        });
-      } else if ('type' in eventData) {
-        console.log('알림 상태 변경:', eventData.type);
-        switch (eventData.type) {
-          case 'READ':
-          case 'READ_ALL':
-          case 'DELETE':
+      switch (eventData.type) {
+        case 'FRIEND_REQUEST':
+        case 'FRIEND_ACCEPT':
+        case 'MESSAGE':
+          queryClient.invalidateQueries({
+            queryKey: NOTIFICATION_KEYS.all,
+            refetchType: 'active',
+            exact: false,
+          });
+
+          if (eventData.type === 'FRIEND_REQUEST') {
             queryClient.invalidateQueries({
-              queryKey: NOTIFICATION_KEYS.all,
+              queryKey: NOTIFICATION_KEYS.friendRequests,
               refetchType: 'active',
-              exact: false,
             });
-            break;
-        }
+          }
+          break;
       }
     },
     [queryClient]
