@@ -1,4 +1,3 @@
-// graph.store.ts
 import { create } from 'zustand';
 import { baseApi } from '@/shared/api/base';
 import { BeginStockResponse } from '@/features/beginner_chart/model/types/stock';
@@ -15,6 +14,7 @@ export const useGraphStore = create<GraphStore>((set) => ({
   stockData: [],
   isLoading: false,
   error: null,
+  
   fetchStockData: async () => {
     try {
       set({ isLoading: true });
