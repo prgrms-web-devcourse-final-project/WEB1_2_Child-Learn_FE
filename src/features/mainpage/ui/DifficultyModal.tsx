@@ -16,10 +16,10 @@ export const DifficultyModal = ({
 
   const handleDifficultySelect = (level: string) => {
     onSelect(level);
-    // 난이도에 따라 다른 페이지로 이동
+    
     switch (level) {
       case 'low':
-        navigate('/fast-navigation');
+        navigate('/begin-stocks');
         break;
       case 'medium':
         navigate('/intermediate');

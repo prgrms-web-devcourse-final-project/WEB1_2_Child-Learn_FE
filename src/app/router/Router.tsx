@@ -172,14 +172,6 @@ export default function Router() {
         }
       />
       <Route
-        path="/fast-navigation"
-        element={
-          <PrivateRoute>
-            <GraphExplanationPage />
-          </PrivateRoute>
-        }
-      />
-      <Route
         path="/begin-stocks"
         element={
           <PrivateRoute>
