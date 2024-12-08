@@ -5,24 +5,30 @@ import { FastGraphData } from '@/features/beginner_chart/model/types/graph';
 
 // 그래프 전용 API 인스턴스 생성
 const graphApi = axios.create({
- baseURL: '/api/v1',
- headers: {
-   'Content-Type': 'application/json',
- },
+  baseURL: 'http://43.202.106.45',  // 실제 서버 URL로 변경
+  headers: {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',  // CORS 설정
+  },
+  withCredentials: true  // 인증 정보 포함
 });
 
 // 인터셉터 설정
 graphApi.interceptors.request.use(
- (config) => {
-   const token = localStorage.getItem('accessToken');
-   if (token) {
-     config.headers.Authorization = `Bearer ${token}`;
-   }
-   return config;
- },
- (error) => {
-   return Promise.reject(error);
- }
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      // CORS 관련 헤더 추가
+      config.headers['Access-Control-Allow-Origin'] = '*';
+      config.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS';
+      config.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
 graphApi.interceptors.response.use(
