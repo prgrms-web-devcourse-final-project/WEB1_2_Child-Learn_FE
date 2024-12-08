@@ -128,8 +128,29 @@ export const avatarHandlers = [
     return HttpResponse.json<ReadResponseDto>(item, { status: 200 });
   }),
 
-  // 아바타 상태 조회
-  http.get('/api/v1/member/avatar', async () => {
-    return HttpResponse.json<AvatarResponseDto>(mockAvatar, { status: 200 });
+   // 아이템 전체 조회
+   http.get('/api/v1/member/avatar/read-all', async () => {
+    // 아이템 상태 계산
+    const enrichedItems = mockItems.map((item) => {
+      const isPurchased =
+        mockAvatar.hat?.id === item.id ||
+        mockAvatar.pet?.id === item.id ||
+        mockAvatar.background?.id === item.id;
+
+      const isEquipped = isPurchased && (
+        (mockAvatar.hat && mockAvatar.hat.id === item.id) ||
+        (mockAvatar.pet && mockAvatar.pet.id === item.id) ||
+        (mockAvatar.background && mockAvatar.background.id === item.id)
+      );
+
+      return {
+        ...item,
+        isPurchased,
+        isEquipped,
+      };
+    });
+
+    // 응답 데이터 반환
+    return HttpResponse.json(enrichedItems, { status: 200 });
   }),
 ];

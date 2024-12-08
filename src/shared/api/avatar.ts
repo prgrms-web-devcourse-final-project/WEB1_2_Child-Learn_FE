@@ -1,6 +1,7 @@
 import { baseApi } from "./base";
 import { AvatarResponseDto } from "@/features/avatar/types/avatarTypes";
 import { EquipRequestDto, EquipResponseDto } from "@/features/avatar/types/equipTypes";
+import { Item } from "@/features/avatar/types/itemTypes";
 import { ReadRequestDto, ReadResponseDto } from "@/features/avatar/types/readTypes";
 import { RemoveRequestDto, RemoveResponseDto } from "@/features/avatar/types/removeTypes";
 import { PurchaseRequestDto, PurchaseResponseDto } from "@/features/avatar/types/purchaseTypes";
@@ -74,5 +75,14 @@ export const avatarApi = {
       }
     );
     return response.data; // ReadResponseDto 반환
+  },
+
+  readAllItems: async (): Promise<Item[]> => {
+    const response = await baseApi.get(`/member/avatar/read-all`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return response.data; // 전체 아이템 배열 반환
   },
 };
