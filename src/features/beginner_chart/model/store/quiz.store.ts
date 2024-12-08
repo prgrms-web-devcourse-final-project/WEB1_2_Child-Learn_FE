@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { baseApi } from '@/shared/api/base';
-import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
+import { BeginQuiz } from '../types/quiz';
+import { StockType, TransactionType, WalletRequest, WalletResponse } from '../types/wallet';
 
 interface QuizStore {
   quizzes: BeginQuiz[];
@@ -9,7 +10,13 @@ interface QuizStore {
   isLoading: boolean;
   error: string | null;
   fetchQuizzes: () => Promise<void>;
-  submitAnswer: (answer: string) => Promise<{ isCorrect: boolean; points?: number }>;
+  submitAnswer: (answer: string) => Promise<{ 
+    isCorrect: boolean; 
+    points: number;
+    currentPoints?: number;
+    currentCoins?: number;
+  }>;
+  updateWallet: (points: number) => Promise<WalletResponse>;
 }
 
 export const useQuizStore = create<QuizStore>((set) => ({
@@ -36,7 +43,26 @@ export const useQuizStore = create<QuizStore>((set) => ({
     }
   },
 
-  submitAnswer: async (answer: string) => {
+  updateWallet: async (points: number) => {
+    const walletRequest: WalletRequest = {
+      memberId: Number(localStorage.getItem('memberId')), // memberId를 localStorage나 다른 상태 관리에서 가져옴
+      transactionType: TransactionType.EARN,
+      points: points,
+      pointType: 'STOCK',
+      stockType: StockType.BEGIN,
+      stockName: '초급 주식 퀴즈' // 필요에 따라 수정
+    };
+
+    const response = await baseApi.post<WalletResponse>('/wallet/stock', walletRequest);
+    return response.data;
+  },
+
+  submitAnswer: async (answer: string): Promise<{ 
+    isCorrect: boolean; 
+    points: number;
+    currentPoints?: number;
+    currentCoins?: number;
+  }> => {
     try {
       const quizResponse = await baseApi.post('/begin-stocks/submissions', {
         answer
@@ -45,27 +71,34 @@ export const useQuizStore = create<QuizStore>((set) => ({
       set({ selectedAnswer: answer });
 
       if (quizResponse.data.correct) {
-        // 포인트 적립 요청 수정
-        await baseApi.post('/wallet/stock', {
-          points: 100,
-          pointType: "STOCK",
-          stockType: "BEGIN",
-          isWin: true
-        });
-
-        return {
-          isCorrect: true,
-          points: 100
-        };
+        try {
+          // 정답인 경우 포인트 적립
+          const walletResponse = await useQuizStore.getState().updateWallet(100);
+          
+          return {
+            isCorrect: true,
+            points: 100,
+            currentPoints: walletResponse.currentPoints,
+            currentCoins: walletResponse.currentCoins
+          };
+        } catch (walletError) {
+          console.error('Wallet update error:', walletError);
+          return {
+            isCorrect: true,
+            points: 0
+          };
+        }
       }
 
       return {
-        isCorrect: false
+        isCorrect: false,
+        points: 0
       };
     } catch (error) {
       console.error('Answer submission error:', error);
       return {
-        isCorrect: false
+        isCorrect: false,
+        points: 0
       };
     }
   }
