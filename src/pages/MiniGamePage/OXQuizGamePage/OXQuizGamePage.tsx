@@ -2,10 +2,11 @@ import { useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUserInfo } from '@/entities/User/lib/queries';
+import { oxQuizApi } from '@/shared/api/minigames';
 import useOXQuizStore from './store/useOXQuizStore';
 
 // 난이도 매핑 함수
-const mapDifficulty = (paramDifficulty: 'begin' | 'mid' | 'adv'): 'easy' | 'medium' | 'hard' => {
+const mapDifficulty = (paramDifficulty: 'begin' | 'mid' | 'adv'| undefined): 'easy' | 'medium' | 'hard' => {
   switch (paramDifficulty) {
     case 'begin':
       return 'easy';
@@ -21,21 +22,15 @@ const mapDifficulty = (paramDifficulty: 'begin' | 'mid' | 'adv'): 'easy' | 'medi
 const OXQuizGamePage = () => {
   const { difficulty } = useParams<{ difficulty: 'begin' | 'mid' | 'adv' }>();
   const { data: userInfo } = useUserInfo();
-  const { oxQuizzes, currentIndex, fetchQuizzes, submitAnswer, result, loading } = useOXQuizStore();
+  const { oxQuizzes, currentIndex, submitAnswer, result, loading } = useOXQuizStore();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (difficulty) {
-      const mappedDifficulty = mapDifficulty(difficulty); // 매핑된 난이도
-      fetchQuizzes(userInfo.id, mappedDifficulty); // 난이도에 따라 퀴즈 가져오기
-    }
-  }, [difficulty, fetchQuizzes, userInfo]);
-
-  const currentQuiz = oxQuizzes[currentIndex];
+  const mappedDifficulty = mapDifficulty(difficulty);
+  const currentQuiz = oxQuizzes[mappedDifficulty][currentIndex];
 
   const handleAnswer = async (userAnswer: 'O' | 'X') => {
     if (currentQuiz) {
-      console.log(`현재 문제 번호: ${currentIndex + 1} / 총 문제 수: ${oxQuizzes.length}`);
+      console.log(`현재 문제 번호: ${currentIndex + 1} / 총 문제 수: ${oxQuizzes[mappedDifficulty].length}`);
       await submitAnswer(currentQuiz.oxQuizDataId, userAnswer);
     } 
   };
@@ -43,7 +38,7 @@ const OXQuizGamePage = () => {
   const handleNextQuestion = () => {
     console.log(`다음 문제로 이동: 현재 문제 번호 ${currentIndex + 1}`);
 
-    if (currentIndex + 1 >= oxQuizzes.length) {
+    if (currentIndex + 1 >= oxQuizzes[mappedDifficulty].length) {
       console.log('결과 페이지로 이동');
       navigate(`/ox-quiz/result/${difficulty}`); // 결과 페이지로 이동
       return;
@@ -62,7 +57,7 @@ const OXQuizGamePage = () => {
   return (
     <PageContainer>
       <ProgressBar>
-        {oxQuizzes.map((_, index) => (
+        {oxQuizzes[mappedDifficulty].map((_, index) => (
           <ProgressStep key={index} active={index <= currentIndex} />
         ))}
       </ProgressBar>
