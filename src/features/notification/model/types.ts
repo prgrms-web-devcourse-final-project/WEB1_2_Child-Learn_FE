@@ -1,5 +1,5 @@
 export type NotificationType = 'MESSAGE' | 'FRIEND_REQUEST' | 'FRIEND_ACCEPT';
-export type NotificationStatus = 'ACCEPT' | 'REJECT' | undefined;
+export type NotificationStatus = 'ACCEPTED' | 'REJECTED' | undefined;
 
 export interface Notification {
   notificationId: number;

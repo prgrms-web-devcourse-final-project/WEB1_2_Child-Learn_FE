@@ -53,7 +53,7 @@ export const useRespondToFriendRequest = () => {
       queryClient.invalidateQueries({ queryKey: FRIEND_KEYS.all });
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       showToast.success(
-        status === 'ACCEPT'
+        status === 'ACCEPTED'
           ? '친구 요청을 수락했습니다.'
           : '친구 요청을 거절했습니다.'
       );
