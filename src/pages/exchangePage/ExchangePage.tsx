@@ -6,6 +6,7 @@ import CurrentStatus from '@/features/exchange/ui/CurrentStatus';
 import ExchangeBox from '@/features/exchange/ui/ExchangeBox';
 import Popup from '@/features/exchange/ui/Popup'
 import { walletApi } from '@/shared/api/wallets';
+import { useQueryClient } from '@tanstack/react-query';
 
 const EXCHANGE_RATE = 100; // 100 포인트 = 1 코인
 
@@ -18,6 +19,7 @@ const ExchangePage = () => {
   const [popupDetails, setPopupDetails] = useState<{ pointsUsed?: number; coinsGained?: number }>({}); // 팝업 상세 정보
   const [popupButtonText, setPopupButtonText] = useState(''); // 팝업 버튼 텍스트
   const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const queryClient = useQueryClient();
 
   if (isLoading) return <div>Loading...</div>;
   if (error || !userInfo) return <div>Error loading user info.</div>;
@@ -51,6 +53,17 @@ const ExchangePage = () => {
         pointsExchanged: pointsToExchange,
       });
 
+      queryClient.setQueryData(['userInfo'], (oldData: any) => {
+        if (oldData) {
+          return {
+            ...oldData,
+            currentPoints: updatedWallet.currentPoints,
+            currentCoins: updatedWallet.currentCoins,
+          };
+        }
+        return oldData;
+      });
+      
     // 상태 업데이트
     setPoint({ currentPoints: updatedWallet.currentPoints  });
     setCoin({ currentCoins: updatedWallet.currentCoins });
