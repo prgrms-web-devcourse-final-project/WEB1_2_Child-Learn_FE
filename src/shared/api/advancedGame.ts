@@ -5,11 +5,11 @@ let ws: WebSocket | null = null;
 
 // Interfaces
 interface ReferenceData {
-  [key: string]: any;  // Concrete structure to be defined based on actual data
+  [key: string]: any;  
 }
 
 interface LiveData {
-  [key: string]: any;  // Concrete structure to be defined based on actual data
+  [key: string]: any;  
 }
 
 interface TradeHistory {
@@ -36,9 +36,9 @@ interface WSMessage {
   [key: string]: any;
 }
 
-// Stock API implementation
+
 export const stockApi = {
-  // WebSocket Methods
+
   connectWebSocket: (token: string) => {
     if (!ws || ws.readyState === WebSocket.CLOSED) {
       ws = new WebSocket(`${process.env.WS_BASE_URL}/api/v1/advanced-invest?token=${token}`);

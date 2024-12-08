@@ -1,9 +1,12 @@
+// features/article/ui/ArticleCard.tsx
 import React from 'react';
 import styled from 'styled-components';
-import imagex from '../../../public/img/imagex.png';
-import { Article, TrendPrediction, Relevance } from '../article/type/article';
+import { Article } from '../types/articleTypes';
 
-//style.css
+interface ArticleCardProps {
+  article: Article;
+}
+
 const Container = styled.div`
   width: 100%;
   max-width: 800px;
@@ -40,16 +43,16 @@ const MainImage = styled.img`
   object-fit: cover;
 `;
 
+const ContentSection = styled.div`
+  padding: 20px;
+`;
+
 const ContentTitle = styled.h2`
   font-size: 20px;
   font-weight: bold;
   margin: 20px;
   color: #000000;
   line-height: 1.4;
-`;
-
-const ContentSection = styled.div`
-  padding: 20px;
 `;
 
 const Content = styled.p`
@@ -69,7 +72,7 @@ const MetaInfo = styled.div`
   gap: 20px;
 `;
 
-const ArticleComponent: React.FC<{ article: Article }> = ({ article }) => {
+const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 오후 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
@@ -87,7 +90,6 @@ const ArticleComponent: React.FC<{ article: Article }> = ({ article }) => {
         <ContentTitle>
           반도체 투톱인 삼성전자와 SK하이닉스 주가가 3%대 하락하며 동반 약세 반도체 시장 이대로 !!
         </ContentTitle>
-
         <Content>
           {article.content}
         </Content>
@@ -102,4 +104,4 @@ const ArticleComponent: React.FC<{ article: Article }> = ({ article }) => {
   );
 };
 
-export default ArticleComponent;
+export default ArticleCard;

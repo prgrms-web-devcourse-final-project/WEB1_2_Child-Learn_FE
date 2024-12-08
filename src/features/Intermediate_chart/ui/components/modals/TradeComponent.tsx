@@ -59,7 +59,7 @@ interface TradeData {
     return (
       <div>
         <S.ButtonGroup>
-          <S.BuyButton
+          <S.Button
             onClick={() => handleTrade({
               stockId: 1,
               tradePoint: 1000,
@@ -68,8 +68,8 @@ interface TradeData {
             })}
           >
             매수
-          </S.BuyButton>
-          <S.SellButton
+          </S.Button>
+          <S.Button
             onClick={() => handleTrade({
               stockId: 1,
               type: 'sell',
@@ -77,7 +77,7 @@ interface TradeData {
             })}
           >
             매도
-          </S.SellButton>
+          </S.Button>
         </S.ButtonGroup>
         <ErrorModal
           isOpen={showErrorModal}

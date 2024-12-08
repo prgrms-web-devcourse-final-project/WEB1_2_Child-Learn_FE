@@ -13,7 +13,7 @@ interface QuizStore {
   submitAnswer: (answer: string) => Promise<{ isCorrect: boolean; points?: number }>;
 }
 
-export const useQuizStore = create<QuizStore>((set) => ({
+export const useQuizStore = create<QuizStore>((set, get) => ({
   quizzes: [],
   currentQuiz: null,
   selectedAnswer: null,
@@ -39,38 +39,43 @@ export const useQuizStore = create<QuizStore>((set) => ({
 
   submitAnswer: async (answer: string) => {
     try {
-      await baseApi.post('/begin-stocks/submissions', {
-        answer
-      });
-
-      set({ selectedAnswer: answer });
-
-      // 정답일 경우 (currentQuiz의 answer와 비교)
-      if (answer === useQuizStore.getState().currentQuiz?.answer) {
-        try {
-          // 포인트 적립
-          const userId = Number(localStorage.getItem('userId')); // 또는 다른 방식으로 userId 가져오기
-          await addStockPoints(userId);
-          
-          return {
-            isCorrect: true,
-            points: 100
-          };
-        } catch (error) {
-          console.error('Points allocation error:', error);
-          return {
-            isCorrect: true,
-            points: 0
-          };
-        }
+      const currentQuiz = get().currentQuiz;
+      if (!currentQuiz) {
+        throw new Error('퀴즈 데이터가 없습니다');
       }
 
-      return {
-        isCorrect: false,
-        points: 0
-      };
+      // 정답 체크 먼저 수행
+      const isCorrect = answer === currentQuiz.answer;
+      set({ selectedAnswer: answer });
+
+      try {
+        // 선택 제출
+        await baseApi.post('/begin-stocks/submissions', {
+          answer
+        });
+
+        // 정답인 경우에만 포인트 적립
+        if (isCorrect) {
+          const userId = Number(localStorage.getItem('userId'));
+          if (userId) {
+            await addStockPoints(userId);
+          }
+        }
+
+        return {
+          isCorrect,
+          points: isCorrect ? 100 : 0
+        };
+      } catch (submitError) {
+        console.error('Submission or points error:', submitError);
+        // API 요청이 실패해도 사용자에게는 정답 결과는 보여줌
+        return {
+          isCorrect,
+          points: 0
+        };
+      }
     } catch (error) {
-      console.error('Answer submission error:', error);
+      console.error('Answer process error:', error);
       return {
         isCorrect: false,
         points: 0
