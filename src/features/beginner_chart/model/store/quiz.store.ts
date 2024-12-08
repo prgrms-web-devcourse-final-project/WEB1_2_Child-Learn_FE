@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { baseApi } from '@/shared/api/base';
-import { BeginQuiz } from '../types/quiz';
-import { StockType, TransactionType, WalletRequest, WalletResponse } from '../types/wallet';
+import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
+import { addStockPoints } from '@/features/beginner_chart/model/types/wallet';
 
 interface QuizStore {
   quizzes: BeginQuiz[];
@@ -10,13 +10,7 @@ interface QuizStore {
   isLoading: boolean;
   error: string | null;
   fetchQuizzes: () => Promise<void>;
-  submitAnswer: (answer: string) => Promise<{ 
-    isCorrect: boolean; 
-    points: number;
-    currentPoints?: number;
-    currentCoins?: number;
-  }>;
-  updateWallet: (points: number) => Promise<WalletResponse>;
+  submitAnswer: (answer: string) => Promise<{ isCorrect: boolean; points?: number }>;
 }
 
 export const useQuizStore = create<QuizStore>((set) => ({
@@ -43,46 +37,27 @@ export const useQuizStore = create<QuizStore>((set) => ({
     }
   },
 
-  updateWallet: async (points: number) => {
-    const walletRequest: WalletRequest = {
-      memberId: Number(localStorage.getItem('memberId')), // memberId를 localStorage나 다른 상태 관리에서 가져옴
-      transactionType: TransactionType.EARN,
-      points: points,
-      pointType: 'STOCK',
-      stockType: StockType.BEGIN,
-      stockName: '초급 주식 퀴즈' // 필요에 따라 수정
-    };
-
-    const response = await baseApi.post<WalletResponse>('/wallet/stock', walletRequest);
-    return response.data;
-  },
-
-  submitAnswer: async (answer: string): Promise<{ 
-    isCorrect: boolean; 
-    points: number;
-    currentPoints?: number;
-    currentCoins?: number;
-  }> => {
+  submitAnswer: async (answer: string) => {
     try {
-      const quizResponse = await baseApi.post('/begin-stocks/submissions', {
+      await baseApi.post('/begin-stocks/submissions', {
         answer
       });
 
       set({ selectedAnswer: answer });
 
-      if (quizResponse.data.correct) {
+      // 정답일 경우 (currentQuiz의 answer와 비교)
+      if (answer === useQuizStore.getState().currentQuiz?.answer) {
         try {
-          // 정답인 경우 포인트 적립
-          const walletResponse = await useQuizStore.getState().updateWallet(100);
+          // 포인트 적립
+          const userId = Number(localStorage.getItem('userId')); // 또는 다른 방식으로 userId 가져오기
+          await addStockPoints(userId);
           
           return {
             isCorrect: true,
-            points: 100,
-            currentPoints: walletResponse.currentPoints,
-            currentCoins: walletResponse.currentCoins
+            points: 100
           };
-        } catch (walletError) {
-          console.error('Wallet update error:', walletError);
+        } catch (error) {
+          console.error('Points allocation error:', error);
           return {
             isCorrect: true,
             points: 0
