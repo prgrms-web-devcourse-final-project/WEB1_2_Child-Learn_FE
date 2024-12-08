@@ -6,11 +6,8 @@ import { useRespondToFriendRequest } from '@/features/freind/lib/quries';
 import { Notification } from '@/features/notification/model/types';
 import { NOTIFICATION_KEYS } from '@/features/notification/lib/queries'; // 추가
 import { useReceivedFriendRequests } from '@/features/notification/lib/queries';
-import { useNotificationSSE } from '@/features/notification/lib/useNotificationSSE';
 
 export const NotificationList = () => {
-  // SSE 연결 추가
-  useNotificationSSE();
   const { data, isLoading, error } = useQuery({
     queryKey: NOTIFICATION_KEYS.list(0), // 쿼리 키 상수 사용
     queryFn: () => notificationApi.getNotifications(),
