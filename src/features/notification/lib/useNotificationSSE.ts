@@ -17,7 +17,7 @@ interface NotificationStateEvent {
 
 export const useNotificationSSE = () => {
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, accessToken } = useAuthStore(); // accessToken 추가
 
   const handleSSEEvent = useCallback(
     (eventData: SSEEvent | NotificationStateEvent) => {
@@ -47,10 +47,11 @@ export const useNotificationSSE = () => {
   const connectSSE = useCallback(() => {
     if (!isAuthenticated) return;
 
+    // URL에서 인증 토큰을 쿼리 파라미터로 포함
     const eventSource = new EventSource(
-      'http://43.202.106.45/api/v1/notifications/subscribe',
+      `/api/v1/notifications/subscribe?token=${accessToken}`,
       {
-        withCredentials: true,
+        withCredentials: true, // 인증 정보 포함
       }
     );
 
