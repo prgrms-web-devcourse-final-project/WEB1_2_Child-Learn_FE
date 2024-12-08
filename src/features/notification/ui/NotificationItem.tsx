@@ -20,10 +20,10 @@ export const NotificationItem = ({
 
   const handleAccept = async () => {
     try {
-      // 1. 친구 요청 수락 - notificationId를 requestId로 사용
+      // 1. 친구 요청 수락
       await onAccept(notification.notificationId);
-      // 2. 수락 알림 보내기 - 동일하게 notificationId 사용
-      await sendAcceptNotification(notification.notificationId);
+      // 2. 수락 알림 보내기 - senderUsername 전달
+      await sendAcceptNotification(notification.senderUsername);
     } catch (error) {
       console.error('친구 수락 실패:', error);
     }

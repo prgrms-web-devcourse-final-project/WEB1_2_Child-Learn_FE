@@ -95,10 +95,8 @@ export const useSendFriendAcceptNotification = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    // notificationId를 직접 requestId로 사용
-    mutationFn: async (notificationId: number) => {
-      await notificationApi.sendFriendAcceptNotification(notificationId);
-    },
+    mutationFn: (receiverUsername: string) =>
+      notificationApi.sendFriendAcceptNotification(receiverUsername),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
       queryClient.invalidateQueries({
