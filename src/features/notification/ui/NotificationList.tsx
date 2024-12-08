@@ -1,29 +1,20 @@
-import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { NotificationItem } from '@/features/notification/ui/NotificationItem';
-import { notificationApi } from '@/features/notification/api/notificationApi';
 import { useRespondToFriendRequest } from '@/features/freind/lib/quries';
 import { Notification } from '@/features/notification/model/types';
-import { NOTIFICATION_KEYS } from '@/features/notification/lib/queries'; // 추가
-import { useReceivedFriendRequests } from '@/features/notification/lib/queries';
+import {
+  useNotifications,
+  useReceivedFriendRequests,
+} from '@/features/notification/lib/queries'; // useNotifications 추가
 
 export const NotificationList = () => {
-  const { data, isLoading, error } = useQuery({
-    queryKey: NOTIFICATION_KEYS.list(0),
-    queryFn: () => notificationApi.getNotifications(),
-    refetchOnMount: 'always', // 컴포넌트 마운트시 항상 새로고침
-    refetchOnWindowFocus: true, // 윈도우 포커스시 새로고침
-    staleTime: 1000 * 60 * 5, // 5분간 데이터 유지
-    retry: 3, // 실패시 3번 재시도
-    retryDelay: 1000, // 재시도 간격 1초
-  });
+  const { data, isLoading, error } = useNotifications(0); // 직접 useQuery 대신 useNotifications 사용
+  const { data: receivedRequests } = useReceivedFriendRequests();
+  const respondToRequest = useRespondToFriendRequest();
 
   if (error) {
     console.error('알림 조회 에러:', error);
   }
-
-  const respondToRequest = useRespondToFriendRequest();
-  const { data: receivedRequests } = useReceivedFriendRequests(); // 추가
 
   const handleAccept = async (notification: Notification) => {
     try {
@@ -64,7 +55,6 @@ export const NotificationList = () => {
   };
 
   if (isLoading && !data) {
-    // 이전 데이터가 있으면 보여주기
     return <LoadingContainer>로딩중...</LoadingContainer>;
   }
 
