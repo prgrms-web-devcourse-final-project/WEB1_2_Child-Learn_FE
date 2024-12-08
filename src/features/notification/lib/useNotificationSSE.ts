@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/entities/User/model/store/authStore';
-import { notificationApi } from '@/features/notification/api/notificationApi';
 
 interface SSEEvent {
   event?: 'notification';
@@ -38,38 +37,39 @@ export const useNotificationSSE = () => {
     [queryClient]
   );
 
-  const connectSSE = useCallback(async () => {
+  const connectSSE = useCallback(() => {
     if (!isAuthenticated) return;
 
-    try {
-      const response = await notificationApi.subscribeToSSE();
-      const lines = response.data.split('\n');
+    const eventSource = new EventSource('/api/v1/notifications/subscribe', {
+      withCredentials: true,
+    });
 
-      lines.forEach((line: string) => {
-        if (line.startsWith('data: ')) {
-          try {
-            const eventData = JSON.parse(line.slice(6));
-            handleSSEEvent(eventData);
-          } catch (error) {
-            console.error('Failed to parse SSE message:', error);
-          }
-        }
-      });
-    } catch (error) {
-      console.error('SSE error:', error);
+    eventSource.onmessage = (event) => {
+      try {
+        const eventData = JSON.parse(event.data);
+        handleSSEEvent(eventData);
+      } catch (error) {
+        console.error('Failed to parse SSE message:', error);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('SSE connection error:', error);
+      eventSource.close();
+      // 연결이 끊어지면 5초 후 재연결 시도
       setTimeout(connectSSE, 5000);
-    }
+    };
+
+    // cleanup function
+    return () => {
+      eventSource.close();
+    };
   }, [isAuthenticated, handleSSEEvent]);
 
   useEffect(() => {
-    let mounted = true;
-
-    if (mounted) {
-      connectSSE();
-    }
-
+    const cleanup = connectSSE();
     return () => {
-      mounted = false;
+      cleanup?.();
     };
   }, [connectSSE]);
 };
