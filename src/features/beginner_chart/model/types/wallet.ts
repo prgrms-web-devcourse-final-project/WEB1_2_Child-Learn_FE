@@ -7,7 +7,7 @@ interface StockPointResponse {
   }
   
   export const addStockPoints = async (userId: number): Promise<StockPointResponse> => {
-    const response = await baseApi.post('/api/v1/wallet/invest', {
+    const response = await baseApi.post('/wallet/stock', {
       memberId: userId,
       transactionType: 'EARN',
       points: 100,
