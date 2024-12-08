@@ -25,9 +25,10 @@ interface FriendRequest {
 export const useNotifications = (page: number) => {
   return useQuery({
     queryKey: NOTIFICATION_KEYS.list(page),
-    queryFn: () => notificationApi.getNotifications(page), // 여기를 수정
-    staleTime: 0,
+    queryFn: () => notificationApi.getNotifications(page),
+    refetchOnMount: 'always',
     refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 };
 
