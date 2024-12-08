@@ -66,14 +66,13 @@ export const useNotificationSSE = () => {
     };
 
     const handleNotification = (event: MessageEvent) => {
-      try {
-        // connected 메시지는 별도 처리
-        if (event.data === 'connected') {
-          console.log('SSE 서버와 연결됨');
-          return;
-        }
+      // connected 메시지 처리
+      if (event.data === 'connected') {
+        console.log('SSE 초기 연결 완료');
+        return;
+      }
 
-        // 나머지 메시지는 JSON 파싱
+      try {
         const eventData = JSON.parse(event.data);
         console.log('알림 이벤트 수신:', eventData);
         handleSSEEvent(eventData);
@@ -82,12 +81,7 @@ export const useNotificationSSE = () => {
       }
     };
 
-    const handleRetry = () => {
-      console.log('SSE 재연결 시도');
-    };
-
     eventSource.addEventListener('notification', handleNotification);
-    eventSource.addEventListener('retry', handleRetry);
 
     eventSource.onerror = () => {
       console.error('SSE 연결 에러');
@@ -99,8 +93,6 @@ export const useNotificationSSE = () => {
 
     return () => {
       console.log('SSE 연결 종료');
-      eventSource.removeEventListener('notification', handleNotification);
-      eventSource.removeEventListener('retry', handleRetry);
       eventSource.close();
     };
   }, [isAuthenticated, accessToken, handleSSEEvent]);
