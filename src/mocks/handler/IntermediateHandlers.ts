@@ -453,6 +453,16 @@ http.post('/api/v1/mid-stocks/:id/sell', async ({ params }) => {
   });
 }),
 
+http.post('/api/v1/wallet/invest', async ({ request }) => {
+  const body = await request.json() as { points: number };
+  console.log('Wallet invest request:', body);
+  
+  return HttpResponse.json({
+    currentPoints: body.points,
+    currentCoins: 0
+  });
+}),
+
 // 보유 주식 조회 핸들러 추가
 http.get('/api/v1/mid-stocks/:id/holding', ({ params }) => {
   const stockId = Number(params.id);

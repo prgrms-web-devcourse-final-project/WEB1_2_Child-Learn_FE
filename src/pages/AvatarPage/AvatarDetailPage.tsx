@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
-import { MarketItem } from "../../features/avatar/types/marketItemTypes";
-import { useItemStore } from "../../features/avatar/model/itemStore";
-import { useAvatarStore } from "../../features/avatar/model/avatarStore";
-import { useUserStore } from "../../app/providers/state/zustand/userStore";
+import { MarketItem } from "@/features/avatar/types/marketItemTypes";
+import { useItemStore } from "@/features/avatar/model/itemStore";
+import { useAvatarStore } from "@/features/avatar/model/avatarStore";
+import { useUserInfo } from "@/entities/User/lib/queries";
+import { useUserStore } from "@/app/providers/state/zustand/userStore";
+import { avatarApi } from "@/shared/api/avatar";
 
 const AvatarDetailPage = () => {
   const { marketItems, updateMarketItems } = useItemStore();
   const { avatar, updateAvatarItem } = useAvatarStore();
-  const { currentCoins, setUser } = useUserStore();
+  const { data: userInfo } = useUserInfo();
   const { category, product } = useParams();
 
   const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
@@ -49,24 +51,35 @@ const AvatarDetailPage = () => {
  }
 
     // 구매 확인 모달에서 구매 버튼 클릭 시 처리
-  const handlePurchaseConfirm = () => {
-    if (!selectedItem) {
+  const handlePurchaseConfirm = async () => {
+    if (!selectedItem || !userInfo) {
       return;
     }
 
-    if (currentCoins < selectedItem.prd_price) {
+    if (userInfo.currentCoins < selectedItem.prd_price) {
       // 코인이 부족한 경우
       setIsModalOpen(false);
       setModalMessage("코인이 부족합니다.");
       return;
     }
 
-    updateMarketItems(selectedItem.prd_id, true);
+    try {
+      // 서버 API 호출
+      const response = await avatarApi.purchaseItem(selectedItem.prd_id);
 
-    setUser({ currentCoins: currentCoins - selectedItem.prd_price }); // 유저의 코인 차감
-    setIsModalOpen(false);
+      // 성공적으로 구매 완료 시 상태 업데이트
+      updateMarketItems(selectedItem.prd_id, true); // 아이템을 구매 상태로 변경
+
+      // 코인 업데이트
+      userInfo.currentCoins -= selectedItem.prd_price;
+      setIsModalOpen(false);
     setModalMessage("구매가 완료되었습니다.");
-    setTimeout(() => setModalMessage(""), 3000); // 3초 후 메시지 숨기기
+      setTimeout(() => setModalMessage(""), 3000); // 3초 후 메시지 숨기기
+    } catch (error) {
+      console.error("Failed to purchase item:", error);
+      setModalMessage("구매 처리 중 오류가 발생했습니다.");
+      setTimeout(() => setModalMessage(""), 3000);
+    }
   };
 
   // 버튼 클릭 핸들러
@@ -137,7 +150,7 @@ const AvatarDetailPage = () => {
         <ItemTitle>
           {selectedItem?.prd_name}
           <ItemPrice>
-            <CoinIcon src="/public/img/coins.png" alt="코인" />
+            <CoinIcon src="/img/coins.png" alt="코인" />
             {selectedItem?.prd_price} Coin
           </ItemPrice>
         </ItemTitle>

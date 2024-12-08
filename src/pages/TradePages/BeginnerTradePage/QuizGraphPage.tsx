@@ -164,14 +164,17 @@ const QuizGraphPage: React.FC = () => {
     try {
       setSelectedAnswer(answer);
       const result = await submitAnswer(answer);
-      if (result && 'points' in result) {
-        setEarnedPoints(result.points ?? 0);
+      console.log('Submit Answer Result:', result);
+      
+      if (result.isCorrect) {  // 여기서 체크
+        setEarnedPoints(200);  // 테스트를 위해 고정값 사용
       }
       setShowModal(true);
     } catch (error) {
       console.error('Error submitting answer:', error);
     }
   };
+  
 
   const handleModalClose = () => {
     setShowModal(false);
@@ -231,12 +234,12 @@ const QuizGraphPage: React.FC = () => {
         </ArticleContainer>
       )}
 
-      <QuizModal
-        isOpen={showModal}
-        onClose={handleModalClose}
-        isCorrect={selectedAnswer === currentQuiz?.answer}
-        earnedPoints={earnedPoints}
-      />
+<QuizModal
+  isOpen={showModal}
+  onClose={handleModalClose}
+  isCorrect={selectedAnswer === currentQuiz?.answer}
+  earnedPoints={earnedPoints}
+/>
     </PageContainer>
   );
 };

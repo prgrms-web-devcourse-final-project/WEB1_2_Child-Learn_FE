@@ -1,3 +1,20 @@
+// 매수 응답
+export interface BuyTradeResponse {
+  warning: boolean;  // required로 변경
+}
+
+// 매도 응답
+export interface SellTradeResponse {
+  earnedPoints: number;  // required로 변경
+}
+
+// 통합 응답 타입 (기존 코드와의 호환성을 위해 필요한 경우)
+export interface TradeResponse {
+  earnedPoints?: number;  // earnedPoints를 선택적 속성으로 추가
+  // 기존 속성들...
+}
+
+// 나머지 인터페이스들은 API 문서와 일치하므로 그대로 유지
 export interface MidStock {
   midStockId: number;
   midName: string;
@@ -11,11 +28,10 @@ export interface StockPrice {
 }
 
 export interface TradeDetail {
-  id: number;
   tradePoint: number;
   pricePerStock: number;
+  tradeDate: string;
   tradeType: 'BUY' | 'SELL';
-  createDate: string;
 }
 
 export interface StockWithDetails extends MidStock {
@@ -27,10 +43,9 @@ export interface TradeAvailability {
   isPossibleSell: boolean;
 }
 
-export interface TradeResponse {
-  warning?: boolean;
-  earnedPoints?: number;
-  success: boolean;
-  message?: string;
+export interface TradeData {
+  stockId: number;
+  tradePoint?: number;
+  type: 'buy' | 'sell';
+  tradeDate: string;
 }
-
