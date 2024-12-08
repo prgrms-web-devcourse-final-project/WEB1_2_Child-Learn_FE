@@ -39,9 +39,9 @@ export const NotificationItem = ({
 
   const renderFriendRequestActions = () => {
     switch (notification.status) {
-      case 'ACCEPT':
+      case 'ACCEPTED':
         return <StatusMessage>친구 수락이 완료되었습니다.</StatusMessage>;
-      case 'REJECT':
+      case 'REJECTED':
         return <StatusMessage>친구 요청을 거절하였습니다.</StatusMessage>;
       default:
         return (

@@ -6,4 +6,4 @@ export interface Friend {
   active: boolean;
 }
 
-export type FriendRequestStatus = 'ACCEPT' | 'REJECT';
+export type FriendRequestStatus = 'ACCEPTED' | 'REJECTED';

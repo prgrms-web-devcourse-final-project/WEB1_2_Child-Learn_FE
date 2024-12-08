@@ -27,7 +27,7 @@ export const NotificationList = () => {
     try {
       await respondToRequest.mutateAsync({
         requestId: notificationId,
-        status: 'ACCEPT',
+        status: 'ACCEPTED',
       });
     } catch (error) {
       console.error('친구 수락 실패:', error);
@@ -38,7 +38,7 @@ export const NotificationList = () => {
     try {
       await respondToRequest.mutateAsync({
         requestId: notificationId,
-        status: 'REJECT',
+        status: 'REJECTED',
       });
     } catch (error) {
       console.error('친구 거절 실패:', error);

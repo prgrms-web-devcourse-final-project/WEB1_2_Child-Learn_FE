@@ -33,7 +33,7 @@ export interface FriendListResponse {
 
 interface RespondToFriendRequestParams {
   requestId: number;
-  status: 'ACCEPT' | 'REJECT';
+  status: 'ACCEPTED' | 'REJECTED';
 }
 
 export const friendApi = {
