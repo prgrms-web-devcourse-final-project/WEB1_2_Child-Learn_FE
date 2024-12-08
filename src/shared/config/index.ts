@@ -9,6 +9,9 @@ export const API_CONFIG = {
     logout: '/member/logout',
     friendList: '/friends/list',
     friendRemove: '/friends/remove',
+    friendRequest: '/friends/request',
+    friendRequestSent: '/friends/request/sent',
+    friendRequestReceived: '/friends/request/received',
   },
 } as const;
 

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userApi } from '@/features/search/api/userApi';
 import { UserSearchResponse } from '@/features/search/model/types';
 import showToast from '@/shared/lib/toast';
+import { useCreateFriendRequestNotification } from '@/features/notification/lib/queries';
 
 export const useSearchUsers = (
   username: string,
@@ -21,12 +22,26 @@ export const useSearchUsers = (
 
 export const useSendFriendRequest = () => {
   const queryClient = useQueryClient();
+  const { mutateAsync: createNotification } =
+    useCreateFriendRequestNotification();
 
   return useMutation({
-    mutationFn: (receiverId: number) => userApi.sendFriendRequest(receiverId),
-    onSuccess(_, receiverId) {
+    mutationFn: async ({
+      receiverId,
+      receiverUsername,
+    }: {
+      receiverId: number;
+      receiverUsername: string;
+    }) => {
+      // 1. 친구 요청 처리 (receiverId 사용)
+      await userApi.sendFriendRequest(receiverId);
+      // 2. 알림 생성 (receiverUsername 사용)
+      await createNotification(receiverUsername);
+    },
+    onSuccess(_, { receiverId }) {
       showToast.success('친구 요청을 보냈습니다.');
 
+      // 검색 결과 업데이트
       const queries = queryClient.getQueriesData<UserSearchResponse>({
         queryKey: ['userSearch'],
       });

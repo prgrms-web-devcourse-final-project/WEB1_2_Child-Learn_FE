@@ -6,6 +6,9 @@ import { walletApi } from '@/shared/api/wallets';
 import { MiniGameTransaction, PointTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
 import { useLotteryStore } from '@/app/providers/state/zustand/useLotteryStore';
+import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
+import { AvatarCard } from '@/features/minigame/ui/AvatarCard';
+import { ExchangeCard } from '@/features/minigame/ui/ExchangeCard';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
@@ -203,30 +206,15 @@ const MiniGamePage = () => {
           <p>안녕하세요, {userInfo?.username || '사용자'} 님!</p>
           <h1>오늘은 어떤 게임을 즐겨보시겠어요?</h1>
         </GreetingContainer>
-        <PointsContainer>
-          <img src="/icons/coins 1.png" alt="Coin Icon" />
-          {userInfo?.currentPoints} P
-        </PointsContainer>
+        <PointBadge />
       </Header>
 
       {/* 메인 콘텐츠 */}
       <MainContent>
-        <TopSection>
-          <div>
-            <p>획득한 포인트로</p>
-            <p>나를 꾸며볼까요?</p>
-            <StyledLink to="/avatar">내 캐릭터 꾸미러 가기</StyledLink>
-          </div>
-        </TopSection>
-
-        <TopSection>
-        <div>
-    <p>오늘 미니게임으로</p>
-    <p>획득한 포인트</p>
-    <h2>{todayPoints} Points</h2>
-  </div>
-          <StyledLink to="/exchange">환전하러 가기</StyledLink>
-        </TopSection>
+        <AvatarCard
+        onClick={() => navigate('/avatar')}
+        />
+        <ExchangeCard points={todayPoints} />
 
         <GameGrid> 
           {/* 낱말 퀴즈 */}
@@ -358,23 +346,19 @@ const MiniGamePage = () => {
 export default MiniGamePage;
 
 const PageContainer = styled.div`
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  min-height: 100vh;
-  background-color: #fff;
+  height: 100%;
+  background-color: #fff; // 상단 흰색
 `;
 
 const BackgroundContainer = styled.div`
   position: absolute;
-  bottom: 0;
   left: 0;
   right: 0;
-  top: 250px;
-  background-color: #def9c4; /* 연두색 배경 */
-  border-top-left-radius: 30px;
-  border-top-right-radius: 30px;
+  bottom: 0;
+  height: 60%;
+  background-color: #def9c4;
+  border-radius: 24px 24px 0 0;
+  z-index: 0;
 `;
 
 const Header = styled.header`
@@ -410,91 +394,12 @@ const GreetingContainer = styled.div`
   }
 `;
 
-const PointsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /*position: absolute;*/
-  top: 15px;
-  right: 20px;
-  width: 91px;
-  height: 34px;
-  background-color: #50b498;
-  border-radius: 20px; /* 둥근 모서리 */
-  font-weight: bold;
-  color: #ffffff;
-  font-size: 11px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  img {
-    width: 24px;
-    height: 24px;
-    margin-right: 5px; /* 이미지와 텍스트 간격 */
-  }
-`;
-
 const MainContent = styled.main`
-  width: 100%;
-  max-width: 390px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
   padding: 20px;
-`;
-
-const TopSection = styled.div`
-  display: flex;
-  flex-direction: column; /* 세로 정렬 */
-  justify-content: center; /* 중앙 정렬 */
-  align-items: center; /* 중앙 정렬 */
-  background-color: rgba(80, 180, 152, 0.8); /* #50B498의 opacity 80% */
-  color: white; /* 텍스트 색상 흰색 */
-  border-radius: 15px; /* 모서리를 둥글게 */
-  width: 310px; /* 고정된 너비 */
-  height: 107px; /* 고정된 높이 */
-  padding: 15px; /* 내부 여백 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
-  position: relative; /* 텍스트 정렬 및 추가 요소를 위한 기준 */
-
-  h2 {
-    font-size: 20px; /* 포인트 숫자 크기 */
-    font-weight: bold;
-    margin: 0;
-    margin-top: 10px; /* 숫자 위 여백 추가 */
-  }
-
-  p {
-    font-size: 14px; /* 텍스트 크기 */
-    font-weight: bold;
-    margin: 0;
-    text-align: center; /* 텍스트 중앙 정렬 */
-  }
-
-  img {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px; /* 아이콘 크기 */
-    height: 30px; /* 아이콘 크기 */
-  }
-`;
-
-const StyledLink = styled(Link)`
-  display: flex; /* 텍스트와 가운데 정렬을 위한 플렉스 박스 */
-  justify-content: center;
-  align-items: center;
-  width: 110px; /* 버튼 너비 */
-  height: 30px; /* 버튼 높이 */
-  background-color: #ffffff; /* 흰색 배경 */
-  border-radius: 10px; /* 둥근 모서리 */
-  font-size: 12px; /* 텍스트 크기 */
-  font-weight: bold; /* 텍스트 굵기 */
-  color: #50b498; /* 텍스트 색상 */
-  text-decoration: none; /* 링크 밑줄 제거 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
-
-  &:hover {
-    background-color: #f0f0f0; /* 호버 시 약간 밝은 회색 */
+  position: relative;
+  & > * {
+    position: relative;
+    z-index: 1; // 모든 직접적인 자식 요소들에 z-index 적용
   }
 `;
 

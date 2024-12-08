@@ -9,11 +9,15 @@ import { useEffect } from 'react';
 import { silentRefresh } from '@/features/auth/login/lib/setupInterceptors';
 import { useAuthStore } from '@/entities/User/model/store/authStore';
 import { ToastContainer, Slide } from 'react-toastify';
+import { useNotificationSSE } from '@/features/notification/lib/useNotificationSSE';
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const accessToken = useAuthStore((state) => state.accessToken);
+
+  // SSE 연결 훅 추가
+  useNotificationSSE();
 
   useEffect(() => {
     // accessToken이 없고 isAuthenticated가 true일 때만 리프레시 시도
