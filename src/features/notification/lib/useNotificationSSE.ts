@@ -47,9 +47,12 @@ export const useNotificationSSE = () => {
   const connectSSE = useCallback(() => {
     if (!isAuthenticated) return;
 
-    const eventSource = new EventSource('/api/v1/notifications/subscribe', {
-      withCredentials: true,
-    });
+    const eventSource = new EventSource(
+      'http://43.202.106.45/api/v1/notifications/subscribe',
+      {
+        withCredentials: true,
+      }
+    );
 
     console.log('SSE 연결 시도');
 
@@ -77,7 +80,10 @@ export const useNotificationSSE = () => {
     eventSource.onerror = (error) => {
       console.error('SSE 연결 에러:', error);
       eventSource.close();
-      setTimeout(connectSSE, 1000); // 백엔드의 RECONNECTION_TIMEOUT과 맞춤
+      // 인증된 상태일 때만 재연결 시도
+      if (isAuthenticated) {
+        setTimeout(connectSSE, 3000);
+      }
     };
 
     return () => {
@@ -89,7 +95,10 @@ export const useNotificationSSE = () => {
   useEffect(() => {
     const cleanup = connectSSE();
     return () => {
-      cleanup?.();
+      if (cleanup) {
+        cleanup();
+        console.log('SSE 연결 정상 종료');
+      }
     };
-  }, [connectSSE]);
+  }, [connectSSE, isAuthenticated]); // isAuthenticated 의존성 추가
 };
