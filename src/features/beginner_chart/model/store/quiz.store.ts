@@ -1,6 +1,5 @@
-// quiz.store.ts
 import { create } from 'zustand';
-import { graphApi } from '@/features/beginner_chart/model/api/graph.api'; // graphApi 가져오기
+import { baseApi } from '@/shared/api/base';
 import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
 
 interface QuizStore {
@@ -23,57 +22,52 @@ export const useQuizStore = create<QuizStore>((set) => ({
   fetchQuizzes: async () => {
     try {
       set({ isLoading: true });
-      const response = await graphApi.get('/begin-stocks');
+      const response = await baseApi.get('/begin-stocks');
       
       if (response.data.quiz?.[0]) {
         set({
           currentQuiz: response.data.quiz[0],
-          isLoading: true
+          isLoading: false
         });
       }
     } catch (error) {
-      set({ error: '퀴즈 데이터 로딩 실패', isLoading: true });
+      set({ error: '퀴즈 데이터 로딩 실패', isLoading: false });
       console.error('Quiz fetch error:', error);
     }
   },
+
   submitAnswer: async (answer: string) => {
     try {
-      const quizResponse = await graphApi.post('/begin-stocks/submissions', {
+      // 퀴즈 답변 제출
+      const quizResponse = await baseApi.post('/begin-stocks/submissions', {
         answer: answer
       });
-  
+
       set({ selectedAnswer: answer });
-  
-      // API 응답 구조에 맞게 수정
-      if (quizResponse.data.correct) {  
-        const pointResponse = await graphApi.post('/member/wallet/stock', {  
-          transactionType: "BEGIN",
-          points: 200,
-          pointType: "STOCK",
-          stockType: "BEGIN",
-          stockName: "초급주식퀴즈"
+
+      const isCorrect = quizResponse.data.isCorrect;
+
+      if (isCorrect) {
+        // 포인트 적립 요청 - 수정된 부분
+        const pointResponse = await baseApi.post('/wallet/stock', {
+          points: 100,
+          pointType: "QUIZ",
+          quizType: "BEGIN",
+          quizName: "초급주식퀴즈"
         });
-  
+
         return {
           isCorrect: true,
-          points: pointResponse.data.points || 200  // pointResponse 데이터 사용
+          points: pointResponse.data.currentPoints
         };
       }
-  
+
       return {
         isCorrect: false
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Answer submission error:', error);
-      // 에러가 발생해도 정답 처리는 그대로 진행
-      if (error.response?.status === 404) {
-        return {
-          isCorrect: true,
-          points: 200  // 테스트용 고정값
-        };
-      }
       throw error;
     }
   }
-  
 }));

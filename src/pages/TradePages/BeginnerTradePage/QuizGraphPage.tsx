@@ -44,6 +44,7 @@ const CardWrapper = styled.div`
   padding: 16px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;  // 추가
 `;
 
 const ArticleContainer = styled.div`

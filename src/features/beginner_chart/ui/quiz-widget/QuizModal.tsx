@@ -78,7 +78,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
         </ModalText>
         {isCorrect && earnedPoints > 0 && (
           <PointText>
-            {earnedPoints} 포인트를 획득했습니다!
+            100 포인트를 획득했습니다!
           </PointText>
         )}
         <ConfirmButton onClick={onClose}>
