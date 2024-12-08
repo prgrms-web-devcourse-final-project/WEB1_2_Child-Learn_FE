@@ -1,5 +1,4 @@
 import { baseApi } from "./base";
-import { AvatarResponseDto } from "@/features/avatar/types/avatarTypes";
 import { EquipRequestDto, EquipResponseDto } from "@/features/avatar/types/equipTypes";
 import { Item } from "@/features/avatar/types/itemTypes";
 import { ReadRequestDto, ReadResponseDto } from "@/features/avatar/types/readTypes";
@@ -7,15 +6,6 @@ import { RemoveRequestDto, RemoveResponseDto } from "@/features/avatar/types/rem
 import { PurchaseRequestDto, PurchaseResponseDto } from "@/features/avatar/types/purchaseTypes";
 
 export const avatarApi = {
-  // 아바타 상태 조회
-  getAvatar: async (): Promise<AvatarResponseDto> => {
-    const response = await baseApi.get(`/member/avatar`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    return response.data; // AvatarResponseDto 반환
-  },
 
   // 아이템 구매
   purchaseItem: async (dto: PurchaseRequestDto): Promise<PurchaseResponseDto> => {
@@ -77,12 +67,14 @@ export const avatarApi = {
     return response.data; // ReadResponseDto 반환
   },
 
-  readAllItems: async (): Promise<Item[]> => {
-    const response = await baseApi.get(`/member/avatar/read-all`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    return response.data; // 전체 아이템 배열 반환
-  },
+  getAllItems: async (): Promise<
+  (Item & { isPurchased: boolean; isEquipped: boolean })[]
+> => {
+  const response = await baseApi.get(`/member/avatar/read-all`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  return response.data; // 모든 아이템 리스트 반환 (구매 및 장착 여부 포함)
+},
 };
