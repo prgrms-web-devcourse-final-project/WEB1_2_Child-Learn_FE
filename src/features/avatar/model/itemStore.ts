@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { Item } from "../types/itemTypes";
 import { MarketItem } from "../types/marketItemTypes";
 import { ItemCategory } from "../types/itemCategoryTypes";
 

@@ -9,22 +9,22 @@ import { RemoveRequestDto, RemoveResponseDto } from '@/features/avatar/types/rem
 // Mock 데이터
 let mockCoins = 1000; // 회원의 초기 코인 잔액
 
-let mockItems = [
-  { id: 1, name: 'Red Hat', price: 20, category: 'BACKGROUND', imageUrl: '/img/future-city.png', description: 'A stylish red hat.' },
-  { id: 2, name: 'Blue Background', price: 50, category: 'BACKGROUND', imageUrl: '/img/underwater.png', description: 'A calming blue background.' },
-  { id: 3, name: 'Blue Background', price: 50, category: 'BACKGROUND', imageUrl: '/img/space.png', description: 'A calming blue background.' },
-  { id: 4, name: 'Blue Background', price: 50, category: 'BACKGROUND', imageUrl: '/img/sweet-factory.png', description: 'A calming blue background.' },
-  { id: 5, name: 'Blue Background', price: 50, category: 'BACKGROUND', imageUrl: '/img/spooky-castle.png', description: 'A calming blue background.' },
-  { id: 11, name: 'Red Hat', price: 20, category: 'PET', imageUrl: '/img/fire.png', description: 'A stylish red hat.' },
-  { id: 12, name: 'Blue Background', price: 50, category: 'PET', imageUrl: '/img/water.png', description: 'A calming blue background.' },
-  { id: 13, name: 'Blue Background', price: 50, category: 'PET', imageUrl: '/img/starlight.png', description: 'A calming blue background.' },
-  { id: 14, name: 'Blue Background', price: 50, category: 'PET', imageUrl: '/img/plant.png', description: 'A calming blue background.' },
-  { id: 15, name: 'Blue Background', price: 50, category: 'PET', imageUrl: '/img/cloud.png', description: 'A calming blue background.' },
-  { id: 21, name: 'Red Hat', price: 200, category: 'HAT', imageUrl: '/img/wizard.png', description: 'A stylish red hat.' },
-  { id: 22, name: 'Blue Background', price: 50, category: 'HAT', imageUrl: '/img/gentleman.png', description: 'A calming blue background.' },
-  { id: 23, name: 'Blue Background', price: 50, category: 'HAT', imageUrl: '/img/farmer.png', description: 'A calming blue background.' },
-  { id: 24, name: 'Blue Background', price: 50, category: 'HAT', imageUrl: '/img/baseball.png', description: 'A calming blue background.' },
-  { id: 25, name: 'Blue Background', price: 50, category: 'HAT', imageUrl: '/img/tiara.png', description: 'A calming blue background.' },
+let mockItems: Item[] = [
+  { id: 1, name: '미래 도시', price: 20, category: 'BACKGROUND', imageUrl: '/img/future-city.png', description: '미래 도시 배경' },
+  { id: 2, name: '수중 세계', price: 50, category: 'BACKGROUND', imageUrl: '/img/underwater.png', description: '수중 세계 배경' },
+  { id: 3, name: '우주', price: 50, category: 'BACKGROUND', imageUrl: '/img/space.png', description: '우주 배경' },
+  { id: 4, name: '스위트 공장', price: 50, category: 'BACKGROUND', imageUrl: '/img/sweet-factory.png', description: '스위트 공장 배경' },
+  { id: 5, name: '유령 성', price: 50, category: 'BACKGROUND', imageUrl: '/img/spooky-castle.png', description: '유령 성 배경' },
+  { id: 11, name: '불꽃 펫', price: 20, category: 'PET', imageUrl: '/img/fire.png', description: '불꽃 펫' },
+  { id: 12, name: '물방울 펫', price: 50, category: 'PET', imageUrl: '/img/water.png', description: '물방울 펫' },
+  { id: 13, name: '별똥별 펫', price: 50, category: 'PET', imageUrl: '/img/starlight.png', description: '별똥별 펫' },
+  { id: 14, name: '식물 펫', price: 50, category: 'PET', imageUrl: '/img/plant.png', description: '식물 펫' },
+  { id: 15, name: '구름 펫', price: 50, category: 'PET', imageUrl: '/img/cloud.png', description: '구름 펫' },
+  { id: 21, name: '마법사 모자', price: 200, category: 'HAT', imageUrl: '/img/wizard.png', description: '마법사 모자' },
+  { id: 22, name: '신사 모자', price: 50, category: 'HAT', imageUrl: '/img/gentleman.png', description: '신사 모자' },
+  { id: 23, name: '밀짚모자', price: 50, category: 'HAT', imageUrl: '/img/farmer.png', description: '밀짚 모자' },
+  { id: 24, name: '야구 모자', price: 50, category: 'HAT', imageUrl: '/img/baseball.png', description: '야구 모자' },
+  { id: 25, name: '왕관', price: 50, category: 'HAT', imageUrl: '/img/tiara.png', description: '왕관' },
 ];
 
 let mockAvatar: {
