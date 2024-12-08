@@ -3,34 +3,34 @@ import { oxQuizApi } from '@/shared/api/minigames';
 import { QuizResponseDto, QuizAnswerResponseDto } from '@/features/minigame/oxquizgame/types/oxTypes';
 
 export interface OXQuizState {
-  oxQuizzes: QuizResponseDto[]; // 현재 퀴즈 리스트
+  oxQuizzes: Record<'easy' | 'medium' | 'hard', QuizResponseDto[]>; // 현재 퀴즈 리스트
   currentIndex: number;
   completedQuizzes: number; // 진행 중인 퀴즈의 인덱스
   loading: boolean; // 로딩 상태
   result: QuizAnswerResponseDto | null; // 현재 퀴즈 결과
-  fetchQuizzes: (memberId: number, difficulty: 'easy' | 'medium' | 'hard') => Promise<void>; // 퀴즈 가져오기
+  setQuizzes: (difficulty: 'easy' | 'medium' | 'hard', quizzes: QuizResponseDto[]) => void;
   submitAnswer: (oxQuizDataId: number, userAnswer: 'O' | 'X') => Promise<void>; // 정답 제출
-  resetQuiz: () => void; // 퀴즈 상태 초기화
+  resetQuiz: (difficulty: 'easy' | 'medium' | 'hard') => void; // 퀴즈 상태 초기화
 }
 
 const useOXQuizStore = create<OXQuizState>((set) => ({
-  oxQuizzes: [],
+  oxQuizzes: { easy: [], medium: [], hard: [] },
   currentIndex: 0,
   completedQuizzes: 0, // 초기값 설정
   currentKey: null,
   loading: false,
   result: null,
 
-  fetchQuizzes: async (memberId, difficulty) => {
-    set({ loading: true });
-    try {
-      const quizzes = await oxQuizApi.startQuiz(memberId, difficulty);
-      set({ oxQuizzes: quizzes, currentIndex: 0, completedQuizzes: 0, result: null });
-    } catch (error) {
-      console.error('Failed to fetch quizzes:', error);
-    } finally {
-      set({ loading: false });
-    }
+  setQuizzes: (difficulty, quizzes) => {
+    set((state) => ({
+      oxQuizzes: {
+        ...state.oxQuizzes,
+        [difficulty]: quizzes,
+      },
+      currentIndex: 0,
+      completedQuizzes: 0,
+      result: null,
+    }));
   },
 
   submitAnswer: async (oxQuizDataId, userAnswer) => {
@@ -49,8 +49,16 @@ const useOXQuizStore = create<OXQuizState>((set) => ({
     }
   },
 
-  resetQuiz: () => {
-    set({ oxQuizzes: [], currentIndex: 0, completedQuizzes: 0, result: null });
+  resetQuiz: (difficulty) => {
+    set((state) => ({
+      oxQuizzes: {
+        ...state.oxQuizzes,
+        [difficulty]: [],
+      },
+      currentIndex: 0,
+      completedQuizzes: 0,
+      result: null,
+    }));
   },
 }));
 
