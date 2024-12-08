@@ -1,20 +1,20 @@
-// 매수 응답
+
 export interface BuyTradeResponse {
-  warning: boolean;  // required로 변경
+  warning: boolean; 
 }
 
-// 매도 응답
+
 export interface SellTradeResponse {
-  earnedPoints: number;  // required로 변경
+  earnedPoints: number;  
 }
 
-// 통합 응답 타입 (기존 코드와의 호환성을 위해 필요한 경우)
+
 export interface TradeResponse {
-  earnedPoints?: number;  // earnedPoints를 선택적 속성으로 추가
-  // 기존 속성들...
+  earnedPoints?: number;  
+
 }
 
-// 나머지 인터페이스들은 API 문서와 일치하므로 그대로 유지
+
 export interface MidStock {
   midStockId: number;
   midName: string;

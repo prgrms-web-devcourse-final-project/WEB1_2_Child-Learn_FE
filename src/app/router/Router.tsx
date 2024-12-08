@@ -1,8 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
-import ArticlePage from '@/features/article/pages/articlepage';
 import { LoginPage } from '@/pages/auth/login/LoginPage';
 import { SignUpPage } from '@/pages/auth/signup/SignUpPage';
-import GraphExplanationPage from '@/features/beginner_chart/ui/fast-navgation/fast-navigation';
 import IntermediatePage from '@/pages/TradePages/IntermediateTradePage/IntermediatePage';
 import MainPage from '@/pages/mainpage/MainPage';
 import MiniGamePage from '@/pages/MiniGamePage/MiniGamePage';
@@ -68,14 +66,6 @@ export default function Router() {
         element={
           <PrivateRoute>
             <MainPage />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/article"
-        element={
-          <PrivateRoute>
-            <ArticlePage />
           </PrivateRoute>
         }
       />

@@ -2,10 +2,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationApi } from '@/features/notification/api/notificationApi';
 import { friendApi } from '@/features/freind/api/friendApi';
 
-export const NOTIFICATION_KEYS = {
+type NotificationKeys = {
+  all: readonly ['notifications'];
+  list: (page: number) => readonly ['notifications', 'list', number];
+  friendRequests: readonly ['notifications', 'friendRequests', 'received'];
+};
+
+export const NOTIFICATION_KEYS: NotificationKeys = {
   all: ['notifications'] as const,
-  list: (page: number) => [...NOTIFICATION_KEYS.all, 'list', page] as const,
-  friendRequests: ['friendRequests', 'received'] as const, // 추가
+  list: (page: number) => ['notifications', 'list', page] as const,
+  friendRequests: ['notifications', 'friendRequests', 'received'] as const,
 };
 
 interface FriendRequest {
@@ -16,10 +22,16 @@ interface FriendRequest {
 }
 
 // 알림 목록 조회
-export const useNotifications = (page: number = 0) => {
+export const useNotifications = (page: number) => {
   return useQuery({
     queryKey: NOTIFICATION_KEYS.list(page),
     queryFn: () => notificationApi.getNotifications(page),
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 5, // 5분
+    gcTime: 1000 * 60 * 30, // 30분
+    retry: 3, // 실패시 3번 재시도
+    retryDelay: 1000, // 재시도 간격 1초
   });
 };
 
@@ -95,8 +107,9 @@ export const useSendFriendAcceptNotification = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (receiverUsername: string) =>
-      notificationApi.sendFriendAcceptNotification(receiverUsername),
+    mutationFn: (
+      senderUsername: string // FriendRequest 대신 string을 받도록 수정
+    ) => notificationApi.sendFriendAcceptNotification(senderUsername),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
       queryClient.invalidateQueries({
@@ -108,7 +121,6 @@ export const useSendFriendAcceptNotification = () => {
     },
   });
 };
-
 // 친구 요청 알림 생성
 export const useCreateFriendRequestNotification = () => {
   const queryClient = useQueryClient();
