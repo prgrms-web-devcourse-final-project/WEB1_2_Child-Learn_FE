@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Set build script
+        run: npm pkg set scripts.build="vite build"
+
       - name: Build
         run: npm run build
 
