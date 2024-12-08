@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { NotificationItem } from '@/features/notification/ui/NotificationItem';
 import { notificationApi } from '@/features/notification/api/notificationApi';
 import { useRespondToFriendRequest } from '@/features/freind/lib/quries';
+import { Notification } from '@/features/notification/model/types';
 
 export const NotificationList = () => {
   const { data, isLoading, error } = useQuery({
@@ -23,10 +24,10 @@ export const NotificationList = () => {
 
   const respondToRequest = useRespondToFriendRequest();
 
-  const handleAccept = async (notificationId: number) => {
+  const handleAccept = async (notification: Notification) => {
     try {
       await respondToRequest.mutateAsync({
-        requestId: notificationId,
+        requestId: notification.senderLoginId, // notificationId 대신 senderLoginId 사용
         status: 'ACCEPTED',
       });
     } catch (error) {
@@ -34,10 +35,10 @@ export const NotificationList = () => {
     }
   };
 
-  const handleReject = async (notificationId: number) => {
+  const handleReject = async (notification: Notification) => {
     try {
       await respondToRequest.mutateAsync({
-        requestId: notificationId,
+        requestId: notification.senderLoginId, // 여기도 마찬가지로 수정
         status: 'REJECTED',
       });
     } catch (error) {
@@ -55,8 +56,8 @@ export const NotificationList = () => {
         <NotificationItem
           key={notification.notificationId}
           notification={notification}
-          onAccept={handleAccept}
-          onReject={handleReject}
+          onAccept={() => handleAccept(notification)} // 전체 notification 객체 전달
+          onReject={() => handleReject(notification)} // 전체 notification 객체 전달
         />
       ))}
     </ListContainer>
