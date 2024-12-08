@@ -9,8 +9,13 @@ import { useReceivedFriendRequests } from '@/features/notification/lib/queries';
 
 export const NotificationList = () => {
   const { data, isLoading, error } = useQuery({
-    queryKey: NOTIFICATION_KEYS.list(0), // 쿼리 키 상수 사용
+    queryKey: NOTIFICATION_KEYS.list(0),
     queryFn: () => notificationApi.getNotifications(),
+    refetchOnMount: 'always', // 컴포넌트 마운트시 항상 새로고침
+    refetchOnWindowFocus: true, // 윈도우 포커스시 새로고침
+    staleTime: 1000 * 60 * 5, // 5분간 데이터 유지
+    retry: 3, // 실패시 3번 재시도
+    retryDelay: 1000, // 재시도 간격 1초
   });
 
   if (error) {
@@ -58,9 +63,14 @@ export const NotificationList = () => {
     }
   };
 
-  if (isLoading) return <LoadingContainer>로딩중...</LoadingContainer>;
-  if (!data?.content?.length)
+  if (isLoading && !data) {
+    // 이전 데이터가 있으면 보여주기
+    return <LoadingContainer>로딩중...</LoadingContainer>;
+  }
+
+  if (!data?.content?.length) {
     return <EmptyMessage>알림이 없습니다.</EmptyMessage>;
+  }
 
   return (
     <ListContainer>
