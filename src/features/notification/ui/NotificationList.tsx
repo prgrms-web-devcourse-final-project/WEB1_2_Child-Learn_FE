@@ -1,24 +1,18 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query'; // 추가
 import styled from 'styled-components';
 import { NotificationItem } from '@/features/notification/ui/NotificationItem';
-import { notificationApi } from '@/features/notification/api/notificationApi';
 import { useRespondToFriendRequest } from '@/features/freind/lib/quries';
 import { Notification } from '@/features/notification/model/types';
-import { NOTIFICATION_KEYS } from '@/features/notification/lib/queries'; // 추가
-import { useReceivedFriendRequests } from '@/features/notification/lib/queries';
+import {
+  useNotifications,
+  useReceivedFriendRequests,
+} from '@/features/notification/lib/queries';
 
 export const NotificationList = () => {
-  const { data, isLoading, error } = useQuery({
-    queryKey: NOTIFICATION_KEYS.list(0), // 쿼리 키 상수 사용
-    queryFn: () => notificationApi.getNotifications(),
-  });
-
-  if (error) {
-    console.error('알림 조회 에러:', error);
-  }
-
+  const queryClient = useQueryClient(); // 추가
+  const { data, isLoading } = useNotifications(0);
+  const { data: receivedRequests } = useReceivedFriendRequests();
   const respondToRequest = useRespondToFriendRequest();
-  const { data: receivedRequests } = useReceivedFriendRequests(); // 추가
 
   const handleAccept = async (notification: Notification) => {
     try {
@@ -31,9 +25,12 @@ export const NotificationList = () => {
       }
 
       await respondToRequest.mutateAsync({
-        requestId: request.id, // 실제 requestId 사용
+        requestId: request.id,
         status: 'ACCEPTED',
       });
+
+      // 상태 업데이트를 위해 쿼리 무효화
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     } catch (error) {
       console.error('친구 수락 실패:', error);
     }
@@ -50,17 +47,24 @@ export const NotificationList = () => {
       }
 
       await respondToRequest.mutateAsync({
-        requestId: request.id, // notification.notificationId가 아닌 request.id 사용
+        requestId: request.id,
         status: 'REJECTED',
       });
+
+      // 상태 업데이트를 위해 쿼리 무효화
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     } catch (error) {
       console.error('친구 거절 실패:', error);
     }
   };
 
-  if (isLoading) return <LoadingContainer>로딩중...</LoadingContainer>;
-  if (!data?.content?.length)
+  if (isLoading && !data) {
+    return <LoadingContainer>로딩중...</LoadingContainer>;
+  }
+
+  if (!data?.content?.length) {
     return <EmptyMessage>알림이 없습니다.</EmptyMessage>;
+  }
 
   return (
     <ListContainer>

@@ -2,11 +2,12 @@ import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { notificationApi } from '@/features/notification/api/notificationApi';
+import { NOTIFICATION_KEYS } from '@/features/notification/lib/queries';
 
 const Header = () => {
   const navigate = useNavigate();
   const { data: notifications } = useQuery({
-    queryKey: ['notifications'],
+    queryKey: NOTIFICATION_KEYS.list(0),
     queryFn: () => notificationApi.getNotifications(),
   });
 

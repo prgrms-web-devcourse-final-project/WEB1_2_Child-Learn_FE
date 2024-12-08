@@ -1,75 +1,129 @@
 import { useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/entities/User/model/store/authStore';
-import { notificationApi } from '@/features/notification/api/notificationApi';
+import { NOTIFICATION_KEYS } from '@/features/notification/lib/queries';
+import { EventSourcePolyfill } from 'event-source-polyfill';
+import EventSource from 'eventsource';
+import type { NotificationType } from '@/features/notification/model/types';
 
-interface SSEEvent {
-  event?: 'notification';
-  id?: string;
-  data: string;
-}
-
-interface NotificationStateEvent {
-  type: 'READ' | 'READ_ALL' | 'DELETE';
-  notificationId?: number;
-  memberId?: number;
+// SSE 이벤트 데이터 타입 정의
+interface SSENotification {
+  notificationId: number;
+  senderLoginId: number;
+  senderUsername: string;
+  title: string;
+  content: string;
+  type: NotificationType;
+  isRead: boolean;
+  createdAt: string;
+  profileImageUrl: string | null;
+  elapsedTime: string;
 }
 
 export const useNotificationSSE = () => {
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, accessToken } = useAuthStore();
 
   const handleSSEEvent = useCallback(
-    (eventData: SSEEvent | NotificationStateEvent) => {
-      if ('event' in eventData && eventData.event === 'notification') {
-        // 새 알림이 오면 알림 목록 쿼리 갱신
-        queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      } else if ('type' in eventData) {
-        // READ, DELETE 등 상태 변경 시에도 알림 목록 쿼리 갱신
-        switch (eventData.type) {
-          case 'READ':
-          case 'READ_ALL':
-          case 'DELETE':
-            queryClient.invalidateQueries({ queryKey: ['notifications'] });
-            break;
-        }
+    (eventData: SSENotification) => {
+      // SSENotification 타입 사용
+      console.log('SSE 이벤트 수신:', eventData);
+
+      switch (eventData.type) {
+        case 'FRIEND_REQUEST':
+        case 'FRIEND_ACCEPT':
+        case 'MESSAGE':
+          queryClient.invalidateQueries({
+            queryKey: NOTIFICATION_KEYS.all,
+            refetchType: 'active',
+            exact: false,
+          });
+
+          if (eventData.type === 'FRIEND_REQUEST') {
+            queryClient.invalidateQueries({
+              queryKey: NOTIFICATION_KEYS.friendRequests,
+              refetchType: 'active',
+            });
+          }
+          break;
       }
     },
     [queryClient]
   );
 
-  const connectSSE = useCallback(async () => {
-    if (!isAuthenticated) return;
+  const connectSSE = useCallback(() => {
+    if (!isAuthenticated || !accessToken) return;
 
-    try {
-      const response = await notificationApi.subscribeToSSE();
-      const lines = response.data.split('\n');
+    const eventSource = new EventSourcePolyfill(
+      '/api/v1/notifications/subscribe',
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      }
+    ) as unknown as EventSource;
 
-      lines.forEach((line: string) => {
-        if (line.startsWith('data: ')) {
-          try {
-            const eventData = JSON.parse(line.slice(6));
-            handleSSEEvent(eventData);
-          } catch (error) {
-            console.error('Failed to parse SSE message:', error);
-          }
-        }
-      });
-    } catch (error) {
-      console.error('SSE error:', error);
-      setTimeout(connectSSE, 5000);
-    }
-  }, [isAuthenticated, handleSSEEvent]);
+    console.log('SSE 연결 시도');
 
-  useEffect(() => {
-    let mounted = true;
+    eventSource.onopen = () => {
+      console.log('SSE 연결 성공');
+    };
 
-    if (mounted) {
-      connectSSE();
-    }
+    // 일반 알림 이벤트 핸들러
+    const handleNotification = (event: MessageEvent) => {
+      // connected 메시지 처리
+      if (event.data === 'connected') {
+        console.log('SSE 초기 연결 완료');
+        return;
+      }
+
+      try {
+        const eventData = JSON.parse(event.data);
+        console.log('알림 이벤트 수신:', eventData);
+        handleSSEEvent(eventData);
+      } catch (error) {
+        console.error('SSE 메시지 파싱 실패:', error);
+      }
+    };
+
+    // 하트비트 이벤트 핸들러
+    const handleHeartbeat = (event: MessageEvent) => {
+      console.log('하트비트 수신:', event.data);
+    };
+
+    // 재연결 이벤트 핸들러
+    const handleRetry = (event: MessageEvent) => {
+      console.log('재연결 시도:', event.data);
+    };
+
+    // 이벤트 리스너 등록
+    eventSource.addEventListener('notification', handleNotification);
+    eventSource.addEventListener('heartbeat', handleHeartbeat);
+    eventSource.addEventListener('retry', handleRetry);
+
+    eventSource.onerror = () => {
+      console.error('SSE 연결 에러');
+      eventSource.close();
+      if (isAuthenticated && accessToken) {
+        setTimeout(connectSSE, 3000);
+      }
+    };
 
     return () => {
-      mounted = false;
+      console.log('SSE 연결 종료');
+      // 이벤트 리스너 제거
+      eventSource.removeEventListener('notification', handleNotification);
+      eventSource.removeEventListener('heartbeat', handleHeartbeat);
+      eventSource.removeEventListener('retry', handleRetry);
+      eventSource.close();
+    };
+  }, [isAuthenticated, accessToken, handleSSEEvent]);
+
+  useEffect(() => {
+    const cleanup = connectSSE();
+    return () => {
+      cleanup?.();
     };
   }, [connectSSE]);
 };
