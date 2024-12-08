@@ -67,6 +67,13 @@ export const useNotificationSSE = () => {
 
     const handleNotification = (event: MessageEvent) => {
       try {
+        // connected 메시지는 별도 처리
+        if (event.data === 'connected') {
+          console.log('SSE 서버와 연결됨');
+          return;
+        }
+
+        // 나머지 메시지는 JSON 파싱
         const eventData = JSON.parse(event.data);
         console.log('알림 이벤트 수신:', eventData);
         handleSSEEvent(eventData);
