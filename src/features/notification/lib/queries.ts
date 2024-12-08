@@ -57,3 +57,18 @@ export const useSendFriendAcceptNotification = () => {
     },
   });
 };
+
+// 친구 요청 알림 생성
+export const useCreateFriendRequestNotification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: notificationApi.createFriendRequestNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: () => {
+      console.error('친구 요청 알림 생성 실패');
+    },
+  });
+};
