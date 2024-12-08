@@ -24,28 +24,31 @@ export const SellModal: React.FC<SellModalProps> = ({
   const currentStock = stockDetails.find(stock => stock.midStockId === stockId);
   const currentPrice = currentStockPrices[0]?.avgPrice || 0;
 
-  // 보유 수량 계산
+  // 보유 수량 계산 - 소수점 허용
   const quantity = currentStock?.details.reduce((total, detail) => {
     if (detail.tradeType === 'BUY') {
-      return total + detail.tradePoint;
-    } else if (detail.tradeType === 'SELL') {
-      return total - detail.tradePoint;
+      return total + (detail.tradePoint / detail.pricePerStock);  // 실제 구매 주식 수량
     }
     return total;
   }, 0) || 0;
 
+
+  const purchasePrice = currentStock?.details
+  .filter(detail => detail.tradeType === 'BUY')
+  .reduce((total, detail) => {
+    return total + detail.pricePerStock;
+  }, 0) || 0;
+
+
   // 예상 수익 계산
-  const expectedProfit = quantity * currentPrice;
+  const expectedProfit = ((currentPrice - purchasePrice) * quantity);
 
   const handleConfirm = async () => {
     try {
       setError('');
-      if (quantity <= 0) {
-        setError('매도할 주식이 없습니다.');
-        return;
-      }
       await onConfirm();
     } catch (error: any) {
+      console.error('매도 처리 중 오류:', error);
       setError(error.message || '매도 처리 중 오류가 발생했습니다.');
     }
   };
@@ -60,7 +63,7 @@ export const SellModal: React.FC<SellModalProps> = ({
         <S.ModalContent>
           <S.StockInfo>
             <div>종목명: {stockName}</div>
-            <div>보유 수량: {quantity}주</div>
+            <div>보유 수량: {quantity.toFixed(2)}주</div>
             <div>현재 가격: {currentPrice.toLocaleString()}P</div>
             <div>예상 수익: {expectedProfit.toLocaleString()}P</div>
           </S.StockInfo>
