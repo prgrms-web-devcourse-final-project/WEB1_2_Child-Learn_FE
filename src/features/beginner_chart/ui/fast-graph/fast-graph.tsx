@@ -14,7 +14,7 @@ interface FastGraphProps {
 }
 
 const GraphContainer = styled.div`
-  width: 355px;
+  width: 100%;
   background: white;
   padding: 5px;
   margin-bottom: 20px;
@@ -203,7 +203,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data, onChartClick }) => {
         series={series}
         type="bar"
         height={350}
-        width={350}
+        width="100%"
       />
     </GraphContainer>
   );
