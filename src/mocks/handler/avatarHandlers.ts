@@ -1,45 +1,26 @@
 import { http, HttpResponse } from 'msw';
+import { AvatarResponseDto } from '@/features/avatar/types/avatarTypes';
+import { EquipRequestDto, EquipResponseDto } from '@/features/avatar/types/equipTypes';
+import { Item } from '@/features/avatar/types/itemTypes';
+import { PurchaseRequestDto, PurchaseResponseDto } from '@/features/avatar/types/purchaseTypes';
+import { ReadRequestDto, ReadResponseDto } from '@/features/avatar/types/readTypes';
+import { RemoveRequestDto, RemoveResponseDto } from '@/features/avatar/types/removeTypes';
 
-// 타입 정의
-interface Avatar {
-    id: number;
-    memberId: number;
-    hat: Item | null;
-    pet: Item | null;
-    background: Item | null;
-  }
-  
-interface Item {
-    id: number;
-    name: string;
-    description: string;
-    price: number;
-    category: "hat" | "pet" | "background";
-    isEquipped: boolean;
-  }
-  
-  interface Purchase {
-    id: number;
-    memberId: number;
-    itemId: number;
-    purchaseDate: string;
-    isEquipped: boolean;
-  }
-  
-  interface PurchaseRequestBody {
-    itemId: number;
-  }
+// Mock 데이터
+let mockCoins = 1000; // 회원의 초기 코인 잔액
 
-  interface ItemEquipRequestBody {
-    memberId: number;
-    itemId: number;
-}
+let mockItems = [
+  { id: 1, name: 'Red Hat', price: 200, category: 'HAT', imageUrl: '/images/red-hat.png', description: 'A stylish red hat.' },
+  { id: 2, name: 'Blue Background', price: 500, category: 'BACKGROUND', imageUrl: '/images/blue-background.png', description: 'A calming blue background.' },
+];
 
-interface ItemRemoveRequestBody {
-   itemId: number;
-}
-
-let mockAvatar: Avatar = {
+let mockAvatar: {
+  id: number;
+  memberId: number;
+  hat: Item | null;
+  pet: Item | null;
+  background: Item | null;
+} = {
   id: 1,
   memberId: 1,
   hat: null,
@@ -47,173 +28,95 @@ let mockAvatar: Avatar = {
   background: null,
 };
 
-let mockPurchases: Purchase[] = [];
-let mockWallet = {
-  memberId: 3,
-  currentCoins: 5000, // 초기 코인 설정
-};
-
-let mockItems: Item[] = [
-  {
-    id: 1,
-    name: "Cute Hat",
-    description: "A cute hat to wear.",
-    price: 10,
-    category: "hat",
-    isEquipped: false,
-  },
-  {
-    id: 2,
-    name: "Adorable Pet",
-    description: "A pet to accompany you.",
-    price: 20,
-    category: "pet",
-    isEquipped: false,
-  },
-  {
-    id: 3,
-    name: "Beautiful Background",
-    description: "A background to customize your profile.",
-    price: 15,
-    category: "background",
-    isEquipped: false,
-  },
-];
-
 // Handlers
 export const avatarHandlers = [
-  // 아이템 구매 핸들러
+  // 아이템 구매
   http.post('/api/v1/member/avatar/purchase', async ({ request }) => {
-    const body = (await request.json()) as PurchaseRequestBody;
+    const body = (await request.json() as PurchaseRequestDto);
     const { itemId } = body;
 
-    const item = mockItems.find((item) => item.id === itemId);
-
+    const item = mockItems.find((i) => i.id === itemId);
     if (!item) {
-      return new HttpResponse(
-        JSON.stringify({ error: "Item not found." }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return HttpResponse.json<PurchaseResponseDto>({ message: '아이템을 찾을 수 없습니다.' }, { status: 404 });
     }
 
-     // 이미 구매한 아이템인지 확인
-  const alreadyPurchased = mockPurchases.find(
-    (purchase) => purchase.itemId === itemId && purchase.memberId === mockWallet.memberId
-  );
-  if (alreadyPurchased) {
-    return new HttpResponse(
-      JSON.stringify({ error: 'Item already purchased.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-     // 코인 확인 및 차감
-  if (mockWallet.currentCoins < item.price) {
-    return new HttpResponse(
-      JSON.stringify({ error: 'Not enough coins.' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-  mockWallet.currentCoins -= item.price;
+    if (mockCoins < item.price) {
+      return HttpResponse.json<PurchaseResponseDto>({ message: '코인이 부족합니다.' }, { status: 400 });
+    }
 
-  // 구매 내역 추가
-  const newPurchase: Purchase = {
-    id: Date.now(),
-    memberId: mockWallet.memberId,
-    itemId: item.id,
-    purchaseDate: new Date().toISOString(),
-    isEquipped: false,
-  };
-  mockPurchases.push(newPurchase);
-
-  console.log(`MSW: Item purchased - ID: ${itemId}`);
-  return new HttpResponse(
-    JSON.stringify({ message: 'Item purchased successfully.' }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } }
-  );
+    mockCoins -= item.price;
+    return HttpResponse.json<PurchaseResponseDto>({ message: '아이템을 성공적으로 구매했습니다.', remainingCoins: mockCoins }, { status: 200 });
   }),
 
-  // 아이템 장착 핸들러
+  // 아이템 장착
   http.post('/api/v1/member/avatar/isEquipped', async ({ request }) => {
-    const body = (await request.json()) as ItemEquipRequestBody;
+    const body = (await request.json() as EquipRequestDto);
     const { itemId } = body;
 
-    const item = mockItems.find((item) => item.id === itemId);
-
+    const item = mockItems.find((i) => i.id === itemId);
     if (!item) {
-      return new HttpResponse(
-        JSON.stringify({ error: "Item not found." }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return HttpResponse.json<EquipResponseDto>({ message: '아이템을 찾을 수 없습니다.', itemImageUrl: '' }, { status: 404 });
     }
 
     switch (item.category) {
-      case "hat":
+      case 'HAT':
         mockAvatar.hat = item;
         break;
-      case "pet":
-        mockAvatar.pet = item;
-        break;
-      case "background":
+      case 'BACKGROUND':
         mockAvatar.background = item;
         break;
+      case 'PET':
+        mockAvatar.pet = item;
+        break;
       default:
-        return new HttpResponse(
-          JSON.stringify({ error: "Invalid item category." }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
-        );
+        return HttpResponse.json<EquipResponseDto>({ message: '잘못된 아이템 카테고리입니다.', itemImageUrl: '' }, { status: 400 });
     }
 
-    console.log(`MSW: Item equipped - ID: ${itemId}`);
-    return new HttpResponse(
-      JSON.stringify({ message: "Item equipped successfully." }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return HttpResponse.json<EquipResponseDto>({ message: '아이템이 성공적으로 장착되었습니다.', itemImageUrl: item.imageUrl }, { status: 200 });
   }),
 
-  // 아이템 해제 핸들러
+  // 아이템 해제
   http.post('/api/v1/member/avatar/remove', async ({ request }) => {
-    const body = (await request.json()) as ItemRemoveRequestBody;
+    const body = (await request.json() as RemoveRequestDto);
     const { itemId } = body;
 
-    const item = mockItems.find((item) => item.id === itemId);
-
+    const item = mockItems.find((i) => i.id === itemId);
     if (!item) {
-      return new HttpResponse(
-        JSON.stringify({ error: "Item not found." }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return HttpResponse.json<RemoveResponseDto>({ message: '아이템을 찾을 수 없습니다.', itemImageUrl: '' }, { status: 404 });
     }
 
     switch (item.category) {
-      case "hat":
+      case 'HAT':
         mockAvatar.hat = null;
         break;
-      case "pet":
-        mockAvatar.pet = null;
-        break;
-      case "background":
+      case 'BACKGROUND':
         mockAvatar.background = null;
         break;
+      case 'PET':
+        mockAvatar.pet = null;
+        break;
       default:
-        return new HttpResponse(
-          JSON.stringify({ error: "Invalid item category." }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
-        );
+        return HttpResponse.json<RemoveResponseDto>({ message: '잘못된 아이템 카테고리입니다.', itemImageUrl: '' }, { status: 400 });
     }
 
-    console.log(`MSW: Item unequipped - ID: ${itemId}`);
-    return new HttpResponse(
-      JSON.stringify({ message: "Item unequipped successfully." }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return HttpResponse.json<RemoveResponseDto>({ message: '아이템이 성공적으로 해제되었습니다.', itemImageUrl: '/images/default.png' }, { status: 200 });
   }),
 
-  // 아바타 조회 핸들러
-  http.get('/api/v1/member/avatar/read', () => {
-    console.log("MSW: Fetching avatar data");
-    return new HttpResponse(
-      JSON.stringify(mockAvatar),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+  // 아이템 조회
+  http.post('/api/v1/member/avatar/read', async ({ request }) => {
+    const body = (await request.json() as ReadRequestDto);
+    const { id } = body;
+
+    const item = mockItems.find((i) => i.id === id);
+    if (!item) {
+      return HttpResponse.json<ReadResponseDto | { message: string }>({ message: '아이템을 찾을 수 없습니다.' }, { status: 404 });
+    }
+
+    return HttpResponse.json<ReadResponseDto>(item, { status: 200 });
+  }),
+
+  // 아바타 상태 조회
+  http.get('/api/v1/member/avatar', async () => {
+    return HttpResponse.json<AvatarResponseDto>(mockAvatar, { status: 200 });
   }),
 ];
