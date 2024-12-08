@@ -47,7 +47,7 @@ export const useNotificationSSE = () => {
   const connectSSE = useCallback(() => {
     if (!isAuthenticated) return;
 
-    const eventSource = new EventSource('/notifications/subscribe', {
+    const eventSource = new EventSource('/api/v1/notifications/subscribe', {
       withCredentials: true,
     });
 
