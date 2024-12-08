@@ -232,4 +232,5 @@ export class StockWebSocket {
   }
 }
 
+
 export const webSocket = StockWebSocket.getInstance();
