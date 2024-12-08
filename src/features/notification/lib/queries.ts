@@ -8,6 +8,13 @@ export const NOTIFICATION_KEYS = {
   friendRequests: ['friendRequests', 'received'] as const, // 추가
 };
 
+interface FriendRequest {
+  id: number;
+  senderUsername: string;
+  receiverUsername: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+}
+
 // 알림 목록 조회
 export const useNotifications = (page: number = 0) => {
   return useQuery({
@@ -18,7 +25,7 @@ export const useNotifications = (page: number = 0) => {
 
 // 받은 친구 요청 목록 조회
 export const useReceivedFriendRequests = () => {
-  return useQuery({
+  return useQuery<FriendRequest[]>({
     queryKey: NOTIFICATION_KEYS.friendRequests,
     queryFn: friendApi.getReceivedFriendRequests,
   });
