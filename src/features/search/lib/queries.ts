@@ -26,13 +26,19 @@ export const useSendFriendRequest = () => {
     useCreateFriendRequestNotification();
 
   return useMutation({
-    mutationFn: async (receiverId: number) => {
-      // 1. 친구 요청 처리
+    mutationFn: async ({
+      receiverId,
+      receiverUsername,
+    }: {
+      receiverId: number;
+      receiverUsername: string;
+    }) => {
+      // 1. 친구 요청 처리 (receiverId 사용)
       await userApi.sendFriendRequest(receiverId);
-      // 2. 알림 생성
-      await createNotification(receiverId);
+      // 2. 알림 생성 (receiverUsername 사용)
+      await createNotification(receiverUsername);
     },
-    onSuccess(_, receiverId) {
+    onSuccess(_, { receiverId }) {
       showToast.success('친구 요청을 보냈습니다.');
 
       // 검색 결과 업데이트
