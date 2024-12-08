@@ -5,8 +5,8 @@ import { useSendFriendAcceptNotification } from '@/features/notification/lib/que
 
 interface NotificationItemProps {
   notification: Notification;
-  onAccept: (notificationId: number) => void;
-  onReject: (notificationId: number) => void;
+  onAccept: (requestId: number) => void; // senderLoginId -> notificationId
+  onReject: (requestId: number) => void; // senderLoginId -> notificationId
 }
 
 export const NotificationItem = ({
@@ -22,8 +22,8 @@ export const NotificationItem = ({
     try {
       // 1. 친구 요청 수락
       await onAccept(notification.notificationId);
-      // 2. 수락 알림 보내기
-      await sendAcceptNotification(notification.notificationId);
+      // 2. 수락 알림 보내기 - senderUsername 전달
+      await sendAcceptNotification(notification.senderUsername);
     } catch (error) {
       console.error('친구 수락 실패:', error);
     }
@@ -39,9 +39,9 @@ export const NotificationItem = ({
 
   const renderFriendRequestActions = () => {
     switch (notification.status) {
-      case 'ACCEPT':
+      case 'ACCEPTED':
         return <StatusMessage>친구 수락이 완료되었습니다.</StatusMessage>;
-      case 'REJECT':
+      case 'REJECTED':
         return <StatusMessage>친구 요청을 거절하였습니다.</StatusMessage>;
       default:
         return (
@@ -49,7 +49,9 @@ export const NotificationItem = ({
             <ActionButton $isAccept onClick={handleAccept}>
               수락하기
             </ActionButton>
-            <ActionButton onClick={() => onReject(notification.notificationId)}>
+            <ActionButton
+              onClick={() => onReject(notification.notificationId)} // senderLoginId -> notificationId
+            >
               거절하기
             </ActionButton>
           </ButtonGroup>

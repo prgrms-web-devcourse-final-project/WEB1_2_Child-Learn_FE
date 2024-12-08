@@ -160,22 +160,29 @@ const QuizGraphPage: React.FC = () => {
   const handleChartClick = () => {
     setShowArticle(true);
   };
-
   const handleAnswer = async (answer: string) => {
     try {
       setSelectedAnswer(answer);
       const result = await submitAnswer(answer);
-      console.log('Submit Answer Result:', result);
       
-      if (result.isCorrect) {  // 여기서 체크
-        setEarnedPoints(200);  // 테스트를 위해 고정값 사용
+      if (result.isCorrect) {
+        setEarnedPoints(result.points || 0);
+        // 필요한 경우 현재 포인트와 코인을 상태에 저장
+        if ('currentPoints' in result) {
+          // updateCurrentPoints(result.currentPoints);
+          // updateCurrentCoins(result.currentCoins);
+        }
+      } else {
+        setEarnedPoints(0);
       }
+      
       setShowModal(true);
     } catch (error) {
       console.error('Error submitting answer:', error);
+      setEarnedPoints(0);
+      setShowModal(true);
     }
   };
-  
 
   const handleModalClose = () => {
     setShowModal(false);
@@ -238,11 +245,10 @@ const QuizGraphPage: React.FC = () => {
 <QuizModal
   isOpen={showModal}
   onClose={handleModalClose}
-  isCorrect={selectedAnswer === currentQuiz?.answer}
   earnedPoints={earnedPoints}
+  isCorrect={earnedPoints > 0}
 />
     </PageContainer>
   );
-};
-
+};  
 export default QuizGraphPage;
