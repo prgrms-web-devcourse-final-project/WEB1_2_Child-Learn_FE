@@ -2,22 +2,149 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart'; 
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
 import { StockWebSocket } from '@/features/Advanced_chat/model/stockWebSocket';
-import { 
-  Stock,
-  StockPrice
-} from '@/features/Advanced_chat/types/stock';
-import {  
-  SlideContainer,
-  TimeDisplay,
-  ChartGrid, 
-  ChartItem,
-  NavigationButton,
-  ControlPanel,
-  PlayButton,
-  TradeButton,
-  SlideIndicators,
-  Indicator
-} from './styled';
+import { useArticle } from '@/features/article/model/useArticle';
+import ArticleCard from '@/features/article/ui/ArticleCard';
+import styled from 'styled-components';
+import { Stock, StockPrice } from '@/features/Advanced_chat/types/stock';
+
+interface AdvancedGameStockSliderProps {
+  stockId: number;
+  stockName: string;
+}
+
+const ArticleContent = styled.div`
+ padding: 20px;
+`;
+
+const Content = styled.div`
+ font-size: 14px;
+ line-height: 1.8;
+ color: #333;
+`;
+
+const Column = styled.div`
+ display: flex;
+ flex-direction: column;
+ gap: 20px;
+`;
+
+const SlideContainer = styled.div`
+ position: relative;
+ width: 100%;
+ overflow: hidden;
+ margin: 20px 0;
+`;
+
+const TimeDisplay = styled.div`
+ position: absolute;
+ top: 10px;
+ left: 10px;
+ z-index: 10;
+ display: flex;
+ align-items: center;
+ gap: 5px;
+ background: rgba(0, 0, 0, 0.7);
+ color: white;
+ padding: 5px 10px;
+ border-radius: 5px;
+
+ img {
+   width: 20px;
+   height: 20px;
+ }
+`;
+
+const ChartGrid = styled.div`
+ display: flex;
+ transition: transform 0.3s ease;
+`;
+
+const ChartItem = styled.div`
+ flex: 0 0 25%;
+ padding: 10px;
+`;
+
+const NavigationButton = styled.button<{ position: 'left' | 'right', $show?: boolean }>`
+ position: absolute;
+ top: 50%;
+ transform: translateY(-50%);
+ ${props => props.position === 'left' ? 'left: 10px' : 'right: 10px'};
+ display: ${props => props.$show ? 'block' : 'none'};
+ background: none;
+ border: none;
+ cursor: pointer;
+ z-index: 10;
+
+ img {
+   width: 30px;
+   height: 30px;
+   transform: ${props => props.position === 'left' ? 'rotate(180deg)' : 'none'};
+ }
+
+ &:disabled {
+   opacity: 0.5;
+   cursor: not-allowed;
+ }
+`;
+
+const ControlPanel = styled.div`
+ position: absolute;
+ bottom: 20px;
+ left: 50%;
+ transform: translateX(-50%);
+ display: flex;
+ gap: 10px;
+ z-index: 10;
+`;
+
+const PlayButton = styled.button`
+ background: rgba(0, 0, 0, 0.7);
+ border: none;
+ border-radius: 50%;
+ width: 40px;
+ height: 40px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ cursor: pointer;
+
+ img {
+   width: 20px;
+   height: 20px;
+ }
+`;
+
+const TradeButton = styled.button`
+ background: #007bff;
+ color: white;
+ border: none;
+ border-radius: 20px;
+ padding: 0 20px;
+ height: 40px;
+ cursor: pointer;
+
+ &:hover {
+   background: #0056b3;
+ }
+`;
+
+const SlideIndicators = styled.div<{ $show: boolean }>`
+ position: absolute;
+ bottom: 20px;
+ left: 50%;
+ transform: translateX(-50%);
+ display: ${props => props.$show ? 'flex' : 'none'};
+ gap: 10px;
+ z-index: 10;
+`;
+
+const Indicator = styled.div<{ $active: boolean }>`
+ width: 10px;
+ height: 10px;
+ border-radius: 50%;
+ background: ${props => props.$active ? '#fff' : 'rgba(255, 255, 255, 0.5)'};
+ cursor: pointer;
+`;
 
 const useGameTimer = ({ 
   isPlaying, 
@@ -88,15 +215,16 @@ const useGameTimer = ({
   };
 };
 
-export const StockSlider: React.FC = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [showActions, setShowActions] = useState(false);
-  const [selectedStock, setSelectedStock] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [stockData, setStockData] = useState<Record<string, StockPrice[]>>({});
-  const [showTradeModal, setShowTradeModal] = useState(false);
-  const [availableStocks, setAvailableStocks] = useState<Stock[]>([]);
-  const wsRef = useRef(StockWebSocket.getInstance());
+export const AdvancedArticlePage: React.FC = () => {
+ const { articles, loading, error } = useArticle('ADVANCED');
+ const [currentSlide, setCurrentSlide] = useState(0);
+ const [showActions, setShowActions] = useState(false);
+ const [selectedStock, setSelectedStock] = useState<number | null>(null);
+ const [isPlaying, setIsPlaying] = useState(false);
+ const [stockData, setStockData] = useState<Record<string, StockPrice[]>>({});
+ const [showTradeModal, setShowTradeModal] = useState(false);
+ const [availableStocks, setAvailableStocks] = useState<Stock[]>([]);
+ const wsRef = useRef(StockWebSocket.getInstance());
 
   const { formattedTime, isTimeUp } = useGameTimer({
     isPlaying,
@@ -111,11 +239,11 @@ export const StockSlider: React.FC = () => {
   const processStockData = (data: any): StockPrice => {
     return {
       timestamp: new Date().toISOString(),
-      price: String(data.closePrice || 0),
-      open: String(data.openPrice || 0),
-      high: String(data.highPrice || 0),
-      low: String(data.lowPrice || 0),
-      close: String(data.closePrice || 0),
+      price: Number(data.closePrice || 0),
+      open: Number(data.openPrice || 0),
+      high: Number(data.highPrice || 0),
+      low: Number(data.lowPrice || 0),
+      close: Number(data.closePrice || 0),
       change: 0,
       volume: 0
     };
@@ -240,84 +368,59 @@ export const StockSlider: React.FC = () => {
     return <div>주식 데이터를 불러오는 중...</div>;
   }
 
-  return (
-    <SlideContainer>
-      <TimeDisplay>
-        <img src="/img/timer.png" alt="시계" />
-        {formattedTime}
-      </TimeDisplay>
-
-      <NavigationButton 
-        $show={!selectedStock}
-        position="left" 
-        onClick={handlePrevSlide}
-        disabled={currentSlide === 0}
-      >
-        <img src="/img/arrow2.png" alt="이전" />
-      </NavigationButton>
-
-      <ChartGrid style={{ transform: `translateX(-${currentSlide * 25}%)` }}>
-        {availableStocks.map((stock) => {
-          console.log(`${stock.symbol} 차트 데이터:`, stockData[stock.symbol]);
-          return (
-            <ChartItem key={stock.id}>
-              <StockChart
-                stockId={stock.id}
-                title={stock.title}
-                data={stockData[stock.symbol] || []}
-                isSelected={selectedStock === stock.id}
-                onClick={() => setSelectedStock(stock.id)}
-                isPlaying={isPlaying}
-              />
-            </ChartItem>
-          );
-        })}
-      </ChartGrid>
-
-      <NavigationButton 
-        $show={!selectedStock}
-        position="right" 
-        onClick={handleNextSlide}
-        disabled={currentSlide === availableStocks.length - 1}
-      >
-        <img src="/img/arrow2.png" alt="다음" />
-      </NavigationButton>
-
-      {selectedStock && (
-        <ControlPanel>
-          <PlayButton onClick={handlePlayClick}>
-            {isPlaying ? (
-              <img src="/img/pause.png" alt="일시정지" />
-            ) : (
-              <img src="/img/play.png" alt="시작" />
-            )}
-          </PlayButton>
-          <TradeButton onClick={() => setShowTradeModal(true)}>거래하기</TradeButton>
-        </ControlPanel>
-      )}
-
-      {showTradeModal && selectedStock && (
-        <TradeModal
-          isOpen={showTradeModal}
-          onClose={() => setShowTradeModal(false)}
-          stockName={availableStocks.find(s => s.id === selectedStock)?.title || ''}
-          currentPrice={Number(stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || '']?.[0]?.close || '0')}
-          priceHistory={stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || ''] || []}
-          isPlaying={isPlaying}
-        />
-      )}
-
-      <SlideIndicators $show={!showActions}>
-        {availableStocks.map((_, index) => (
-          <Indicator
-            key={index}
-            $active={index === currentSlide}
-            onClick={() => setCurrentSlide(index)}
+ return (
+  <Column>
+  <SlideContainer>
+    <TimeDisplay>
+      <img src="/img/timer.png" alt="시계" />
+      {formattedTime}
+    </TimeDisplay>
+ 
+    <ChartGrid style={{ transform: `translateX(-${currentSlide * 25}%)` }}>
+      {availableStocks.map((stock) => (
+        <ChartItem key={stock.id}>
+          <StockChart
+            stockId={stock.id}
+            title={stock.title}
+            data={(stockData[stock.symbol] || []) as any}
+            isSelected={selectedStock === stock.id}
+            onClick={() => setSelectedStock(stock.id)}
+            isPlaying={isPlaying}
           />
-        ))}
-      </SlideIndicators>
-    </SlideContainer>
-  );
+        </ChartItem>
+      ))}
+    </ChartGrid>
+ 
+    {showTradeModal && selectedStock && (
+      <TradeModal
+        isOpen={showTradeModal}
+        onClose={() => setShowTradeModal(false)}
+        stockName={availableStocks.find(s => s.id === selectedStock)?.title || ''}
+        currentPrice={Number(stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || '']?.[0]?.close || '0')}
+        priceHistory={stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || ''] || []}
+        isPlaying={isPlaying}
+      />
+    )}
+  </SlideContainer>
+ 
+  <ArticleContent>
+    {selectedStock && availableStocks.find(s => s.id === selectedStock) && (
+      <ArticleCard 
+      article={{
+        article_id: Number(articles[0]?.articleId),
+        stock_symbol: articles[0]?.stockSymbol || '',
+        mid_stock_id: selectedStock || 0,
+        trend_prediction: articles[0]?.trendPrediction || '',
+        title: articles[0]?.stockName || '',
+        created_at: articles[0]?.createdAt || '',
+        content: articles[0]?.content || '',
+        duration: Number(articles[0]?.duration) || 0
+      }}
+      />
+    )}
+  </ArticleContent>
+ </Column>
+ );
 };
 
-export default StockSlider;
+export default AdvancedArticlePage;
