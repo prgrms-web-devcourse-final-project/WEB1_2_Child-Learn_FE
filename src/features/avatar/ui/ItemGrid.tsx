@@ -11,16 +11,16 @@ const ItemGrid = ({ filteredItems }: { filteredItems: MarketItem[] }) => {
       <ItemGridWrapper>
       {filteredItems.map((item) => (
           <ItemCard
-            key={item.id}
+            key={item.prd_id}
             purchased={item.purchased}
             isEquipped={
-              (item.category === "BACKGROUND" && avatar?.background?.id === item.id) ||
-              (item.category === "PET" && avatar?.pet?.id === item.id) ||
-              (item.category === "HAT" && avatar?.hat?.id === item.id)
+              (item.prd_type === "background" && avatar?.cur_background === item.prd_name) ||
+              (item.prd_type === "pet" && avatar?.cur_pet === item.prd_name) ||
+              (item.prd_type === "hat" && avatar?.cur_hat === item.prd_name)
             }
-            onClick={() => navigate(`/avatar/details/${item.category}/${item.name}`)} // category와 product를 URL에 포함
+            onClick={() => navigate(`/avatar/details/${item.prd_type}/${item.prd_name}`)} // category와 product를 URL에 포함
           >
-            <ItemImage src={item.imageUrl} alt={item.name} />
+            <ItemImage src={item.prd_image} alt={item.prd_name} />
           </ItemCard>
         ))}
       </ItemGridWrapper>
