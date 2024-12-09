@@ -1,7 +1,7 @@
 import { ArticleType } from '@/features/article/types/articleTypes';
 import { baseApi } from '@/shared/api/base';
 
-const USE_MOCK = true; // 개발/테스트 환경에서 사용
+const USE_MOCK = true; 
 
 const mockArticles: Record<ArticleType, Array<{
   articleId: number;
@@ -22,6 +22,6 @@ export const getArticles = async (type: ArticleType) => {
     return mockArticles[type];
   }
   
-  const response = await baseApi.get(`/adv/articles/${type}`);
+  const response = await baseApi.get(`/articles/${type}`);
   return response.data;
 };
