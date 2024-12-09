@@ -160,14 +160,14 @@ const WordQuizGamePage = () => {
 
   // 다음 문제로 이동
   const handleNextQuestion = () => {
-    setShowCorrectPopup(false);
     setUserAnswer([]);
+    setShowCorrectPopup(false);
   };
 
   // 팝업 닫기 핸들러
 const handleCloseIncorrectPopup = () => {
-  setShowIncorrectPopup(false);
   setUserAnswer([]); // 팝업 닫힐 때 답안 초기화
+  setShowIncorrectPopup(false);
 };
 
   // 목숨이 0이 되면 결과 페이지로 이동
