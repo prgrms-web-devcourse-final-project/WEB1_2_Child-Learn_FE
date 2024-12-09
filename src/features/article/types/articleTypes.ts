@@ -28,6 +28,5 @@ export interface Article {
   content: string;
   created_at: string;
   duration: number;
-  title: string;
   mid_stock_id: number;
 }

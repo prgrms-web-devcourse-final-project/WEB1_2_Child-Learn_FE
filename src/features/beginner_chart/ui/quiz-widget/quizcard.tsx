@@ -112,7 +112,7 @@ const QuizCard: React.FC<QuizCardProps> = ({ quiz, onAnswer, selectedAnswer }) =
     <Container>
       <Header>
         <Title>Child-Learn News</Title>
-        <Subtitle>Lorem ipsum dolor</Subtitle>
+        <Subtitle>아이주주</Subtitle>
       </Header>
 
       <QuestionContainer>

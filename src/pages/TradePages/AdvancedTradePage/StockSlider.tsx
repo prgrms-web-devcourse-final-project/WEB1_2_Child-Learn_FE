@@ -1,6 +1,23 @@
-// pages/TradePages/AdvancedTradePage/StockSlider.tsx
-import { StockSlider as AdvancedGameStockSlider } from '@/features/Advanced_chat/ui/StockSlider/stockSlider';
+interface AdvancedArticlePageProps {
+  stockId: string;
+  stockName: string;
+}
 
-export const StockSlider: React.FC = () => {
-  return <AdvancedGameStockSlider />;
+interface AdvancedGameStockSliderProps {
+  stockId: number;
+  stockName: string;
+}
+
+const LocalAdvancedGameStockSlider: React.FC<AdvancedGameStockSliderProps> = ({ stockId, stockName }) => {
+  return (
+    <div>
+      {/* 컴포넌트 로직 */}
+      <p>Stock ID: {stockId}</p>
+      <p>Stock Name: {stockName}</p>
+    </div>
+  );
+};
+
+export const StockSlider = ({ stockId, stockName }: AdvancedArticlePageProps) => {
+  return <LocalAdvancedGameStockSlider stockId={Number(stockId)} stockName={stockName} />;
 };
