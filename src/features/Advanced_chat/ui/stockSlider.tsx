@@ -70,10 +70,13 @@ export const StockSlider: React.FC<StockSliderProps> = () => {
    const fetchArticle = async () => {
      if (selectedStock) {
        try {
-         const response = await baseApi.get(`/articles/stocks/${selectedStock}`);
-         setCurrentArticle(response.data);
+         const response = await baseApi.get(`/articles/mid-stocks/${selectedStock}`);
+         if (response.data) {
+           setCurrentArticle(response.data);
+         }
        } catch (error) {
          console.error('기사 로딩 실패:', error);
+         setCurrentArticle(null);
        }
      }
    };
