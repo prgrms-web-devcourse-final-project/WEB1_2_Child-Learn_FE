@@ -16,6 +16,7 @@ import StockChart from '@/shared/ui/Intermediate/StockChat';
 import { MidStock } from '@/features/Intermediate_chart/model/types/stock';
 import ArticleCard from '@/features/article/ui/ArticleCard';
 
+
 interface TradeResult {
   success: boolean;
   message: string;
@@ -157,9 +158,13 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
     if (!currentStock || !currentStockPrices.length) return;
     
     try {
+      // 1. 먼저 현재 보유 주식 정보를 확인
+      const holdingInfo = await baseApi.get(`/mid-stocks/${currentStock.midStockId}/holdings`);
+      
+      // 2. executeTrade 호출 시 실제 보유 포인트 전달
       const result = await executeTrade(
         currentStock.midStockId,
-        0,
+        holdingInfo.data.points || 0,  // 실제 보유 포인트
         'sell',
         currentStock.midName
       );
@@ -168,13 +173,13 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         const response = await baseApi.post(`/mid-stocks/${currentStock.midStockId}/sell`, {
           memberId: parseInt(localStorage.getItem('userId') || '0'),
           transactionType: "MID",
-          points: result.earnedPoints ?? 0,  // totalPoints 대신 earnedPoints 사용
+          points: result.earnedPoints,  // 이제 undefined가 될 수 없음
           pointType: "STOCK",
           stockType: "MID",
-          stockName: currentStock.midName
+          stockName: currentStock.midName,
+          holdingPoints: holdingInfo.data.points  // 보유 포인트 정보 추가
         });
-        
-
+  
         const { earnedPoints, totalPoints } = response.data;
   
         setTradeResult({
@@ -182,24 +187,27 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
           message: '매도 완료',
           tradeType: 'sell',
           stockName: currentStock.midName,
-          totalPrice: totalPoints ?? 0,
+          totalPrice: totalPoints,
           price: currentStockPrices[0]?.avgPrice || 0,
-          quantity: Math.floor(totalPoints ?? 0 / (currentStockPrices[0]?.avgPrice || 1)),
-          earnedPoints: earnedPoints,
-          totalPoints: totalPoints
+          quantity: Math.floor(totalPoints / (currentStockPrices[0]?.avgPrice || 1)),
+          earnedPoints,
+          totalPoints
         });
   
- 
-        setUserPoints(prev => prev + (totalPoints ?? 0));
+        setUserPoints(prev => prev + totalPoints);
         setShowSellModal(false);
         setShowResultModal(true);
         setHasSoldToday(true);
       }
     } catch (error: any) {
       console.error('매도 처리 중 에러:', error);
+      
+      // 에러 메시지를 더 구체적으로 처리
+      const errorMessage = error.response?.data?.message || error.message || '매도 처리 중 오류가 발생했습니다.';
+      
       setTradeResult({
         success: false,
-        message: error.message,
+        message: errorMessage,
         tradeType: 'sell',
         stockName: currentStock.midName,
         totalPrice: 0,
@@ -208,6 +216,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         earnedPoints: 0,
         totalPoints: 0
       });
+      
       setShowSellModal(false);
       setShowResultModal(true);
     }
@@ -298,7 +307,7 @@ return (
       }} 
     />
   )}
-</Column>
+                </Column>
                   </ArticleContent>
                 </ArticleInner>
               </ArticleContainer>
@@ -312,7 +321,7 @@ return (
       isOpen={showBuyModal}
       onClose={() => setShowBuyModal(false)}
       onConfirm={async (tradePoint: number) => {
-        await handleBuyTrade(tradePoint);  // tradePoint만 전달
+        await handleBuyTrade(tradePoint);  
       }}
       stockId={currentStock?.midStockId || 0}
       stockName={currentStock?.midName || ''}
@@ -500,17 +509,20 @@ const ArticleSubtitle = styled.p`
 
 const ArticleContent = styled.div`
  background: #ffffff;
- padding: 24px 20px;
- display: grid;
- grid-template-columns: 1fr 1fr;
- gap: 24px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;  
+  width: 100%;  
 `;
 
 const Column = styled.div`
- font-size: 10px;
- line-height: 1.8;
- color: #333;
+ font-size: 14px;  // 글자 크기 증가
+  line-height: 1.8;
+  color: #333;
+  width: 100%;  // 전체 너비 사용
+  padding: 0 16px;  // 좌우 패딩 추가
 `;
+
 
 const NavigationButton = styled(Button)<{ $show?: boolean }>`
  position: absolute;
