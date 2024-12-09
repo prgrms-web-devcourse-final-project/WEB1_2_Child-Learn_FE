@@ -63,8 +63,8 @@ export const SellModal: React.FC<SellModalProps> = ({
         <S.ModalContent>
           <S.StockInfo>
             <div>종목명: {stockName}</div>
-            <div>보유 수량: {quantity.toFixed(2)}주</div>
-            <div>현재 가격: {currentPrice.toLocaleString()}P</div>
+            {/* <div>보유 수량: {quantity.toFixed(2)}주</div>
+            <div>현재 가격: {currentPrice.toLocaleString()}P</div> */}
             <div>예상 수익: {expectedProfit.toLocaleString()}P</div>
           </S.StockInfo>
           {error && <S.ErrorMessage>{error}</S.ErrorMessage>}
