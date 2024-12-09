@@ -13,7 +13,7 @@ export const useArticle = (type: ArticleType) => {
       try {
         setLoading(true);
         // URL 확인 및 Authorization 헤더 추가
-        const response = await baseApi.get(`/adv/aricles/${type}`, {
+        const response = await baseApi.get(`/aricles/${type}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}` // token이 localStorage에 저장되어 있다고 가정
           }

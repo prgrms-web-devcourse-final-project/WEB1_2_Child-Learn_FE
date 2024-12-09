@@ -26,10 +26,13 @@ interface TradeResult {
 }
 
 export interface MidArticlePageProps {
-  stockId: number;
-  stockName: string;
-  stockPrice: number;
-  content: any;
+  articleId: number;
+  stockSymbol: string;
+  trendPrediction: string;
+  content: string;
+  createdAt: string;
+  duration: string;
+  title: string;
 }
 
 // const formatDate = (date: Date): string => {
@@ -96,7 +99,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
       );  
   
       if ('warning' in result) {
-        await baseApi.post('mid-stocks/{midStockId}/buy', {
+        await baseApi.post(`/mid-stocks/${currentStock.midStockId}/buy`, {
           memberId: parseInt(localStorage.getItem('userId') || '0'),
           transactionType: "MID",
           points: tradePoint,
@@ -154,7 +157,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
       );
       
       if ('earnedPoints' in result) {
-        await baseApi.post('mid-stocks/{midStockId}/sell', {
+        await baseApi.post(`/mid-stocks/${currentStock.midStockId}/sell`, {
           memberId: parseInt(localStorage.getItem('userId') || '0'),
           transactionType: "MID",
           points: result.earnedPoints ?? 0,
@@ -262,12 +265,13 @@ return (
                   <ArticleContent>
                     <Column>
                       <MidArticlePage 
-                        // articleId:
-                        // stockSymbol:
-                        // trendPrediction:
-                        // content: 
-                        // createdAt: 
-                        // duration: 
+                      //  midStockId={currentStock.midStockId}
+                        stockSymbol={currentStock.midName}
+                      //  trendPrediction={currentStock.midName}
+                        content={currentStock.midName}
+                      //  createdAt={currentStock.midName}
+                      //  duration={currentStock.midName}
+                      //  title={currentStock.midName}
                          // 백으로 넘어오는 데이터 
                       />
                     </Column>
