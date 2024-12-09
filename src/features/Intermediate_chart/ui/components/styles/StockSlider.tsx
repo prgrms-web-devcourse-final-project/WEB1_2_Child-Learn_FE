@@ -14,6 +14,7 @@ import { WarningModal } from '@/features/Intermediate_chart/ui/components/modals
 import { MidArticlePage } from '@/pages/article/MidArticlePage';
 import StockChart from '@/shared/ui/Intermediate/StockChat';
 import { MidStock } from '@/features/Intermediate_chart/model/types/stock';
+import ArticleCard from '@/features/article/ui/ArticleCard';
 
 interface TradeResult {
   success: boolean;
@@ -23,8 +24,9 @@ interface TradeResult {
   price: number;
   quantity: number;
   totalPrice: number;
+  earnedPoints?: number;  // Added for sell transactions
+  totalPoints?: number;   // Added for sell transactions
 }
-
 export interface MidArticlePageProps {
   articleId: number;
   stockSymbol: string;
@@ -33,6 +35,11 @@ export interface MidArticlePageProps {
   createdAt: string;
   duration: string;
   title: string;
+  article_id?: number;
+  stock_symbol?: string;
+  trend_prediction?: string;
+  created_at?: string;
+  mid_stock_id?: number;
 }
 
 // const formatDate = (date: Date): string => {
@@ -58,6 +65,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
   const [userPoints, setUserPoints] = useState(2000);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
   const [hasSoldToday, setHasSoldToday] = useState(false);
+  const [currentArticle, setCurrentArticle] = useState<MidArticlePageProps | null>(null);
  
   const {
     fetchStockPrices,
@@ -157,26 +165,32 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
       );
       
       if ('earnedPoints' in result) {
-        await baseApi.post(`/mid-stocks/${currentStock.midStockId}/sell`, {
+        const response = await baseApi.post(`/mid-stocks/${currentStock.midStockId}/sell`, {
           memberId: parseInt(localStorage.getItem('userId') || '0'),
           transactionType: "MID",
-          points: result.earnedPoints ?? 0,
+          points: result.earnedPoints ?? 0,  // totalPoints 대신 earnedPoints 사용
           pointType: "STOCK",
           stockType: "MID",
           stockName: currentStock.midName
         });
+        
+
+        const { earnedPoints, totalPoints } = response.data;
   
         setTradeResult({
           success: true,
           message: '매도 완료',
           tradeType: 'sell',
           stockName: currentStock.midName,
-          totalPrice: result.earnedPoints ?? 0,
+          totalPrice: totalPoints ?? 0,
           price: currentStockPrices[0]?.avgPrice || 0,
-          quantity: Math.floor(result.earnedPoints ?? 0 / (currentStockPrices[0]?.avgPrice || 1))
+          quantity: Math.floor(totalPoints ?? 0 / (currentStockPrices[0]?.avgPrice || 1)),
+          earnedPoints: earnedPoints,
+          totalPoints: totalPoints
         });
   
-        setUserPoints(prev => prev + (result.earnedPoints ?? 0));
+ 
+        setUserPoints(prev => prev + (totalPoints ?? 0));
         setShowSellModal(false);
         setShowResultModal(true);
         setHasSoldToday(true);
@@ -190,7 +204,9 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
         stockName: currentStock.midName,
         totalPrice: 0,
         price: currentStockPrices[0]?.avgPrice || 0,
-        quantity: Math.floor(0 / (currentStockPrices[0]?.avgPrice || 1))
+        quantity: 0,
+        earnedPoints: 0,
+        totalPoints: 0
       });
       setShowSellModal(false);
       setShowResultModal(true);
@@ -263,18 +279,26 @@ return (
                     </HeaderDate>
                   </ArticleHeader>
                   <ArticleContent>
-                    <Column>
-                      <MidArticlePage 
-                      //  midStockId={currentStock.midStockId}
-                        // stockSymbol={currentStock.midName}
-                      //  trendPrediction={currentStock.midName}
-                        // content={currentStock.midName}
-                      //  createdAt={currentStock.midName}
-                      //  duration={currentStock.midName}
-                      //  title={currentStock.midName}
-                         // 백으로 넘어오는 데이터 
-                      />
-                    </Column>
+                  <Column>
+  <MidArticlePage 
+    stockId={currentStock.midStockId}
+    stockName={currentStock.midName}
+  />
+  {currentArticle && currentArticle.article_id && (
+    <ArticleCard 
+      article={{
+        article_id: Number(currentArticle.article_id),
+        stock_symbol: currentArticle.stockSymbol || currentArticle.stock_symbol || '',
+        trend_prediction: currentArticle.trendPrediction || currentArticle.trend_prediction || '',
+        created_at: currentArticle.createdAt || currentArticle.created_at || '',
+        content: currentArticle.content || '',
+        duration: Number(currentArticle.duration),
+        title: currentArticle.title || '',
+        mid_stock_id: currentArticle.mid_stock_id || 0
+      }} 
+    />
+  )}
+</Column>
                   </ArticleContent>
                 </ArticleInner>
               </ArticleContainer>

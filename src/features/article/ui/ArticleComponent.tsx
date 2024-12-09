@@ -1,4 +1,3 @@
-
 import styled from 'styled-components';
 import { ArticleSection } from '@/features/article/ui/ArticleSection';
 import { MidArticlePage } from '@/pages/article/MidArticlePage';
@@ -14,11 +13,11 @@ export const TradePage = () => {
     <PageContainer>
       <ArticleSection 
         type="MID" 
-        graphComponent={<MidArticlePage/>} 
+        graphComponent={<MidArticlePage stockId={1} stockName="예시주식" />} 
       />
       <ArticleSection 
         type="ADVANCED" 
-        graphComponent={<AdvancedArticlePage/>} 
+        graphComponent={<AdvancedArticlePage stockId={1} stockName="예시주식" />} 
       />
     </PageContainer>
   );
