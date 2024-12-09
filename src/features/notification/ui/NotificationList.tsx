@@ -10,20 +10,17 @@ import {
 
 export const NotificationList = () => {
   const queryClient = useQueryClient();
-  const { data, isLoading } = useNotifications(0);
+  const { data } = useNotifications(0);
   const { data: receivedRequests } = useReceivedFriendRequests();
   const respondToRequest = useRespondToFriendRequest();
 
-  const handleAccept = async (notificationId: number) => {
+  const handleAccept = async (notification: Notification) => {
     try {
-      const notification = data?.content.find(
-        (n) => n.notificationId === notificationId
-      );
       const request = receivedRequests?.find(
-        (req) => req.senderUsername === notification?.senderUsername
+        (req) => req.senderUsername === notification.senderUsername
       );
 
-      if (!request || !notification) {
+      if (!request) {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
@@ -35,7 +32,9 @@ export const NotificationList = () => {
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
         ...old,
         content: old.content.map((n: Notification) =>
-          n.notificationId === notificationId ? { ...n, status: 'ACCEPTED' } : n
+          n.notificationId === notification.notificationId
+            ? { ...n, status: 'ACCEPTED' }
+            : n
         ),
       }));
     } catch (error) {
@@ -43,16 +42,14 @@ export const NotificationList = () => {
     }
   };
 
-  const handleReject = async (notificationId: number) => {
+  // notification 전체를 받도록 수정
+  const handleReject = async (notification: Notification) => {
     try {
-      const notification = data?.content.find(
-        (n) => n.notificationId === notificationId
-      );
       const request = receivedRequests?.find(
-        (req) => req.senderUsername === notification?.senderUsername
+        (req) => req.senderUsername === notification.senderUsername
       );
 
-      if (!request || !notification) {
+      if (!request) {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
@@ -64,7 +61,9 @@ export const NotificationList = () => {
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
         ...old,
         content: old.content.map((n: Notification) =>
-          n.notificationId === notificationId ? { ...n, status: 'REJECTED' } : n
+          n.notificationId === notification.notificationId
+            ? { ...n, status: 'REJECTED' }
+            : n
         ),
       }));
     } catch (error) {
@@ -72,11 +71,7 @@ export const NotificationList = () => {
     }
   };
 
-  if (isLoading && !data) {
-    return <LoadingContainer>로딩중...</LoadingContainer>;
-  }
-
-  if (!data?.content?.length) {
+  if (!data || !data.content) {
     return <EmptyMessage>알림이 없습니다.</EmptyMessage>;
   }
 
@@ -86,8 +81,8 @@ export const NotificationList = () => {
         <NotificationItem
           key={notification.notificationId}
           notification={notification}
-          onAccept={() => handleAccept(notification.notificationId)} // notification -> notification.notificationId
-          onReject={() => handleReject(notification.notificationId)} // notification -> notification.notificationId
+          onAccept={() => handleAccept(notification)}
+          onReject={() => handleReject(notification)}
         />
       ))}
     </ListContainer>
@@ -97,12 +92,6 @@ export const NotificationList = () => {
 const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
-`;
-
-const LoadingContainer = styled.div`
-  padding: 20px;
-  text-align: center;
-  color: #666;
 `;
 
 const EmptyMessage = styled.div`

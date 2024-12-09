@@ -2,10 +2,11 @@ import styled from 'styled-components';
 import { Notification } from '@/features/notification/model/types';
 import { useDeleteNotification } from '@/features/notification/lib/queries';
 import { useSendFriendAcceptNotification } from '@/features/notification/lib/queries';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface NotificationItemProps {
   notification: Notification;
-  onAccept: (notification: Notification) => void; // 타입 수정
+  onAccept: (notification: Notification) => void;
   onReject: (notification: Notification) => void;
 }
 
@@ -14,19 +15,49 @@ export const NotificationItem = ({
   onAccept,
   onReject,
 }: NotificationItemProps) => {
+  const queryClient = useQueryClient();
   const { mutateAsync: deleteNotification } = useDeleteNotification();
   const { mutateAsync: sendAcceptNotification } =
     useSendFriendAcceptNotification();
 
   const handleAccept = async () => {
     try {
-      // 1. 친구 요청 수락 - 전체 notification 객체 전달
       await onAccept(notification);
-
-      // 2. 수락 알림 보내기 - senderUsername만 전달
       await sendAcceptNotification(notification.senderUsername);
+
+      // 로컬 상태 즉시 업데이트
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
+        ...old,
+        content: old.content.map((n: Notification) =>
+          n.notificationId === notification.notificationId
+            ? { ...n, status: 'ACCEPTED' }
+            : n
+        ),
+      }));
     } catch (error) {
       console.error('친구 수락 실패:', error);
+      // 에러 발생 시 상태 복구
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'list', 0] });
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      await onReject(notification);
+
+      // 로컬 상태 즉시 업데이트
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
+        ...old,
+        content: old.content.map((n: Notification) =>
+          n.notificationId === notification.notificationId
+            ? { ...n, status: 'REJECTED' }
+            : n
+        ),
+      }));
+    } catch (error) {
+      console.error('친구 거절 실패:', error);
+      // 에러 발생 시 상태 복구
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'list', 0] });
     }
   };
 
@@ -50,11 +81,7 @@ export const NotificationItem = ({
             <ActionButton $isAccept onClick={handleAccept}>
               수락하기
             </ActionButton>
-            <ActionButton
-              onClick={() => onReject(notification)} // 전체 notification 객체 전달
-            >
-              거절하기
-            </ActionButton>
+            <ActionButton onClick={handleReject}>거절하기</ActionButton>
           </ButtonGroup>
         );
     }
@@ -120,8 +147,8 @@ const ItemContainer = styled.div<{ $isRead: boolean }>`
 const ProfileContainer = styled.div`
   position: relative;
   margin-right: 12px;
-  align-self: flex-start; // 이미지를 위쪽으로 정렬
-  margin-top: 4px; // 약간의 여백 추가
+  align-self: flex-start;
+  margin-top: 4px;
 `;
 
 const ProfileImage = styled.img`
@@ -146,8 +173,8 @@ const Time = styled.span`
   font-size: 9px;
   font-weight: 700;
   color: #999;
-  margin-top: 8px; // 버튼과의 간격 추가
-  display: block; // 줄바꿈을 위해
+  margin-top: 8px;
+  display: block;
 `;
 
 const ButtonGroup = styled.div`
@@ -172,7 +199,7 @@ const ActionButton = styled.button<{ $isAccept?: boolean }>`
   }
 
   &:focus {
-    outline: none; // focus 시 생기는 테두리 제거
+    outline: none;
   }
 `;
 
