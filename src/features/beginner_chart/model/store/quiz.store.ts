@@ -58,9 +58,30 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         if (isCorrect) {
           const userId = Number(localStorage.getItem('userId'));
           if (userId) {
-            await addStockPoints(userId);
+            try {
+              // 현재 포인트 조회
+              const walletResponse = await baseApi.get('/wallet/stock');
+              const currentPoints = walletResponse.data.points || 0;
+              
+              // 포인트 업데이트 (100점 추가)
+              await baseApi.patch('/wallet/stock', {
+                points: currentPoints + 100
+              });
+
+              return {
+                isCorrect: true,
+                points: 100
+              };
+            } catch (error) {
+              console.error('포인트 적립 실패:', error);
+              return {
+                isCorrect: true,
+                points: 0
+              };
+            }
           }
         }
+        
 
         return {
           isCorrect,

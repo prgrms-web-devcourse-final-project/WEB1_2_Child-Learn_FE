@@ -519,7 +519,7 @@ const Column = styled.div`
  font-size: 12px;  // 글자 크기 증가
   line-height: 1.8;
   color: #333;
-  width: 120%;  // 전체 너비 사용
+  width: 100%;  // 전체 너비 사용
   padding: 0 10px;  // 좌우 패딩 추가
 `;
 
