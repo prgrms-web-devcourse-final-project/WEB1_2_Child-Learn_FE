@@ -6,17 +6,18 @@ function AvatarPage() {
   const { avatar } = useAvatarStore();
   const { marketItems } = useItemStore();
 
-  const currentBackground = marketItems.find(
-    (item) => item.prd_name === avatar?.cur_background
-  )?.prd_image;
+   // 현재 아바타에 장착된 아이템을 찾아서 이미지 URL 가져오기
+   const currentBackground = marketItems.find(
+    (item) => item.id === avatar?.background?.id
+  )?.imageUrl;
 
   const currentPet = marketItems.find(
-    (item) => item.prd_name === avatar?.cur_pet
-  )?.prd_image;
+    (item) => item.id === avatar?.pet?.id
+  )?.imageUrl;
 
   const currentHat = marketItems.find(
-    (item) => item.prd_name === avatar?.cur_hat
-  )?.prd_image;
+    (item) => item.id === avatar?.hat?.id
+  )?.imageUrl;
 
   return (
         <BackgroundPlaceholder backgroundImage={currentBackground}>

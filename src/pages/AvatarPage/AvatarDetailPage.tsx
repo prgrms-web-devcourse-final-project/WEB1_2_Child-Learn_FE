@@ -9,72 +9,69 @@ import { useUserStore } from "@/app/providers/state/zustand/userStore";
 import { avatarApi } from "@/shared/api/avatar";
 
 const AvatarDetailPage = () => {
-  const { marketItems, updateMarketItems } = useItemStore();
+  const { marketItems, updateMarketItem } = useItemStore();
   const { avatar, updateAvatarItem } = useAvatarStore();
   const { data: userInfo } = useUserInfo();
   const { category, product } = useParams();
 
-  const [isModalOpen, setIsModalOpen] = useState(false); // 모달 상태 관리
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [selectedItem, setSelectedItem] = useState<MarketItem | null>(null);
 
-     // marketItems에서 선택된 아이템을 설정합니다.
+  // 선택된 아이템 찾기
   useEffect(() => {
     const item = marketItems.find(
-      (item) => item.prd_type === category && item.prd_name === product
+      (item) => item.category === category && item.name === product
     );
     setSelectedItem(item || null);
   }, [marketItems, category, product]);
 
-   // 현재 상태와 선택된 아이템을 조합하여 표시할 배경과 펫 계산
-   const computedBackground =
-   category === "background" ? selectedItem?.prd_image : marketItems.find((item) => item.prd_name === avatar?.cur_background)?.prd_image;
+  // 현재 상태와 선택된 아이템 기반으로 계산
+  const computedBackground = category === "BACKGROUND"
+    ? selectedItem?.imageUrl
+    : avatar?.background?.imageUrl;
 
- const computedPet =
-   category === "pet" ? selectedItem?.prd_image : marketItems.find((item) => item.prd_name === avatar?.cur_pet)?.prd_image;
+  const computedPet = category === "PET"
+    ? selectedItem?.imageUrl
+    : avatar?.pet?.imageUrl;
 
-   const computedHat =
-   category === "hat" ? selectedItem?.prd_image : marketItems.find((item) => item.prd_name === avatar?.cur_hat)?.prd_image;
+  const computedHat = category === "HAT"
+    ? selectedItem?.imageUrl
+    : avatar?.hat?.imageUrl;
 
-   // 현재 장착 여부 확인
-   const isEquipped =
-   (category === "background" && avatar?.cur_background === product) ||
-   (category === "pet" && avatar?.cur_pet === product) ||
-   (category === "hat" && avatar?.cur_hat === product);
+  // 현재 장착 여부 확인
+  const isEquipped =
+    (category === "BACKGROUND" && avatar?.background?.id === selectedItem?.id) ||
+    (category === "PET" && avatar?.pet?.id === selectedItem?.id) ||
+    (category === "HAT" && avatar?.hat?.id === selectedItem?.id);
 
- // 버튼 상태 결정
- let buttonText: string;
- if (selectedItem?.purchased) {
-   buttonText = isEquipped ? "장착 해제하기" : "장착하기";
- } else {
-   buttonText = "구매하기";
- }
+  // 버튼 텍스트 결정
+  let buttonText: string;
+  if (selectedItem?.purchased) {
+    buttonText = isEquipped ? "장착 해제하기" : "장착하기";
+  } else {
+    buttonText = "구매하기";
+  }
 
-    // 구매 확인 모달에서 구매 버튼 클릭 시 처리
+  // 구매 확인 모달 처리
   const handlePurchaseConfirm = async () => {
-    if (!selectedItem || !userInfo) {
-      return;
-    }
+    if (!selectedItem || !userInfo) return;
 
-    if (userInfo.currentCoins < selectedItem.prd_price) {
-      // 코인이 부족한 경우
+    if (userInfo.currentCoins < selectedItem.price) {
       setIsModalOpen(false);
       setModalMessage("코인이 부족합니다.");
       return;
     }
 
     try {
-      // 서버 API 호출
-      const response = await avatarApi.purchaseItem(selectedItem.prd_id);
+      const response = await avatarApi.purchaseItem({ itemId: selectedItem.id });
 
-      // 성공적으로 구매 완료 시 상태 업데이트
-      updateMarketItems(selectedItem.prd_id, true); // 아이템을 구매 상태로 변경
-
-      // 코인 업데이트
-      userInfo.currentCoins -= selectedItem.prd_price;
+      if (response.message === "아이템을 구매했습니다") {
+        updateMarketItem(selectedItem.id, true); // 아이템을 구매 상태로 변경
+      }
       setIsModalOpen(false);
-    setModalMessage("구매가 완료되었습니다.");
-      setTimeout(() => setModalMessage(""), 3000); // 3초 후 메시지 숨기기
+      setModalMessage("구매가 완료되었습니다.");
+      setTimeout(() => setModalMessage(""), 3000);
     } catch (error) {
       console.error("Failed to purchase item:", error);
       setModalMessage("구매 처리 중 오류가 발생했습니다.");
@@ -83,47 +80,48 @@ const AvatarDetailPage = () => {
   };
 
   // 버튼 클릭 핸들러
-  const handleButtonClick = () => {
+  const handleButtonClick = async () => {
     if (!selectedItem?.purchased) {
-      // 구매 모달 열기
       setIsModalOpen(true);
       return;
     }
 
-    if (isEquipped) {
-      // 장착 해제 로직 
-      updateAvatarItem(category as "background" | "pet" | "hat", "");
-      alert(`${selectedItem.prd_name} 장착 해제 완료!`);
-    } else {
-      // 장착 로직
-      updateAvatarItem(category as "background" | "pet" | "hat", selectedItem.prd_name);
-      alert(`${selectedItem.prd_name} 장착 완료!`);
+    try {
+      if (isEquipped) {
+        // 장착 해제 로직
+        await avatarApi.removeItem({ itemId: selectedItem.id }); // 서버에 해제 요청
+        updateAvatarItem(category?.toLowerCase() as "background" | "pet" | "hat", selectedItem);
+        alert(`${selectedItem.name} 장착 해제 완료!`);
+      } else {
+        // 장착 로직
+        await avatarApi.equipItem({ itemId: selectedItem.id }); // 서버에 장착 요청
+        updateAvatarItem(category?.toLowerCase() as "background" | "pet" | "hat", selectedItem);
+        alert(`${selectedItem.name} 장착 완료!`);
+      }
+    } catch (error) {
+      console.error("장착/해제 처리 중 오류 발생:", error);
+      alert("처리 중 오류가 발생했습니다.");
     }
   };
 
   return (
     <Container>
       <CharacterPreview>
-      <BackgroundPlaceholder backgroundImage={computedBackground}>
-      {!computedBackground && <Placeholder />}
+        <BackgroundPlaceholder backgroundImage={computedBackground}>
+          {!computedBackground && <Placeholder />}
           <AvatarImage src="/img/avatar.png" alt="캐릭터" />
           {computedPet && <PetImage src={computedPet} alt="펫" />}
-          {computedHat && <HatImage src={computedHat} alt="모자" isBaseball={selectedItem?.prd_name === "baseball"} />}
+          {computedHat && <HatImage src={computedHat} alt="모자" />}
         </BackgroundPlaceholder>
       </CharacterPreview>
 
-      {/* 구매 모달 */}
       {isModalOpen && (
         <ModalOverlay>
           <ModalContent>
             <ModalTitle>정말로 구매하시겠습니까?</ModalTitle>
-            {category && selectedItem?.prd_image && (
-        <ModalPreview
-          src={selectedItem.prd_image}
-          alt={selectedItem.prd_name}
-          category={category}
-        />
-      )}
+            {category && selectedItem?.imageUrl && (
+              <ModalPreview src={selectedItem.imageUrl} alt={selectedItem.name} />
+            )}
             <ModalActions>
               <ModalButton onClick={handlePurchaseConfirm} confirm>
                 구매
@@ -133,31 +131,28 @@ const AvatarDetailPage = () => {
           </ModalContent>
         </ModalOverlay>
       )}
-       {/* 결과 메시지 모달 */}
-       {modalMessage && (
+
+      {modalMessage && (
         <ModalOverlay>
           <ModalContent>
-            {/* 코인이 부족한 경우만 CloseButton 표시 */}
-      {modalMessage === "코인이 부족합니다." && (
-        <CloseButton onClick={() => setModalMessage("")}>&times;</CloseButton>
-      )}
-      <ModalTitle>{modalMessage}</ModalTitle>
+            <ModalTitle>{modalMessage}</ModalTitle>
           </ModalContent>
         </ModalOverlay>
       )}
-       <BackgroundContainer>
-       <DetailSection>
-        <ItemTitle>
-          {selectedItem?.prd_name}
-          <ItemPrice>
-            <CoinIcon src="/img/coins.png" alt="코인" />
-            {selectedItem?.prd_price} Coin
-          </ItemPrice>
-        </ItemTitle>
-        <ItemDescription>{selectedItem?.prd_description}</ItemDescription>
-        <ActionButton onClick={handleButtonClick}>{buttonText}</ActionButton>
-      </DetailSection>
-       </BackgroundContainer>
+
+      <BackgroundContainer>
+        <DetailSection>
+          <ItemTitle>
+            {selectedItem?.name}
+            <ItemPrice>
+              <CoinIcon src="/img/coins.png" alt="코인" />
+              {selectedItem?.price} Coin
+            </ItemPrice>
+          </ItemTitle>
+          <ItemDescription>{selectedItem?.description}</ItemDescription>
+          <ActionButton onClick={handleButtonClick}>{buttonText}</ActionButton>
+        </DetailSection>
+      </BackgroundContainer>
     </Container>
   );
 };

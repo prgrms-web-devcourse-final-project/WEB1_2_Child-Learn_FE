@@ -6,11 +6,12 @@ import { Notification } from '@/features/notification/model/types';
 import {
   useNotifications,
   useReceivedFriendRequests,
+  NOTIFICATION_KEYS,
 } from '@/features/notification/lib/queries';
 
 export const NotificationList = () => {
-  const queryClient = useQueryClient(); // 추가
-  const { data, isLoading } = useNotifications(0);
+  const queryClient = useQueryClient();
+  const { data } = useNotifications(0);
   const { data: receivedRequests } = useReceivedFriendRequests();
   const respondToRequest = useRespondToFriendRequest();
 
@@ -24,15 +25,42 @@ export const NotificationList = () => {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
+      // 즉시 UI 상태 업데이트
+      const updatedNotification = {
+        ...notification,
+        status: 'ACCEPTED' as const,
+      };
+
+      // 낙관적 업데이트
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => {
+        if (!old) return old;
+        const newData = {
+          ...old,
+          content: old.content.map((n: Notification) =>
+            n.notificationId === notification.notificationId
+              ? updatedNotification
+              : n
+          ),
+        };
+        return newData;
+      });
+
+      // 서버 요청 처리
       await respondToRequest.mutateAsync({
         requestId: request.id,
         status: 'ACCEPTED',
       });
 
-      // 상태 업데이트를 위해 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      // 다른 쿼리들의 무효화는 유지 (친구 목록 등이 업데이트 되어야 하므로)
+      queryClient.invalidateQueries({
+        queryKey: NOTIFICATION_KEYS.friendRequests,
+      });
     } catch (error) {
       console.error('친구 수락 실패:', error);
+      // 실패시에만 쿼리 무효화하여 원래 상태로 복구
+      queryClient.invalidateQueries({
+        queryKey: ['notifications', 'list', 0],
+      });
     }
   };
 
@@ -46,23 +74,47 @@ export const NotificationList = () => {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
+      // 즉시 UI 상태 업데이트
+      const updatedNotification = {
+        ...notification,
+        status: 'REJECTED' as const,
+      };
+
+      // 낙관적 업데이트
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => {
+        if (!old) return old;
+        const newData = {
+          ...old,
+          content: old.content.map((n: Notification) =>
+            n.notificationId === notification.notificationId
+              ? updatedNotification
+              : n
+          ),
+        };
+        return newData;
+      });
+
+      // 서버 요청 처리
       await respondToRequest.mutateAsync({
         requestId: request.id,
         status: 'REJECTED',
       });
 
-      // 상태 업데이트를 위해 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      // 다른 쿼리들의 무효화는 유지
+      queryClient.invalidateQueries({
+        queryKey: NOTIFICATION_KEYS.friendRequests,
+      });
     } catch (error) {
       console.error('친구 거절 실패:', error);
+      // 실패시에만 쿼리 무효화
+      queryClient.invalidateQueries({
+        queryKey: ['notifications', 'list', 0],
+      });
     }
   };
 
-  if (isLoading && !data) {
-    return <LoadingContainer>로딩중...</LoadingContainer>;
-  }
-
-  if (!data?.content?.length) {
+  // 나머지 코드는 동일
+  if (!data || !data.content) {
     return <EmptyMessage>알림이 없습니다.</EmptyMessage>;
   }
 
@@ -83,12 +135,6 @@ export const NotificationList = () => {
 const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
-`;
-
-const LoadingContainer = styled.div`
-  padding: 20px;
-  text-align: center;
-  color: #666;
 `;
 
 const EmptyMessage = styled.div`
