@@ -75,6 +75,7 @@ export const avatarApi = {
       Authorization: `Bearer ${localStorage.getItem('token')}`,
     },
   });
+  console.log('API response:', response.data);
   return response.data; // 모든 아이템 리스트 반환 (구매 및 장착 여부 포함)
 },
 };
