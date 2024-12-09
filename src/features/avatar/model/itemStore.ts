@@ -1,190 +1,56 @@
 import { create } from "zustand";
 import { MarketItem } from "../types/marketItemTypes";
 import { ItemCategory } from "../types/itemCategoryTypes";
+import { avatarApi } from "@/shared/api/avatar"; // API 가져오기
 
- // 초기 데이터 정의
- const initialItems: MarketItem[] = [
-  {
-    prd_id: 1,
-    prd_name: "미래 도시",
-    prd_type: "background",
-    prd_image: "/img/future-city.png",
-    prd_price: 10,
-    prd_description: "미래 도시 배경",
-    cate_id: 1,
-    purchased: false,
-  },
-  {
-    prd_id: 2,
-    prd_name: "수중 세계",
-    prd_type: "background",
-    prd_image: "/img/underwater.png",
-    prd_price: 12,
-    prd_description: "수중 세계 배경",
-    cate_id: 1,
-    purchased: false,
-  },
-  {
-    prd_id: 3,
-    prd_name: "우주",
-    prd_type: "background",
-    prd_image: "/img/space.png",
-    prd_price: 15,
-    prd_description: "우주 배경",
-    cate_id: 1,
-    purchased: false,
-  },
-  {
-    prd_id: 4,
-    prd_name: "스위트 공장",
-    prd_type: "background",
-    prd_image: "/img/sweet-factory.png",
-    prd_price: 20,
-    prd_description: "스위트 공장 배경",
-    cate_id: 1,
-    purchased: false,
-  },
-  {
-    prd_id: 5,
-    prd_name: "유령 성",
-    prd_type: "background",
-    prd_image: "/img/spooky-castle.png",
-    prd_price: 18,
-    prd_description: "유령 성 배경",
-    cate_id: 1,
-    purchased: false,
-  },
-  {
-    prd_id: 6,
-    prd_name: "불꽃",
-    prd_type: "pet",
-    prd_image: "/img/fire.png",
-    prd_price: 10,
-    prd_description: "불꽃 펫",
-    cate_id: 2,
-    purchased: false,
-  },
-  {
-    prd_id: 7,
-    prd_name: "물방울",
-    prd_type: "pet",
-    prd_image: "/img/water.png",
-    prd_price: 12,
-    prd_description: "물방울 펫",
-    cate_id: 2,
-    purchased: false,
-  },
-  {
-    prd_id: 8,
-    prd_name: "별똥별",
-    prd_type: "pet",
-    prd_image: "/img/starlight.png",
-    prd_price: 15,
-    prd_description: "별똥별 펫",
-    cate_id: 2,
-    purchased: false,
-  },
-  {
-    prd_id: 9,
-    prd_name: "식물",
-    prd_type: "pet",
-    prd_image: "/img/plant.png",
-    prd_price: 20,
-    prd_description: "식물 펫",
-    cate_id: 2,
-    purchased: false,
-  },
-  {
-    prd_id: 10,
-    prd_name: "구름",
-    prd_type: "pet",
-    prd_image: "/img/cloud.png",
-    prd_price: 18,
-    prd_description: "구름 펫",
-    cate_id: 2,
-    purchased: false,
-  },
-  {
-    prd_id: 11,
-    prd_name: "마법사 모자",
-    prd_type: "hat",
-    prd_image: "/img/wizard.png",
-    prd_price: 10,
-    prd_description: "마법사 모자",
-    cate_id: 3,
-    purchased: false,
-  },
-  {
-    prd_id: 12,
-    prd_name: "신사 모자",
-    prd_type: "hat",
-    prd_image: "/img/gentleman.png",
-    prd_price: 12,
-    prd_description: "신사 모자",
-    cate_id: 3,
-    purchased: false,
-  },
-  {
-    prd_id: 13,
-    prd_name: "밀짚모자",
-    prd_type: "hat",
-    prd_image: "/img/farmer.png",
-    prd_price: 15,
-    prd_description: "밀짚모자",
-    cate_id: 3,
-    purchased: false,
-  },
-  {
-    prd_id: 14,
-    prd_name: "야구 모자",
-    prd_type: "hat",
-    prd_image: "/img/baseball.png",
-    prd_price: 2000,
-    prd_description: "야구 모자",
-    cate_id: 3,
-    purchased: false,
-  },
-  {
-    prd_id: 15,
-    prd_name: "왕관",
-    prd_type: "hat",
-    prd_image: "/img/tiara.png",
-    prd_price: 18,
-    prd_description: "왕관",
-    cate_id: 3,
-    purchased: false,
-  },
-];
+function isValidCategory(category: string): category is ItemCategory {
+  return ["BACKGROUND", "PET", "HAT"].includes(category);
+}
 
 interface ItemStore {
-  marketItems: MarketItem[];
-  itemCategories: ItemCategory[];
-  setMarketItems: (items: MarketItem[] | ((prevMarketItems: MarketItem[]) => MarketItem[])) => void;
-  setItemCategories: (categories: ItemCategory[]) => void;
-  updateMarketItems: (id: number, purchased: boolean) => void; // 특정 아이템 상태 업데이트
+  marketItems: MarketItem[]; // 아이템 목록
+  setMarketItems: (items: MarketItem[] | ((prevItems: MarketItem[]) => MarketItem[])) => void;
+  updateMarketItem: (id: number, purchased: boolean) => void; // 특정 아이템 상태 업데이트
+  fetchMarketItems: () => Promise<void>; // API에서 아이템 목록 가져오기
 }
 
 export const useItemStore = create<ItemStore>((set) => ({
-  marketItems: initialItems,
-  itemCategories: [],
+  marketItems: [],
   setMarketItems: (items) =>
-    set((prevState) => {
-      // 기존 데이터와 병합
-      const updatedMarketItems =
+    set((state) => {
+      const updatedItems =
         typeof items === "function"
-          ? items(prevState.marketItems)
-          : items.map((item) => {
-              const existingItem = prevState.marketItems.find((i) => i.prd_id === item.prd_id);
-              return existingItem ? { ...existingItem, ...item } : item;
-            });
-
-      return { marketItems: updatedMarketItems };
+          ? items(state.marketItems)
+          : items;
+      return { marketItems: updatedItems };
     }),
-  setItemCategories: (categories) => set({ itemCategories: categories }),
-  updateMarketItems: (id, purchased) =>
+  updateMarketItem: (id, purchased) =>
     set((state) => ({
       marketItems: state.marketItems.map((item) =>
-        item.prd_id === id ? { ...item, purchased } : item
+        item.id === id ? { ...item, purchased } : item
       ),
     })),
-}));
+    fetchMarketItems: async () => {
+      try {
+        const items = await avatarApi.getAllItems(); // getAllItems 호출
+        // 데이터를 MarketItem 타입으로 변환
+        const marketItems: MarketItem[] = items.map((item) => {
+          if (!isValidCategory(item.category)) {
+            throw new Error(`Invalid category: ${item.category}`);
+          }
+          return {
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            category: item.category, // 이미 검증되었으므로 안전
+            imageUrl: item.imageUrl,
+            description: item.description,
+            purchased: item.isPurchased,
+          };
+        });
+        set({ marketItems });
+      } catch (error) {
+        console.error("Failed to fetch market items:", error);
+      }
+    },
+  }));

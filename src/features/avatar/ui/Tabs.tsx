@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-type TabType = "background" | "pet" | "hat";
+type TabType = "BACKGROUND" | "PET" | "HAT";
 
 interface TabsProps {
   activeTab: TabType;
@@ -10,13 +10,13 @@ interface TabsProps {
 
 const Tabs = ({ activeTab, setActiveTab }: TabsProps) => (
       <TabWrapper>
-        <Tab onClick={() => setActiveTab("background")} active={activeTab === "background"}>
+        <Tab onClick={() => setActiveTab("BACKGROUND")} active={activeTab === "BACKGROUND"}>
           배경
         </Tab>
-        <Tab onClick={() => setActiveTab("pet")} active={activeTab === "pet"}>
+        <Tab onClick={() => setActiveTab("PET")} active={activeTab === "PET"}>
           펫
         </Tab>
-        <Tab onClick={() => setActiveTab("hat")} active={activeTab === "hat"}>
+        <Tab onClick={() => setActiveTab("HAT")} active={activeTab === "HAT"}>
           모자
         </Tab>
       </TabWrapper>
