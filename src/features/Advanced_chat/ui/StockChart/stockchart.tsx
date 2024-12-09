@@ -1,5 +1,3 @@
-// src/features/Advanced_chat/ui/StockChart/stockchart.tsx
-
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -7,11 +5,11 @@ import { ChartContainer } from './styled';
 
 interface StockPrice {
   timestamp: string;
-  price: string;
-  open: string;
-  high: string;
-  low: string;
-  close: string;
+  price: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
   change: number;
   volume: number;
 }
@@ -32,19 +30,6 @@ export const StockChart: React.FC<StockChartProps> = ({
   onClick,
   isPlaying
 }) => {
-  console.log(`Chart data for ${title}:`, {
-    rawData: data,
-    processedData: data.map(item => ({
-      x: new Date(item.timestamp).getTime(),
-      y: [
-        parseFloat(item.open),
-        parseFloat(item.high),
-        parseFloat(item.low),
-        parseFloat(item.close)
-      ]
-    }))
-  });
-
   const options: ApexOptions = {
     chart: {
       type: 'candlestick',
@@ -96,12 +81,7 @@ export const StockChart: React.FC<StockChartProps> = ({
     name: title,
     data: data.map(item => ({
       x: new Date(item.timestamp).getTime(),
-      y: [
-        parseFloat(item.open),
-        parseFloat(item.high),
-        parseFloat(item.low),
-        parseFloat(item.close)
-      ]
+      y: [item.open, item.high, item.low, item.close]
     }))
   }];
 
