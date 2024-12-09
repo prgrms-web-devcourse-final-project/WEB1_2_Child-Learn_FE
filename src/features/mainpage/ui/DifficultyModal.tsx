@@ -6,35 +6,28 @@ interface DifficultyModalProps {
   onClose: () => void;
   onSelect: (level: string) => void;
 }
-
 export const DifficultyModal = ({
   isOpen,
   onClose,
   onSelect,
 }: DifficultyModalProps) => {
+  if (!isOpen) return null; // 모달이 열려 있지 않으면 아무것도 렌더링하지 않음
+
   const navigate = useNavigate();
 
   const checkPlayable = (level: string) => {
-    const lastPlayTime = localStorage.getItem(`lastPlay_${level}`);
-    console.log(`Checking ${level}:`, { lastPlayTime });
-    
-    if (!lastPlayTime) return true;
-
-    const now = new Date().getTime();
-    const lastPlay = parseInt(lastPlayTime);
-    const hoursPassed = (now - lastPlay) / (1000 * 60 * 60);
-    
-    console.log(`Hours passed for ${level}:`, hoursPassed);
-    return hoursPassed >= 24;
+    const hasPlayed = localStorage.getItem(`played_${level}`);
+    return !hasPlayed; // 플레이 기록이 없으면 true, 있으면 false
   };
 
   const handleDifficultySelect = (level: string) => {
     if (!checkPlayable(level)) {
-      // alert('24시간 후에 다시 도전할 수 있습니다!');
+      alert('이미 플레이한 난이도입니다!');
       return;
     }
 
-    localStorage.setItem(`lastPlay_${level}`, new Date().getTime().toString());
+    // 플레이 기록 저장
+    localStorage.setItem(`played_${level}`, 'true');
     onSelect(level);
     
     switch (level) {
@@ -51,8 +44,6 @@ export const DifficultyModal = ({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -61,24 +52,16 @@ export const DifficultyModal = ({
         </CloseButton>
         <ModalTitle>난이도를 선택하세요!</ModalTitle>
         <ButtonGroup>
-          <DifficultyButton
-            onClick={() => handleDifficultySelect('low')}
-            $level="low"
-          >
-            초급
-          </DifficultyButton>
-          <DifficultyButton
-            onClick={() => handleDifficultySelect('medium')}
-            $level="medium"
-          >
-            중급
-          </DifficultyButton>
-          <DifficultyButton
-            onClick={() => handleDifficultySelect('high')}
-            $level="high"
-          >
-            고급
-          </DifficultyButton>
+          {['low', 'medium', 'high'].map((level) => (
+            <DifficultyButton
+              key={level}
+              onClick={() => handleDifficultySelect(level)}
+              $level={level as 'low' | 'medium' | 'high'}
+              disabled={!checkPlayable(level)}
+            >
+              {level === 'low' ? '초급' : level === 'medium' ? '중급' : '고급'}
+            </DifficultyButton>
+          ))}
         </ButtonGroup>
       </ModalContent>
     </ModalOverlay>
