@@ -31,6 +31,7 @@ export const ArticleSection: React.FC<ArticleSectionProps> = ({ type, graphCompo
           article={{
             article_id: article.article_id,
             stock_symbol: article.stock_symbol,
+            mid_stock_id: article.mid_stock_id,
             trend_prediction: article.trend_prediction,
             created_at: article.created_at,
             content: article.content,
