@@ -10,7 +10,7 @@ function isValidCategory(category: string): category is ItemCategory {
 interface ItemStore {
   marketItems: MarketItem[]; // 아이템 목록
   setMarketItems: (items: MarketItem[] | ((prevItems: MarketItem[]) => MarketItem[])) => void;
-  updateMarketItem: (id: number, purchased: boolean) => void; // 특정 아이템 상태 업데이트
+  updateMarketItem: (id: number, purchased: boolean, equipped: boolean) => void; // 특정 아이템 상태 업데이트
   fetchMarketItems: () => Promise<void>; // API에서 아이템 목록 가져오기
 }
 
@@ -24,10 +24,10 @@ export const useItemStore = create<ItemStore>((set) => ({
           : items;
       return { marketItems: updatedItems };
     }),
-  updateMarketItem: (id, purchased) =>
+  updateMarketItem: (id, purchased, equipped) =>
     set((state) => ({
       marketItems: state.marketItems.map((item) =>
-        item.id === id ? { ...item, purchased } : item
+        item.id === id ? { ...item, purchased, equipped } : item
       ),
     })),
     fetchMarketItems: async () => {
@@ -46,6 +46,7 @@ export const useItemStore = create<ItemStore>((set) => ({
             imageUrl: item.imageUrl,
             description: item.description,
             purchased: item.isPurchased,
+            equipped: item.isEquipped
           };
         });
         set({ marketItems });
