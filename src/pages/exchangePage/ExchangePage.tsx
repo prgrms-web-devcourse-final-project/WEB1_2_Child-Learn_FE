@@ -109,7 +109,7 @@ const ExchangePage = () => {
       />
       <SectionLabel>포인트 변환 비율</SectionLabel>
         <RateSection>
-          <Icon src="/img/coins.png" alt="Point Icon" />
+          <Icon src="/img/dollar.png" alt="Point Icon" />
           <RateText>
             100 <StrongText>Point</StrongText>
           </RateText>
