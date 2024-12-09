@@ -28,7 +28,7 @@ const useGameTimer = ({
 }) => {
   const [gameTime, setGameTime] = useState(0);
   const lastUpdateTime = useRef<number | null>(null);
-  const MAX_GAME_TIME = 420; // 7 minutes
+  const MAX_GAME_TIME = 420; // 7 minutes in seconds
 
   useEffect(() => {
     let animationFrameId: number;
@@ -43,17 +43,21 @@ const useGameTimer = ({
           if (deltaTime >= 1) {
             setGameTime(prev => {
               const newTime = prev + deltaTime;
+              
               if (newTime >= MAX_GAME_TIME) {
                 onGameEnd?.();
                 return MAX_GAME_TIME;
               }
+              
               return newTime;
             });
+            
             lastUpdateTime.current = currentTime;
           }
         } else {
           lastUpdateTime.current = currentTime;
         }
+        
         animationFrameId = requestAnimationFrame(updateTimer);
       }
     };
@@ -106,35 +110,60 @@ export const StockSlider: React.FC = () => {
 
   const processStockData = (data: any): StockPrice => {
     return {
-      timestamp: new Date(data.timestamp * 1000).toISOString(),
-      price: Number(data.closePrice || 0),
-      open: Number(data.openPrice) || 0,
-      high: Number(data.highPrice) || 0,
-      low: Number(data.lowPrice) || 0,
-      close: Number(data.closePrice) || 0,
-      change: parseFloat(data.change) || 0,
-      volume: parseInt(data.volume) || 0
+      timestamp: new Date().toISOString(),
+      price: String(data.closePrice || 0),
+      open: String(data.openPrice || 0),
+      high: String(data.highPrice || 0),
+      low: String(data.lowPrice || 0),
+      close: String(data.closePrice || 0),
+      change: 0,
+      volume: 0
     };
+  };
+
+  const handleInitialData = (data: any[]) => {
+    // 심볼별로 데이터 그룹화
+    const groupedData: Record<string, StockPrice[]> = {};
+    const uniqueStocks = new Set<string>();
+
+    data.forEach(item => {
+      uniqueStocks.add(item.symbol);
+      if (!groupedData[item.symbol]) {
+        groupedData[item.symbol] = [];
+      }
+      groupedData[item.symbol].push(processStockData(item));
+    });
+
+    // 사용 가능한 주식 목록 설정
+    const stocks = Array.from(uniqueStocks).map(symbol => ({
+      id: symbol === 'AAPL' ? 1 : 2,
+      symbol: symbol,
+      title: data.find(item => item.symbol === symbol)?.name || symbol
+    }));
+
+    console.log('그룹화된 데이터:', groupedData);
+    console.log('사용 가능한 주식:', stocks);
+
+    setAvailableStocks(stocks);
+    setStockData(groupedData);
   };
 
   const handleStockData = (data: any) => {
     if (!data?.symbol) {
-      console.warn('Invalid stock data received:', data);
+      console.warn('유효하지 않은 주식 데이터:', data);
       return;
     }
-
-    console.log('Processing stock data:', data);
 
     setStockData(prevData => {
       const newData = { ...prevData };
       const processedPrice = processStockData(data);
       
-      // 
       newData[data.symbol] = [
         processedPrice,
-        ...(newData[data.symbol] || [])
+        ...(prevData[data.symbol] || [])
       ].slice(0, 100);
       
+      console.log(`${data.symbol} 데이터 업데이트:`, newData[data.symbol]);
       return newData;
     });
   };
@@ -144,46 +173,47 @@ export const StockSlider: React.FC = () => {
     
     const messageHandler = (message: any) => {
       try {
-        const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message;
-        console.log('Received WebSocket message:', parsedMessage);
-        
-        switch (parsedMessage.action) {
-          case 'REFERENCE_DATA':
-            if (parsedMessage.data?.stocks) {
-              console.log('Setting available stocks:', parsedMessage.data.stocks);
-              setAvailableStocks(parsedMessage.data.stocks);
-              
-              // Initialize stockData with empty arrays for each stock
-              const initialStockData: Record<string, StockPrice[]> = {};
-              parsedMessage.data.stocks.forEach((stock: Stock) => {
-                initialStockData[stock.symbol] = [];
-              });
-              setStockData(initialStockData);
-            }
-            break;
+        const data = typeof message === 'string' ? JSON.parse(message) : message;
+        console.log('받은 메시지:', data);
 
-          case 'LIVE_DATA':
-            if (parsedMessage.data) {
-              handleStockData(parsedMessage.data);
-            }
-            break;
-
-          case 'END_GAME':
-            setIsPlaying(false);
-            break;
+        // 배열 데이터 처리 (초기 데이터)
+        if (Array.isArray(data)) {
+          console.log('초기 데이터 처리:', data.length);
+          handleInitialData(data);
         }
+        // 단일 데이터 업데이트 처리
+        else if (typeof data === 'object' && data.symbol) {
+          console.log('실시간 데이터 처리:', data);
+          handleStockData(data);
+        }
+        // 게임 종료 메시지 처리
+        else if (data === '게임이 종료되었습니다.') {
+          console.log('게임 종료');
+          setIsPlaying(false);
+        }
+
       } catch (error) {
-        console.error('Error processing message:', error);
+        console.error('메시지 처리 중 에러:', error);
       }
     };
 
     ws.onMessage(messageHandler);
-    ws.connect().catch(console.error);
+
+    console.log('WebSocket 연결 시도');
+    ws.connect().catch(error => {
+      console.error('WebSocket 연결 실패:', error);
+    });
 
     return () => {
+      console.log('WebSocket 연결 종료');
       ws.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    console.log('현재 stockData:', stockData);
+    console.log('사용 가능한 주식:', availableStocks);
+  }, [stockData, availableStocks]);
 
   const handlePrevSlide = () => {
     setCurrentSlide(prev => Math.max(0, prev - 1));
@@ -227,18 +257,21 @@ export const StockSlider: React.FC = () => {
       </NavigationButton>
 
       <ChartGrid style={{ transform: `translateX(-${currentSlide * 25}%)` }}>
-        {availableStocks.map((stock) => (
-          <ChartItem key={stock.id}>
-            <StockChart
-              stockId={stock.id}
-              title={stock.title}
-              data={(stockData[stock.symbol] || []) as any}
-              isSelected={selectedStock === stock.id}
-              onClick={() => setSelectedStock(stock.id)}
-              isPlaying={isPlaying}
-            />
-          </ChartItem>
-        ))}
+        {availableStocks.map((stock) => {
+          console.log(`${stock.symbol} 차트 데이터:`, stockData[stock.symbol]);
+          return (
+            <ChartItem key={stock.id}>
+              <StockChart
+                stockId={stock.id}
+                title={stock.title}
+                data={stockData[stock.symbol] || []}
+                isSelected={selectedStock === stock.id}
+                onClick={() => setSelectedStock(stock.id)}
+                isPlaying={isPlaying}
+              />
+            </ChartItem>
+          );
+        })}
       </ChartGrid>
 
       <NavigationButton 

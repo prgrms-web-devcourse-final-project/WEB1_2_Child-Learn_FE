@@ -135,14 +135,46 @@ export class StockWebSocket {
 
         this.ws.onmessage = (event) => {
           try {
-            const message = JSON.parse(event.data);
-            console.log('Received message:', message);
-            
-            if (this.messageHandler) {
-              this.messageHandler(message);
+            let message;
+            // 문자열인 경우 JSON 파싱 시도
+            if (typeof event.data === 'string') {
+              try {
+                message = JSON.parse(event.data);
+                console.log('Parsed message data:', message);
+              } catch (parseError) {
+                // 파싱 실패시 원본 문자열 사용
+                message = event.data;
+                console.log('Using raw message:', message);
+              }
+            } else {
+              message = event.data;
+              console.log('Non-string message:', message);
+            }
+
+            // 배열 데이터 처리 (초기 주식 데이터)
+            if (Array.isArray(message)) {
+              console.log('Processing initial stock data array:', message.length, 'items');
+              if (this.messageHandler) {
+                this.messageHandler(message);
+              }
+            }
+            // 객체 데이터 처리 (실시간 업데이트)
+            else if (typeof message === 'object' && message !== null) {
+              console.log('Processing stock update:', message);
+              if (this.messageHandler) {
+                this.messageHandler(message);
+              }
+            }
+            // 문자열 메시지 처리
+            else {
+              console.log('Processing system message:', message);
+              if (this.messageHandler) {
+                this.messageHandler(message);
+              }
             }
           } catch (error) {
-            console.error('Failed to parse message:', error);
+            console.error('Message processing error:', error);
+            console.error('Original message:', event.data);
           }
         };
 
@@ -230,7 +262,14 @@ export class StockWebSocket {
     
     StockWebSocket.instance = null;
   }
-}
 
+  public sendMessage(message: any): void {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.warn('Cannot send message - WebSocket is not connected');
+    }
+  }
+}
 
 export const webSocket = StockWebSocket.getInstance();
