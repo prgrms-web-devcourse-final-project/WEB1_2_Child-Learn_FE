@@ -26,26 +26,26 @@ export const useNotificationSSE = () => {
 
   const handleSSEEvent = useCallback(
     (eventData: SSENotification) => {
-      // SSENotification 타입 사용
       console.log('SSE 이벤트 수신:', eventData);
 
-      switch (eventData.type) {
-        case 'FRIEND_REQUEST':
-        case 'FRIEND_ACCEPT':
-        case 'MESSAGE':
-          queryClient.invalidateQueries({
-            queryKey: NOTIFICATION_KEYS.all,
-            refetchType: 'active',
-            exact: false,
-          });
+      // FRIEND_REQUEST나 FRIEND_ACCEPT 타입이 아닌 경우에만 notifications 쿼리 무효화
+      if (
+        eventData.type !== 'FRIEND_REQUEST' &&
+        eventData.type !== 'FRIEND_ACCEPT'
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: NOTIFICATION_KEYS.all,
+          refetchType: 'active',
+          exact: false,
+        });
+      }
 
-          if (eventData.type === 'FRIEND_REQUEST') {
-            queryClient.invalidateQueries({
-              queryKey: NOTIFICATION_KEYS.friendRequests,
-              refetchType: 'active',
-            });
-          }
-          break;
+      // 친구 요청의 경우 friendRequests만 무효화
+      if (eventData.type === 'FRIEND_REQUEST') {
+        queryClient.invalidateQueries({
+          queryKey: NOTIFICATION_KEYS.friendRequests,
+          refetchType: 'active',
+        });
       }
     },
     [queryClient]

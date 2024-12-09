@@ -26,12 +26,11 @@ export const useNotifications = (page: number) => {
   return useQuery({
     queryKey: NOTIFICATION_KEYS.list(page),
     queryFn: () => notificationApi.getNotifications(page),
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    // refetchOnMount와 refetchOnWindowFocus 제거
     staleTime: 1000 * 60 * 5, // 5분
     gcTime: 1000 * 60 * 30, // 30분
-    retry: 3, // 실패시 3번 재시도
-    retryDelay: 1000, // 재시도 간격 1초
+    retry: 3,
+    retryDelay: 1000,
   });
 };
 
@@ -91,11 +90,11 @@ export const useRespondToFriendRequest = () => {
       await friendApi.respondToFriendRequest({ requestId, status });
     },
     onSuccess: () => {
-      // notifications 쿼리 무효화 제거
+      // NOTIFICATION_KEYS.all 쿼리 무효화를 제거하고 friendRequests만 무효화
       queryClient.invalidateQueries({
         queryKey: NOTIFICATION_KEYS.friendRequests,
       });
-      // queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all }); <- 이 줄 제거
+      // queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all }); // 이 줄을 제거
     },
     onError: () => {
       console.error('친구 요청 처리 실패');
