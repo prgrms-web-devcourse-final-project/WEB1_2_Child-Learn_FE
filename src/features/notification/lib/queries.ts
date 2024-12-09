@@ -26,12 +26,10 @@ export const useNotifications = (page: number) => {
   return useQuery({
     queryKey: NOTIFICATION_KEYS.list(page),
     queryFn: () => notificationApi.getNotifications(page),
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 1000 * 60 * 5, // 5분
-    gcTime: 1000 * 60 * 30, // 30분
-    retry: 3, // 실패시 3번 재시도
-    retryDelay: 1000, // 재시도 간격 1초
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity, // 캐시를 무기한으로 유지
   });
 };
 
@@ -78,8 +76,6 @@ export const useDeleteNotification = () => {
 
 // 친구 요청 응답 (수락/거절)
 export const useRespondToFriendRequest = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async ({
       requestId,
@@ -89,13 +85,6 @@ export const useRespondToFriendRequest = () => {
       status: 'ACCEPTED' | 'REJECTED';
     }) => {
       await friendApi.respondToFriendRequest({ requestId, status });
-    },
-    onSuccess: () => {
-      // NOTIFICATION_KEYS.all 쿼리 무효화를 제거하고 friendRequests만 무효화
-      queryClient.invalidateQueries({
-        queryKey: NOTIFICATION_KEYS.friendRequests,
-      });
-      // queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all }); // 이 줄을 제거
     },
     onError: () => {
       console.error('친구 요청 처리 실패');

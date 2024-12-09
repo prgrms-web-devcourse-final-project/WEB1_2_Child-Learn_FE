@@ -1,20 +1,6 @@
 import styled from 'styled-components';
 import { useArticle } from '@/features/article/lib/useArticle';
-import { TrendPrediction, Relevance } from '@/features/article/types/articleTypes';
-
-interface Article {
-  article_id: number;
-  stock_symbol: string;
-  trend_prediction: TrendPrediction;
-  content: string;
-  relevance: Relevance;
-  created_at: string;
-  duration: number;
-  title: string;
-  summary: string;
-  mid_stock_id: number;
-  adv_id: number;
-}
+import { Article } from '@/features/article/types/articleTypes';
 
 interface MidArticlePageProps {
   stockId?: number;

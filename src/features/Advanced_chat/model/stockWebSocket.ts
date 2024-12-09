@@ -4,8 +4,6 @@ export class StockWebSocket {
   private static instance: StockWebSocket | null = null;
   private ws: WebSocket | null = null;
   private messageHandler?: (message: any) => void;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
   private connectionId: string;
   private connectionStatus: 'connecting' | 'connected' | 'disconnected' = 'disconnected';
   private static readonly BASE_URL = 'ws://43.202.106.45';
@@ -117,7 +115,6 @@ export class StockWebSocket {
         this.ws.onopen = async () => {
           clearTimeout(timeout);
           this.connectionStatus = 'connected';
-          this.reconnectAttempts = 0;
           console.log('WebSocket connected successfully');
           
           const memberId = this.getMemberId();
@@ -135,14 +132,41 @@ export class StockWebSocket {
 
         this.ws.onmessage = (event) => {
           try {
-            const message = JSON.parse(event.data);
-            console.log('Received message:', message);
-            
-            if (this.messageHandler) {
-              this.messageHandler(message);
+            let message;
+            if (typeof event.data === 'string') {
+              try {
+                message = JSON.parse(event.data);
+                console.log('Parsed message data:', message);
+              } catch (parseError) {
+                message = event.data;
+                console.log('Using raw message:', message);
+              }
+            } else {
+              message = event.data;
+              console.log('Non-string message:', message);
+            }
+
+            if (Array.isArray(message)) {
+              console.log('Processing initial stock data array:', message.length, 'items');
+              if (this.messageHandler) {
+                this.messageHandler(message);
+              }
+            }
+            else if (typeof message === 'object' && message !== null) {
+              console.log('Processing stock update:', message);
+              if (this.messageHandler) {
+                this.messageHandler(message);
+              }
+            }
+            else {
+              console.log('Processing system message:', message);
+              if (this.messageHandler) {
+                this.messageHandler(message);
+              }
             }
           } catch (error) {
-            console.error('Failed to parse message:', error);
+            console.error('Message processing error:', error);
+            console.error('Original message:', event.data);
           }
         };
 
@@ -150,10 +174,6 @@ export class StockWebSocket {
           this.connectionStatus = 'disconnected';
           this.connectPromise = null;
           console.log(`WebSocket closed: ${event.code} (${this.getCloseReason(event.code)})`);
-          
-          if (event.code === 1006) {
-            this.handleReconnect();
-          }
         };
 
         this.ws.onerror = (error) => {
@@ -162,7 +182,6 @@ export class StockWebSocket {
           console.error('WebSocket error details:', error);
           reject(error);
           this.connectPromise = null;
-          this.handleReconnect();
         };
 
       } catch (error) {
@@ -170,30 +189,10 @@ export class StockWebSocket {
         console.error('Connection setup error:', error);
         reject(error);
         this.connectPromise = null;
-        this.handleReconnect();
       }
     });
 
     return this.connectPromise;
-  }
-
-  private async handleReconnect() {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error(`Maximum reconnection attempts (${this.maxReconnectAttempts}) reached`);
-      return;
-    }
-
-    const timeout = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
-    console.log(`Attempting reconnection ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts} in ${timeout}ms`);
-    
-    await new Promise(resolve => setTimeout(resolve, timeout));
-    
-    this.reconnectAttempts++;
-    try {
-      await this.connect();
-    } catch (error) {
-      console.error('Reconnection attempt failed:', error);
-    }
   }
 
   private getCloseReason(code: number): string {
@@ -230,7 +229,14 @@ export class StockWebSocket {
     
     StockWebSocket.instance = null;
   }
-}
 
+  public sendMessage(message: any): void {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    } else {
+      console.warn('Cannot send message - WebSocket is not connected');
+    }
+  }
+}
 
 export const webSocket = StockWebSocket.getInstance();
