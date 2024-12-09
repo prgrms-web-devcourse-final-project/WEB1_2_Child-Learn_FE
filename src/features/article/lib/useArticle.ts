@@ -27,4 +27,3 @@ export function useArticle(type: ArticleType) {
 
   return { articles, loading, error } as { articles: Article[], loading: boolean, error: string | null };
 }
-

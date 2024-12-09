@@ -7,8 +7,6 @@ import { useQuizStore } from '@/features/beginner_chart/model/store/quiz.store';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import QuizModal from '@/features/beginner_chart/ui/quiz-widget/QuizModal';
 
-
-
 // Styled components를 컴포넌트 밖으로 이동
 const PageContainer = styled.div`
   padding: 20px;
@@ -150,10 +148,10 @@ const QuizGraphPage: React.FC = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<string>();
   const [showModal, setShowModal] = useState(false);
   const [earnedPoints, setEarnedPoints] = useState<number>(0);
+  const [userId, setUserId] = useState<number>(0);
   
   const { stockData, fetchStockData, isLoading } = useGraphStore();
   const { currentQuiz, submitAnswer, fetchQuizzes } = useQuizStore();
-  const { userId } = useAuth();
 
   useEffect(() => {
     fetchStockData();
@@ -250,6 +248,7 @@ const QuizGraphPage: React.FC = () => {
   onClose={handleModalClose}
   earnedPoints={earnedPoints}
   isCorrect={earnedPoints > 0}
+  userId={userId}
 />
     </PageContainer>
   );
