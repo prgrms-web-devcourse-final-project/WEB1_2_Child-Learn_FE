@@ -107,7 +107,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data, onChartClick }) => {
     plotOptions: {
       bar: {
         columnWidth: '30%',
-        borderRadius: 8,
+        borderRadius: 6,
         borderRadiusApplication: 'end',
       },
     },
@@ -133,7 +133,7 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data, onChartClick }) => {
     },
     yaxis: {
       min: 0,
-      max: 600,
+      max: 900,
       tickAmount: 6,
       labels: {
         style: {
