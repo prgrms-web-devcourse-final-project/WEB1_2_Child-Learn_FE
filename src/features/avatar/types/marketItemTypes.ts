@@ -9,4 +9,5 @@ export interface MarketItem {
   imageUrl: string; // 이미지 URL
   description: string; // 설명
   purchased: boolean; // 구매 여부
+  equipped: boolean;
 }
