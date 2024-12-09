@@ -24,11 +24,7 @@ export const NotificationList = () => {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
-      await respondToRequest.mutateAsync({
-        requestId: request.id,
-        status: 'ACCEPTED',
-      });
-
+      // 먼저 로컬 UI 업데이트
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
         ...old,
         content: old.content.map((n: Notification) =>
@@ -37,12 +33,21 @@ export const NotificationList = () => {
             : n
         ),
       }));
+
+      // 그 다음 서버 요청
+      await respondToRequest.mutateAsync({
+        requestId: request.id,
+        status: 'ACCEPTED',
+      });
     } catch (error) {
       console.error('친구 수락 실패:', error);
+      // 실패시 쿼리 무효화하여 원래 상태로 복구
+      queryClient.invalidateQueries({
+        queryKey: ['notifications', 'list', 0],
+      });
     }
   };
 
-  // notification 전체를 받도록 수정
   const handleReject = async (notification: Notification) => {
     try {
       const request = receivedRequests?.find(
@@ -53,11 +58,7 @@ export const NotificationList = () => {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
-      await respondToRequest.mutateAsync({
-        requestId: request.id,
-        status: 'REJECTED',
-      });
-
+      // 먼저 로컬 UI 업데이트
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
         ...old,
         content: old.content.map((n: Notification) =>
@@ -66,11 +67,22 @@ export const NotificationList = () => {
             : n
         ),
       }));
+
+      // 그 다음 서버 요청
+      await respondToRequest.mutateAsync({
+        requestId: request.id,
+        status: 'REJECTED',
+      });
     } catch (error) {
       console.error('친구 거절 실패:', error);
+      // 실패시 쿼리 무효화하여 원래 상태로 복구
+      queryClient.invalidateQueries({
+        queryKey: ['notifications', 'list', 0],
+      });
     }
   };
 
+  // 나머지 코드는 동일
   if (!data || !data.content) {
     return <EmptyMessage>알림이 없습니다.</EmptyMessage>;
   }
