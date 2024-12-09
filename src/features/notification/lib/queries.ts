@@ -26,12 +26,10 @@ export const useNotifications = (page: number) => {
   return useQuery({
     queryKey: NOTIFICATION_KEYS.list(page),
     queryFn: () => notificationApi.getNotifications(page),
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
-    staleTime: 1000 * 60 * 5, // 5분
-    gcTime: 1000 * 60 * 30, // 30분
-    retry: 3, // 실패시 3번 재시도
-    retryDelay: 1000, // 재시도 간격 1초
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: Infinity, // 캐시를 무기한으로 유지
   });
 };
 

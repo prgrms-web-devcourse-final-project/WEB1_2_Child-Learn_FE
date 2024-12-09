@@ -16,6 +16,14 @@ export const NotificationList = () => {
 
   const handleAccept = async (notification: Notification) => {
     try {
+      // 이미 처리된 요청은 무시
+      if (
+        notification.status === 'ACCEPTED' ||
+        notification.status === 'REJECTED'
+      ) {
+        return;
+      }
+
       const request = receivedRequests?.find(
         (req) => req.senderUsername === notification.senderUsername
       );
@@ -24,13 +32,7 @@ export const NotificationList = () => {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
-      // 서버 요청 먼저 처리
-      await respondToRequest.mutateAsync({
-        requestId: request.id,
-        status: 'ACCEPTED',
-      });
-
-      // 성공 후에 로컬 상태만 업데이트
+      // 먼저 로컬 상태 업데이트
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => {
         if (!old) return old;
         return {
@@ -42,13 +44,39 @@ export const NotificationList = () => {
           ),
         };
       });
+
+      // 그 다음 서버 요청
+      await respondToRequest.mutateAsync({
+        requestId: request.id,
+        status: 'ACCEPTED',
+      });
     } catch (error) {
+      // 실패시 상태 롤백
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          content: old.content.map((n: Notification) =>
+            n.notificationId === notification.notificationId
+              ? { ...n, status: undefined }
+              : n
+          ),
+        };
+      });
       console.error('친구 수락 실패:', error);
     }
   };
 
   const handleReject = async (notification: Notification) => {
     try {
+      // 이미 처리된 요청은 무시
+      if (
+        notification.status === 'ACCEPTED' ||
+        notification.status === 'REJECTED'
+      ) {
+        return;
+      }
+
       const request = receivedRequests?.find(
         (req) => req.senderUsername === notification.senderUsername
       );
@@ -57,13 +85,7 @@ export const NotificationList = () => {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
-      // 서버 요청 먼저 처리
-      await respondToRequest.mutateAsync({
-        requestId: request.id,
-        status: 'REJECTED',
-      });
-
-      // 성공 후에 로컬 상태만 업데이트
+      // 먼저 로컬 상태 업데이트
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => {
         if (!old) return old;
         return {
@@ -75,7 +97,25 @@ export const NotificationList = () => {
           ),
         };
       });
+
+      // 그 다음 서버 요청
+      await respondToRequest.mutateAsync({
+        requestId: request.id,
+        status: 'REJECTED',
+      });
     } catch (error) {
+      // 실패시 상태 롤백
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          content: old.content.map((n: Notification) =>
+            n.notificationId === notification.notificationId
+              ? { ...n, status: undefined }
+              : n
+          ),
+        };
+      });
       console.error('친구 거절 실패:', error);
     }
   };
