@@ -53,10 +53,6 @@ export const DifficultyModal = ({
 
   if (!isOpen) return null;
 
-  const isLowPlayable = checkPlayable('low');
-  const isMediumPlayable = checkPlayable('medium');
-  const isHighPlayable = checkPlayable('high');
-
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -68,21 +64,18 @@ export const DifficultyModal = ({
           <DifficultyButton
             onClick={() => handleDifficultySelect('low')}
             $level="low"
-            disabled={!isLowPlayable}
           >
             초급
           </DifficultyButton>
           <DifficultyButton
             onClick={() => handleDifficultySelect('medium')}
             $level="medium"
-            disabled={!isMediumPlayable}
           >
             중급
           </DifficultyButton>
           <DifficultyButton
             onClick={() => handleDifficultySelect('high')}
             $level="high"
-            disabled={!isHighPlayable}
           >
             고급
           </DifficultyButton>
@@ -112,7 +105,7 @@ const ModalContent = styled.div`
   width: 90%;
   max-width: 320px;
   position: relative;
-  padding-top: 38px;
+  padding-top: 38px; // 상단 패딩 추가
 `;
 
 const CloseButton = styled.button`
@@ -133,7 +126,7 @@ const CloseButton = styled.button`
 const ModalTitle = styled.h2`
   text-align: center;
   margin-bottom: 24px;
-  margin-top: 5px;
+  margin-top: 5px; // 상단 마진 추가
   font-size: 16px;
   font-weight: 700;
 `;
@@ -177,5 +170,3 @@ const DifficultyButton = styled.button<{
     box-shadow: ${props => (props.disabled ? 'none' : '0 2px 4px rgba(0, 0, 0, 0.1)')};
   }
 `;
-
-export default DifficultyModal;

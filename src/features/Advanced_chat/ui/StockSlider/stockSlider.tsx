@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart';
+import { StockChart } from '@/features/Advanced_chat/ui/StockChart/stockchart'; 
 import { TradeModal } from '@/features/Advanced_chat/ui/TradeModal/TradeModal';
 import { StockWebSocket } from '@/features/Advanced_chat/model/stockWebSocket';
 import { useArticle } from '@/features/article/model/useArticle';
@@ -147,68 +147,72 @@ const Indicator = styled.div<{ $active: boolean }>`
 `;
 
 const useGameTimer = ({ 
- isPlaying, 
- onGameEnd 
+  isPlaying, 
+  onGameEnd 
 }: {
- isPlaying: boolean;
- onGameEnd?: () => void;
+  isPlaying: boolean;
+  onGameEnd?: () => void;
 }) => {
- const [gameTime, setGameTime] = useState(0);
- const lastUpdateTime = useRef<number | null>(null);
- const MAX_GAME_TIME = 420; // 7 minutes
+  const [gameTime, setGameTime] = useState(0);
+  const lastUpdateTime = useRef<number | null>(null);
+  const MAX_GAME_TIME = 420; // 7 minutes in seconds
 
- useEffect(() => {
-   let animationFrameId: number;
-   
-   const updateTimer = () => {
-     const currentTime = Date.now();
-     
-     if (isPlaying) {
-       if (lastUpdateTime.current) {
-         const deltaTime = Math.floor((currentTime - lastUpdateTime.current) / 1000);
-         
-         if (deltaTime >= 1) {
-           setGameTime(prev => {
-             const newTime = prev + deltaTime;
-             if (newTime >= MAX_GAME_TIME) {
-               onGameEnd?.();
-               return MAX_GAME_TIME;
-             }
-             return newTime;
-           });
-           lastUpdateTime.current = currentTime;
-         }
-       } else {
-         lastUpdateTime.current = currentTime;
-       }
-       animationFrameId = requestAnimationFrame(updateTimer);
-     }
-   };
+  useEffect(() => {
+    let animationFrameId: number;
+    
+    const updateTimer = () => {
+      const currentTime = Date.now();
+      
+      if (isPlaying) {
+        if (lastUpdateTime.current) {
+          const deltaTime = Math.floor((currentTime - lastUpdateTime.current) / 1000);
+          
+          if (deltaTime >= 1) {
+            setGameTime(prev => {
+              const newTime = prev + deltaTime;
+              
+              if (newTime >= MAX_GAME_TIME) {
+                onGameEnd?.();
+                return MAX_GAME_TIME;
+              }
+              
+              return newTime;
+            });
+            
+            lastUpdateTime.current = currentTime;
+          }
+        } else {
+          lastUpdateTime.current = currentTime;
+        }
+        
+        animationFrameId = requestAnimationFrame(updateTimer);
+      }
+    };
 
-   if (isPlaying) {
-     animationFrameId = requestAnimationFrame(updateTimer);
-   } else {
-     lastUpdateTime.current = null;
-   }
+    if (isPlaying) {
+      animationFrameId = requestAnimationFrame(updateTimer);
+    } else {
+      lastUpdateTime.current = null;
+    }
 
-   return () => {
-     if (animationFrameId) {
-       cancelAnimationFrame(animationFrameId);
-     }
-   };
- }, [isPlaying, onGameEnd]);
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [isPlaying, onGameEnd]);
 
- const formatTime = (seconds: number) => {
-   const mins = Math.floor(seconds / 60);
-   const secs = seconds % 60;
-   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
- };
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
 
- return {
-   gameTime,
-   formattedTime: formatTime(gameTime),
-   isTimeUp: gameTime >= MAX_GAME_TIME
- };
+  return {
+    gameTime,
+    formattedTime: formatTime(gameTime),
+    isTimeUp: gameTime >= MAX_GAME_TIME
+  };
 };
 
 export const AdvancedArticlePage: React.FC = () => {
@@ -222,119 +226,147 @@ export const AdvancedArticlePage: React.FC = () => {
  const [availableStocks, setAvailableStocks] = useState<Stock[]>([]);
  const wsRef = useRef(StockWebSocket.getInstance());
 
- const { formattedTime, isTimeUp } = useGameTimer({
-   isPlaying,
-   onGameEnd: () => {
-     setIsPlaying(false);
-     wsRef.current.sendMessage({
-       action: "END_GAME"
-     });
-   }
- });
+  const { formattedTime, isTimeUp } = useGameTimer({
+    isPlaying,
+    onGameEnd: () => {
+      setIsPlaying(false);
+      wsRef.current.sendMessage({
+        action: "END_GAME"
+      });
+    }
+  });
 
- const processStockData = (data: any): StockPrice => {
-   return {
-     timestamp: new Date(data.timestamp * 1000).toISOString(),
-     price: Number(data.closePrice || 0),
-     open: Number(data.openPrice) || 0,
-     high: Number(data.highPrice) || 0,
-     low: Number(data.lowPrice) || 0,
-     close: Number(data.closePrice) || 0,
-     change: parseFloat(data.change) || 0,
-     volume: parseInt(data.volume) || 0
-   };
- };
+  const processStockData = (data: any): StockPrice => {
+    return {
+      timestamp: new Date().toISOString(),
+      price: Number(data.closePrice || 0),
+      open: Number(data.openPrice || 0),
+      high: Number(data.highPrice || 0),
+      low: Number(data.lowPrice || 0),
+      close: Number(data.closePrice || 0),
+      change: 0,
+      volume: 0
+    };
+  };
 
- const handleStockData = (data: any) => {
-   if (!data?.symbol) {
-     console.warn('Invalid stock data received:', data);
-     return;
-   }
+  const handleInitialData = (data: any[]) => {
+    // 심볼별로 데이터 그룹화
+    const groupedData: Record<string, StockPrice[]> = {};
+    const uniqueStocks = new Set<string>();
 
-   console.log('Processing stock data:', data);
+    data.forEach(item => {
+      uniqueStocks.add(item.symbol);
+      if (!groupedData[item.symbol]) {
+        groupedData[item.symbol] = [];
+      }
+      groupedData[item.symbol].push(processStockData(item));
+    });
 
-   setStockData(prevData => {
-     const newData = { ...prevData };
-     const processedPrice = processStockData(data);
-     
-     newData[data.symbol] = [
-       processedPrice,
-       ...(newData[data.symbol] || [])
-     ].slice(0, 100);
-     
-     return newData;
-   });
- };
+    // 사용 가능한 주식 목록 설정
+    const stocks = Array.from(uniqueStocks).map(symbol => ({
+      id: symbol === 'AAPL' ? 1 : 2,
+      symbol: symbol,
+      title: data.find(item => item.symbol === symbol)?.name || symbol
+    }));
 
- useEffect(() => {
-   const ws = wsRef.current;
-   
-   const messageHandler = (message: any) => {
-     try {
-       const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message;
-       console.log('Received WebSocket message:', parsedMessage);
-       
-       switch (parsedMessage.action) {
-         case 'REFERENCE_DATA':
-           if (parsedMessage.data?.stocks) {
-             setAvailableStocks(parsedMessage.data.stocks);
-             const initialStockData: Record<string, StockPrice[]> = {};
-             parsedMessage.data.stocks.forEach((stock: Stock) => {
-               initialStockData[stock.symbol] = [];
-             });
-             setStockData(initialStockData);
-           }
-           break;
+    console.log('그룹화된 데이터:', groupedData);
+    console.log('사용 가능한 주식:', stocks);
 
-         case 'LIVE_DATA':
-           if (parsedMessage.data) {
-             handleStockData(parsedMessage.data);
-           }
-           break;
+    setAvailableStocks(stocks);
+    setStockData(groupedData);
+  };
 
-         case 'END_GAME':
-           setIsPlaying(false);
-           break;
-       }
-     } catch (error) {
-       console.error('Error processing message:', error);
-     }
-   };
+  const handleStockData = (data: any) => {
+    if (!data?.symbol) {
+      console.warn('유효하지 않은 주식 데이터:', data);
+      return;
+    }
 
-   ws.onMessage(messageHandler);
-   ws.connect().catch(console.error);
+    setStockData(prevData => {
+      const newData = { ...prevData };
+      const processedPrice = processStockData(data);
+      
+      newData[data.symbol] = [
+        processedPrice,
+        ...(prevData[data.symbol] || [])
+      ].slice(0, 100);
+      
+      console.log(`${data.symbol} 데이터 업데이트:`, newData[data.symbol]);
+      return newData;
+    });
+  };
 
-   return () => {
-     ws.disconnect();
-   };
- }, []);
+  useEffect(() => {
+    const ws = wsRef.current;
+    
+    const messageHandler = (message: any) => {
+      try {
+        const data = typeof message === 'string' ? JSON.parse(message) : message;
+        console.log('받은 메시지:', data);
 
- const handlePrevSlide = () => {
-   setCurrentSlide(prev => Math.max(0, prev - 1));
- };
+        // 배열 데이터 처리 (초기 데이터)
+        if (Array.isArray(data)) {
+          console.log('초기 데이터 처리:', data.length);
+          handleInitialData(data);
+        }
+        // 단일 데이터 업데이트 처리
+        else if (typeof data === 'object' && data.symbol) {
+          console.log('실시간 데이터 처리:', data);
+          handleStockData(data);
+        }
+        // 게임 종료 메시지 처리
+        else if (data === '게임이 종료되었습니다.') {
+          console.log('게임 종료');
+          setIsPlaying(false);
+        }
 
- const handleNextSlide = () => {
-   setCurrentSlide(prev => Math.min(prev + 1, availableStocks.length - 1));
- };
+      } catch (error) {
+        console.error('메시지 처리 중 에러:', error);
+      }
+    };
 
- const handlePlayClick = () => {
-   if (!isPlaying) {
-     wsRef.current.sendMessage({
-       action: "RESUME_GAME"
-     });
-   } else {
-     wsRef.current.sendMessage({
-       action: "PAUSE_GAME"
-     });
-   }
-   setIsPlaying(!isPlaying);
- };
+    ws.onMessage(messageHandler);
 
- if (loading) return <div>Loading...</div>;
- if (error) return <div>{error}</div>;
- if (availableStocks.length === 0) {
-   return <div>주식 데이터를 불러오는 중...</div>;
- }
+    console.log('WebSocket 연결 시도');
+    ws.connect().catch(error => {
+      console.error('WebSocket 연결 실패:', error);
+    });
+
+    return () => {
+      console.log('WebSocket 연결 종료');
+      ws.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log('현재 stockData:', stockData);
+    console.log('사용 가능한 주식:', availableStocks);
+  }, [stockData, availableStocks]);
+
+  const handlePrevSlide = () => {
+    setCurrentSlide(prev => Math.max(0, prev - 1));
+  };
+
+  const handleNextSlide = () => {
+    setCurrentSlide(prev => Math.min(prev + 1, availableStocks.length - 1));
+  };
+
+  const handlePlayClick = () => {
+    if (!isPlaying) {
+      wsRef.current.sendMessage({
+        action: "RESUME_GAME"
+      });
+    } else {
+      wsRef.current.sendMessage({
+        action: "PAUSE_GAME"
+      });
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  if (availableStocks.length === 0) {
+    return <div>주식 데이터를 불러오는 중...</div>;
+  }
 
  return (
   <Column>
@@ -374,16 +406,16 @@ export const AdvancedArticlePage: React.FC = () => {
   <ArticleContent>
     {selectedStock && availableStocks.find(s => s.id === selectedStock) && (
       <ArticleCard 
-        article={{
-          article_id: Number(articles[0]?.articleId),
-          stock_symbol: articles[0]?.stockSymbol || '',
-          mid_stock_id: articles[0]?.stock_Id || 0,
-          trend_prediction: articles[0]?.trendPrediction || '',
-          title: articles[0]?.title || '',
-          created_at: articles[0]?.createdAt || '',
-          content: articles[0]?.content || '',
-          duration: Number(articles[0]?.duration) || 0
-        }} 
+      article={{
+        article_id: Number(articles[0]?.articleId),
+        stock_symbol: articles[0]?.stockSymbol || '',
+        mid_stock_id: selectedStock || 0,
+        trend_prediction: articles[0]?.trendPrediction || '',
+        title: articles[0]?.stockName || '',
+        created_at: articles[0]?.createdAt || '',
+        content: articles[0]?.content || '',
+        duration: Number(articles[0]?.duration) || 0
+      }}
       />
     )}
   </ArticleContent>
