@@ -199,7 +199,7 @@ const QuizGraphPage: React.FC = () => {
   return (
     <PageContainer>
       <TopBar>
-        <OutButton onClick={() => navigate('/main')}>
+        <OutButton onClick={() => navigate('/')}>
           <img src="/img/out.png" alt="나가기" />
         </OutButton>
         <PointBadge/>

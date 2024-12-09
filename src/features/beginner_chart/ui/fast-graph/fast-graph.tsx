@@ -13,56 +13,6 @@ interface FastGraphProps {
   onChartClick: () => void;
 }
 
-const GraphContainer = styled.div`
-  width: 100%;
-  background: white;
-  padding: 5px;
-  margin-bottom: 20px;
-`;
-
-const GraphHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-`;
-
-const GraphTitle = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 20px;
-`;
-
-const StaminaIndicator = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #666;
-  font-size: 14px;
-
-  &::before {
-    content: '';
-    width: 8px;
-    height: 8px;
-    background-color: #f4a261;
-    border-radius: 50%;
-  }
-`;
-
-const Select = styled.select`
-  padding: 6px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
-  background: white;
-  color: #666;
-  outline: none;
-  font-size: 14px;
-  cursor: pointer;
-
-  &:hover {
-    border-color: #ccc;
-  }
-`;
 
 export const FastGraph: React.FC<FastGraphProps> = ({ data, onChartClick }) => {
   const [selectedDay, setSelectedDay] = React.useState('Last 7 days');
@@ -181,6 +131,57 @@ export const FastGraph: React.FC<FastGraphProps> = ({ data, onChartClick }) => {
     },
   };
 
+
+const GraphContainer = styled.div`
+width: 100%;
+background: white;
+padding: 5px;
+margin-bottom: 20px;
+`;
+
+const GraphHeader = styled.div`
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 5px;
+`;
+
+const GraphTitle = styled.div`
+display: flex;
+align-items: center;
+gap: 20px;
+`;
+
+const StaminaIndicator = styled.div`
+display: flex;
+align-items: center;
+gap: 4px;
+color: #666;
+font-size: 14px;
+
+&::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background-color: #f4a261;
+  border-radius: 50%;
+}
+`;
+
+const Select = styled.select`
+padding: 6px 12px;
+border: 1px solid #e0e0e0;
+border-radius: 20px;
+background: white;
+color: #666;
+outline: none;
+font-size: 14px;
+cursor: pointer;
+
+&:hover {
+  border-color: #ccc;
+}
+`;
   return (
     <GraphContainer>
       <GraphHeader>

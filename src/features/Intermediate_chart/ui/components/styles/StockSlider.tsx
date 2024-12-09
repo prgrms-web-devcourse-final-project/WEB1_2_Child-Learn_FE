@@ -516,11 +516,11 @@ const ArticleContent = styled.div`
 `;
 
 const Column = styled.div`
- font-size: 14px;  // 글자 크기 증가
+ font-size: 12px;  // 글자 크기 증가
   line-height: 1.8;
   color: #333;
-  width: 100%;  // 전체 너비 사용
-  padding: 0 16px;  // 좌우 패딩 추가
+  width: 120%;  // 전체 너비 사용
+  padding: 0 10px;  // 좌우 패딩 추가
 `;
 
 
@@ -612,7 +612,7 @@ const ArticleHeader = styled.div`
   text-align: center;
   border-bottom: 1px solid #e0e0e0;
   background: #ffffff;
-  position: relative;  // 추가
+  position: relative;  
 `;
 
 const HeaderTitle = styled.div`
