@@ -6,6 +6,7 @@ import { Notification } from '@/features/notification/model/types';
 import {
   useNotifications,
   useReceivedFriendRequests,
+  NOTIFICATION_KEYS,
 } from '@/features/notification/lib/queries';
 
 export const NotificationList = () => {
@@ -24,14 +25,16 @@ export const NotificationList = () => {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
+      // 즉시 UI 상태 업데이트
       const updatedNotification = {
         ...notification,
         status: 'ACCEPTED' as const,
       };
 
+      // 낙관적 업데이트
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => {
         if (!old) return old;
-        return {
+        const newData = {
           ...old,
           content: old.content.map((n: Notification) =>
             n.notificationId === notification.notificationId
@@ -39,14 +42,22 @@ export const NotificationList = () => {
               : n
           ),
         };
+        return newData;
       });
 
+      // 서버 요청 처리
       await respondToRequest.mutateAsync({
         requestId: request.id,
         status: 'ACCEPTED',
       });
+
+      // 다른 쿼리들의 무효화는 유지 (친구 목록 등이 업데이트 되어야 하므로)
+      queryClient.invalidateQueries({
+        queryKey: NOTIFICATION_KEYS.friendRequests,
+      });
     } catch (error) {
       console.error('친구 수락 실패:', error);
+      // 실패시에만 쿼리 무효화하여 원래 상태로 복구
       queryClient.invalidateQueries({
         queryKey: ['notifications', 'list', 0],
       });
@@ -63,14 +74,16 @@ export const NotificationList = () => {
         throw new Error('해당하는 친구 요청을 찾을 수 없습니다.');
       }
 
+      // 즉시 UI 상태 업데이트
       const updatedNotification = {
         ...notification,
         status: 'REJECTED' as const,
       };
 
+      // 낙관적 업데이트
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => {
         if (!old) return old;
-        return {
+        const newData = {
           ...old,
           content: old.content.map((n: Notification) =>
             n.notificationId === notification.notificationId
@@ -78,14 +91,22 @@ export const NotificationList = () => {
               : n
           ),
         };
+        return newData;
       });
 
+      // 서버 요청 처리
       await respondToRequest.mutateAsync({
         requestId: request.id,
         status: 'REJECTED',
       });
+
+      // 다른 쿼리들의 무효화는 유지
+      queryClient.invalidateQueries({
+        queryKey: NOTIFICATION_KEYS.friendRequests,
+      });
     } catch (error) {
       console.error('친구 거절 실패:', error);
+      // 실패시에만 쿼리 무효화
       queryClient.invalidateQueries({
         queryKey: ['notifications', 'list', 0],
       });
