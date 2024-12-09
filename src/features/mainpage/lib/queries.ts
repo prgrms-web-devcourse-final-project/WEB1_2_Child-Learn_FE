@@ -17,11 +17,9 @@ export const useAttendance = () => {
         }
         return checkAttendance(userId);
       },
-      onSuccess: async (data) => {
+      onSuccess: async () => {
         setIsAttendanceChecked(true);
-        showToast.success(
-          `출석체크 완료! ${data.currentPoints} 포인트가 적립되었습니다.`
-        );
+        showToast.success(`출석체크 완료! 포인트가 적립되었습니다.`);
         // userInfo만 갱신하고 다른 쿼리는 건들지 않음
         await queryClient.invalidateQueries({
           queryKey: ['userInfo'],
