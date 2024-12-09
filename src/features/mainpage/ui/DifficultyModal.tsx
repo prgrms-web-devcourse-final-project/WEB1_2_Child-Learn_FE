@@ -6,30 +6,21 @@ interface DifficultyModalProps {
   onClose: () => void;
   onSelect: (level: string) => void;
 }
+
 export const DifficultyModal = ({
   isOpen,
   onClose,
   onSelect,
 }: DifficultyModalProps) => {
-  if (!isOpen) return null; // 모달이 열려 있지 않으면 아무것도 렌더링하지 않음
+  if (!isOpen) return null;
 
   const navigate = useNavigate();
 
-  const checkPlayable = (level: string) => {
-    const hasPlayed = localStorage.getItem(`played_${level}`);
-    return !hasPlayed; // 플레이 기록이 없으면 true, 있으면 false
-  };
-
   const handleDifficultySelect = (level: string) => {
-    if (!checkPlayable(level)) {
-      alert('이미 플레이한 난이도입니다!');
-      return;
-    }
-
-    // 플레이 기록 저장
-    localStorage.setItem(`played_${level}`, 'false');
+    // 플레이 기록 저장 (기록 업데이트)
+    localStorage.setItem(`played_${level}`, 'true');
     onSelect(level);
-    
+
     switch (level) {
       case 'low':
         navigate('/begin-stocks');
@@ -57,7 +48,6 @@ export const DifficultyModal = ({
               key={level}
               onClick={() => handleDifficultySelect(level)}
               $level={level as 'low' | 'medium' | 'high'}
-              disabled={!checkPlayable(level)}
             >
               {level === 'low' ? '초급' : level === 'medium' ? '중급' : '고급'}
             </DifficultyButton>
@@ -88,7 +78,7 @@ const ModalContent = styled.div`
   width: 90%;
   max-width: 320px;
   position: relative;
-  padding-top: 38px; // 상단 패딩 추가
+  padding-top: 38px;
 `;
 
 const CloseButton = styled.button`
@@ -109,7 +99,7 @@ const CloseButton = styled.button`
 const ModalTitle = styled.h2`
   text-align: center;
   margin-bottom: 24px;
-  margin-top: 5px; // 상단 마진 추가
+  margin-top: 5px;
   font-size: 16px;
   font-weight: 700;
 `;
@@ -128,28 +118,22 @@ const DifficultyButton = styled.button<{
   border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
-  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: pointer;
   text-align: center;
-  background-color: ${({ $level, disabled }) =>
-    disabled 
-      ? '#cccccc'
-      : $level === 'low' 
-      ? '#9CDBA6' 
-      : $level === 'medium' 
-      ? '#50B498' 
-      : '#468585'};
-  color: ${props => (props.disabled ? '#666666' : 'white')};
-  opacity: ${props => (props.disabled ? 0.8 : 1)};
+  background-color: ${({ $level }) =>
+    $level === 'low' ? '#9CDBA6' : $level === 'medium' ? '#50B498' : '#468585'};
+  color: white;
+  opacity: 1;
   transition: all 0.2s ease;
 
   &:hover {
-    transform: ${props => (props.disabled ? 'none' : 'translateY(-2px)')};
-    box-shadow: ${props => (props.disabled ? 'none' : '0 4px 8px rgba(0, 0, 0, 0.1)')};
-    opacity: ${props => (props.disabled ? 0.8 : 0.9)};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0.9;
   }
 
   &:active {
-    transform: ${props => (props.disabled ? 'none' : 'translateY(0)')};
-    box-shadow: ${props => (props.disabled ? 'none' : '0 2px 4px rgba(0, 0, 0, 0.1)')};
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 `;

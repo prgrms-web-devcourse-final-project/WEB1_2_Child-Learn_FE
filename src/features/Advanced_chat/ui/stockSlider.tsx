@@ -155,7 +155,7 @@ const PlayButton = styled.button`
  height: 48px;
  border-radius: 50%;
  border: none;
- background: #1B63AB;
+ background: #ffffff;
  cursor: pointer;
  display: flex;
  align-items: center;
@@ -167,7 +167,7 @@ const PlayButton = styled.button`
  }
 
  &:hover {
-   background: #145293;
+   background: #ffffff;
  }
 `;
 
