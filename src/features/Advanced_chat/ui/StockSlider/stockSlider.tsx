@@ -19,7 +19,6 @@ import {
   Indicator
 } from './styled';
 
-// Custom Hook for Game Timer
 const useGameTimer = ({ 
   isPlaying, 
   onGameEnd 
@@ -29,7 +28,7 @@ const useGameTimer = ({
 }) => {
   const [gameTime, setGameTime] = useState(0);
   const lastUpdateTime = useRef<number | null>(null);
-  const MAX_GAME_TIME = 420; // 7 minutes in seconds
+  const MAX_GAME_TIME = 420; // 7 minutes
 
   useEffect(() => {
     let animationFrameId: number;
@@ -44,21 +43,17 @@ const useGameTimer = ({
           if (deltaTime >= 1) {
             setGameTime(prev => {
               const newTime = prev + deltaTime;
-              
               if (newTime >= MAX_GAME_TIME) {
                 onGameEnd?.();
                 return MAX_GAME_TIME;
               }
-              
               return newTime;
             });
-            
             lastUpdateTime.current = currentTime;
           }
         } else {
           lastUpdateTime.current = currentTime;
         }
-        
         animationFrameId = requestAnimationFrame(updateTimer);
       }
     };
@@ -103,67 +98,91 @@ export const StockSlider: React.FC = () => {
     isPlaying,
     onGameEnd: () => {
       setIsPlaying(false);
+      wsRef.current.sendMessage({
+        action: "END_GAME"
+      });
     }
   });
+
+  const processStockData = (data: any): StockPrice => {
+    return {
+      timestamp: new Date(data.timestamp * 1000).toISOString(),
+      price: Number(data.closePrice || 0),
+      open: Number(data.openPrice) || 0,
+      high: Number(data.highPrice) || 0,
+      low: Number(data.lowPrice) || 0,
+      close: Number(data.closePrice) || 0,
+      change: parseFloat(data.change) || 0,
+      volume: parseInt(data.volume) || 0
+    };
+  };
+
+  const handleStockData = (data: any) => {
+    if (!data?.symbol) {
+      console.warn('Invalid stock data received:', data);
+      return;
+    }
+
+    console.log('Processing stock data:', data);
+
+    setStockData(prevData => {
+      const newData = { ...prevData };
+      const processedPrice = processStockData(data);
+      
+      // 
+      newData[data.symbol] = [
+        processedPrice,
+        ...(newData[data.symbol] || [])
+      ].slice(0, 100);
+      
+      return newData;
+    });
+  };
 
   useEffect(() => {
     const ws = wsRef.current;
     
     const messageHandler = (message: any) => {
-      console.log('Received message:', message);
-      
-      switch (message.action) {
-        case 'REFERENCE_DATA':
-          if (message.data?.stocks) {
-            setAvailableStocks(message.data.stocks);
-          }
-          if (message.data) {
-            handleStockData(message.data);
-          }
-          break;
+      try {
+        const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message;
+        console.log('Received WebSocket message:', parsedMessage);
+        
+        switch (parsedMessage.action) {
+          case 'REFERENCE_DATA':
+            if (parsedMessage.data?.stocks) {
+              console.log('Setting available stocks:', parsedMessage.data.stocks);
+              setAvailableStocks(parsedMessage.data.stocks);
+              
+              // Initialize stockData with empty arrays for each stock
+              const initialStockData: Record<string, StockPrice[]> = {};
+              parsedMessage.data.stocks.forEach((stock: Stock) => {
+                initialStockData[stock.symbol] = [];
+              });
+              setStockData(initialStockData);
+            }
+            break;
 
-        case 'LIVE_DATA':
-          if (message.data) {
-            handleStockData(message.data);
-          }
-          break;
+          case 'LIVE_DATA':
+            if (parsedMessage.data) {
+              handleStockData(parsedMessage.data);
+            }
+            break;
 
-        case 'END_GAME':
-          setIsPlaying(false);
-          break;
+          case 'END_GAME':
+            setIsPlaying(false);
+            break;
+        }
+      } catch (error) {
+        console.error('Error processing message:', error);
       }
     };
 
-    const handleStockData = (data: any) => {
-      if (!data) return;
-      
-      setStockData(prevData => {
-        const newData = { ...prevData };
-        const newPrice = {
-          timestamp: new Date(data.timestamp * 1000).toISOString(),
-          price: data.closePrice,
-          open: data.openPrice,
-          high: data.highPrice,
-          low: data.lowPrice,
-          close: data.closePrice,
-          change: data.change || 0,
-          volume: data.volume || 0
-        };
-        
-        newData[data.symbol] = newData[data.symbol] 
-          ? [newPrice, ...newData[data.symbol]]
-          : [newPrice];
-        
-        return newData;
-      });
-    };
-
     ws.onMessage(messageHandler);
+    ws.connect().catch(console.error);
 
-    // START_GAME은 connect()시 자동으로 전송됨
-    ws.connect();
-
-    return () => ws.disconnect();
+    return () => {
+      ws.disconnect();
+    };
   }, []);
 
   const handlePrevSlide = () => {
@@ -175,6 +194,15 @@ export const StockSlider: React.FC = () => {
   };
 
   const handlePlayClick = () => {
+    if (!isPlaying) {
+      wsRef.current.sendMessage({
+        action: "RESUME_GAME"
+      });
+    } else {
+      wsRef.current.sendMessage({
+        action: "PAUSE_GAME"
+      });
+    }
     setIsPlaying(!isPlaying);
   };
 
@@ -204,7 +232,7 @@ export const StockSlider: React.FC = () => {
             <StockChart
               stockId={stock.id}
               title={stock.title}
-              data={stockData[stock.symbol] || []}
+              data={(stockData[stock.symbol] || []) as any}
               isSelected={selectedStock === stock.id}
               onClick={() => setSelectedStock(stock.id)}
               isPlaying={isPlaying}
@@ -241,14 +269,7 @@ export const StockSlider: React.FC = () => {
           onClose={() => setShowTradeModal(false)}
           stockName={availableStocks.find(s => s.id === selectedStock)?.title || ''}
           currentPrice={Number(stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || '']?.[0]?.close || '0')}
-          priceHistory={stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || '']?.map(price => ({
-            ...price,
-            price: Number(price.price),
-            open: Number(price.open),
-            high: Number(price.high),
-            low: Number(price.low),
-            close: Number(price.close)
-          })) || []}
+          priceHistory={stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || ''] || []}
           isPlaying={isPlaying}
         />
       )}
