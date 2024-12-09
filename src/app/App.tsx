@@ -43,6 +43,7 @@ function App() {
           pauseOnHover
           closeButton={false}
           transition={Slide}
+          limit={1}
         />
         <Layout>
           <Router />
