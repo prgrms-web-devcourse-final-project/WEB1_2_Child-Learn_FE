@@ -55,51 +55,42 @@ const OXQuizResultPage = () => {
   }, []);
 
   // 스타 표시 (완료된 문제 수를 기준으로)
-  const stars = Array(3)
-    .fill(null)
-    .map((_, index) => (index < completedQuizzes ? '★' : '☆'));
+  const stars = Array.from({ length: 3 }, (_, index) =>
+    index < completedQuizzes ? '/img/star.png' : '/img/star-empty.png'
+  );
 
   return (
-    <ResultPageContainer>
-      <ResultIconContainer>
-        <ResultIcon>✔️</ResultIcon>
-      </ResultIconContainer>
+    <Container>
+     <CheckImage src="/img/Check.png" alt="Check"/>
 
-      <StarsContainer>{stars.map((star, index) => <Star key={index}>{star}</Star>)}</StarsContainer>
-
+      <StarsContainer>
+        {stars.map((star, index) => (
+          <Star key={index} src={star} alt="Star" />
+        ))}
+      </StarsContainer>
       <PointsText>{totalPoints} Point를 획득하셨습니다!</PointsText>
 
       <NavigateButton onClick={() => navigate('/minigame')}>미니게임 페이지로 이동하기</NavigateButton>
-    </ResultPageContainer>
+    </Container>
   );
 };
 
 export default OXQuizResultPage;
 
-const ResultPageContainer = styled.div`
+const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 100vh;
-  background-color: #f8f9fa;
-  padding: 20px;
+  background-color: #f5f5f5;
+  padding-top: 200px; /* 상단 여백 추가 */
 `;
 
-const ResultIconContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100px;
-  height: 100px;
-  background-color: #d4edda;
-  border-radius: 50%;
+const CheckImage = styled.img`
+  width: 120px;
+  height: 120px;
   margin-bottom: 20px;
-`;
-
-const ResultIcon = styled.div`
-  font-size: 50px;
-  color: #155724;
 `;
 
 const StarsContainer = styled.div`
@@ -108,7 +99,7 @@ const StarsContainer = styled.div`
   margin-bottom: 20px;
 `;
 
-const Star = styled.div`
+const Star = styled.img`
   font-size: 30px;
   color: #ffc107;
   margin: 0 5px;

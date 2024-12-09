@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUserInfo } from '@/entities/User/lib/queries';
@@ -23,6 +23,9 @@ const OXQuizGamePage = () => {
   const { data: userInfo } = useUserInfo();
   const { oxQuizzes, currentIndex, fetchQuizzes, submitAnswer, result, loading } = useOXQuizStore();
   const navigate = useNavigate();
+  const [selectedAnswer, setSelectedAnswer] = useState<'O' | 'X' | null>(null); // 선택된 답
+  const [isConfirmed, setIsConfirmed] = useState(false); // 선택 완료 상태
+
 
   useEffect(() => {
     if (difficulty) {
@@ -33,11 +36,16 @@ const OXQuizGamePage = () => {
 
   const currentQuiz = oxQuizzes[currentIndex];
 
-  const handleAnswer = async (userAnswer: 'O' | 'X') => {
-    if (currentQuiz) {
-      console.log(`현재 문제 번호: ${currentIndex + 1} / 총 문제 수: ${oxQuizzes.length}`);
-      await submitAnswer(currentQuiz.oxQuizDataId, userAnswer);
-    } 
+  const handleSelectAnswer = (answer: 'O' | 'X') => {
+    setSelectedAnswer(answer);
+    setIsConfirmed(false); // 선택 완료 상태 초기화
+  };
+
+  const handleConfirmAnswer = async () => {
+    if (currentQuiz && selectedAnswer) {
+      await submitAnswer(currentQuiz.oxQuizDataId, selectedAnswer);
+      setIsConfirmed(true); // 선택 완료
+    }
   };
 
   const handleNextQuestion = () => {
@@ -53,6 +61,17 @@ const OXQuizGamePage = () => {
         currentIndex: state.currentIndex + 1,
         result: null, // 다음 문제로 넘어갈 때 결과 초기화
       }));
+      setSelectedAnswer(null); // 선택 상태 초기화
+    setIsConfirmed(false); // 선택 완료 초기화
+
+    }
+  };
+
+  const handleButtonClick = () => {
+    if (!isConfirmed) {
+      handleConfirmAnswer(); // 선택 완료
+    } else {
+      handleNextQuestion(); // 다음 문제로 이동
     }
   };
 
@@ -61,29 +80,43 @@ const OXQuizGamePage = () => {
 
   return (
     <PageContainer>
+      <Background />
       <ProgressBar>
         {oxQuizzes.map((_, index) => (
           <ProgressStep key={index} active={index <= currentIndex} />
         ))}
       </ProgressBar>
-      <QuestionContainer>
-        <Question>{currentQuiz.question}</Question>
-      </QuestionContainer>
-      {result === null ? (
+      {!isConfirmed && ( // 선택 완료 전까지만 문제를 보여줌
+        <QuestionContainer>
+          <Question>{currentQuiz.question}</Question>
+        </QuestionContainer>
+      )}
+      {!isConfirmed ? (
         <ButtonContainer>
-          <AnswerButton onClick={() => handleAnswer('O')}>O</AnswerButton>
-          <AnswerButton onClick={() => handleAnswer('X')}>X</AnswerButton>
+          <AnswerButton
+            onClick={() => handleSelectAnswer('O')}
+            selected={selectedAnswer === 'O'}
+          >
+            O
+          </AnswerButton>
+          <AnswerButton
+            onClick={() => handleSelectAnswer('X')}
+            selected={selectedAnswer === 'X'}
+          >
+            X
+          </AnswerButton>
         </ButtonContainer>
       ) : (
         <ResultContainer>
-          <ResultEmoji>{result.correct ? '😃' : '😢'}</ResultEmoji>
-          <ResultText>{result.correct ? '정답' : '오답'}</ResultText>
-          <Explanation>{result.explanation}</Explanation>
-           {/* 다음 문제로 이동 버튼은 답안 제출 후에만 표시 */}
-           {result !== null && (
-            <NextButton onClick={handleNextQuestion}>다음 문제 넘어가기</NextButton>
-          )}
+          <ResultEmoji>{result?.correct ? '😃' : '😢'}</ResultEmoji>
+          <ResultText>{result?.correct ? '정답' : '오답'}</ResultText>
+          <Explanation>{result?.explanation}</Explanation>
         </ResultContainer>
+      )}
+      {selectedAnswer && (
+        <NextButton onClick={handleButtonClick}>
+          {!isConfirmed ? '선택 완료' : '다음 문제 넘어가기'}
+        </NextButton>
       )}
     </PageContainer>
   );
@@ -93,6 +126,7 @@ export default OXQuizGamePage;
 
 // Styled Components
 const PageContainer = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -102,16 +136,26 @@ const PageContainer = styled.div`
   background-color: #f5f5f5;
 `;
 
+const Background = styled.div`
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 750px;
+  background-color: #def9c4;
+  z-index: 0;
+`;
+
 const ProgressBar = styled.div`
   display: flex;
   width: 100%;
-  max-width: 400px;
-  margin-bottom: 20px;
+  max-width: 200px;
+  margin: 10px 0;
 `;
 
 const ProgressStep = styled.div<{ active: boolean }>`
   flex: 1;
-  height: 8px;
+  height: 5px;
   margin: 0 5px;
   background-color: ${(props) => (props.active ? '#50b498' : '#ddd')};
   border-radius: 4px;
@@ -120,9 +164,11 @@ const ProgressStep = styled.div<{ active: boolean }>`
 const QuestionContainer = styled.div`
   flex: 1;
   display: flex;
+  position: absolute;
   align-items: center;
   justify-content: center;
   text-align: center;
+  top: 300px;
   margin: 20px 0;
 `;
 
@@ -135,18 +181,22 @@ const Question = styled.p`
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: space-around;
-  width: 100%;
-  max-width: 400px;
+  width: 80%;
+  position: absolute; /* 위치 조정을 위해 relative 추가 */
+  top: 620px;
+  z-index: 1; /* Background보다 위에 위치 */
 `;
 
-const AnswerButton = styled.button`
+const AnswerButton = styled.button<{ selected: boolean }>`
   flex: 1;
   padding: 20px;
-  margin: 0 10px;
+  margin: 0 5px;
+  width: 70px; /* 가로 길이를 제한 */
+  height: 120px; /* 세로 길이를 늘림 */
   font-size: 24px;
   font-weight: bold;
   color: #fff;
-  background-color: #50b498;
+  background-color: ${(props) => (props.selected ? '#3d937b' : '#50b498')};
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -157,11 +207,15 @@ const AnswerButton = styled.button`
 `;
 
 const ResultContainer = styled.div`
-  flex: 1;
+  position: absolute; /* QuestionContainer와 동일한 absolute 사용 */
+  top: 300px; /* QuestionContainer와 동일한 top 값 */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  width: 100%; /* 중앙 정렬 보장을 위해 추가 */
+  padding: 20px; /* 내용물 간 여유 공간 추가 */
 `;
 
 const ResultEmoji = styled.div`
@@ -184,12 +238,15 @@ const Explanation = styled.p`
 `;
 
 const NextButton = styled.button`
+  position: absolute; /* 위치를 고정하기 위해 absolute 사용 */
+  top: 780px;
   padding: 10px 20px;
+  width: 300px;
   font-size: 16px;
   color: #fff;
   background-color: #50b498;
   border: none;
-  border-radius: 10px;
+  border-radius: 50px;
   cursor: pointer;
 
   &:hover {
