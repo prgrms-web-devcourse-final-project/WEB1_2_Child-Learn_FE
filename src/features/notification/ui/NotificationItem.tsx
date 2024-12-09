@@ -1,8 +1,6 @@
 import styled from 'styled-components';
 import { Notification } from '@/features/notification/model/types';
 import { useDeleteNotification } from '@/features/notification/lib/queries';
-import { useSendFriendAcceptNotification } from '@/features/notification/lib/queries';
-import { useQueryClient } from '@tanstack/react-query';
 
 interface NotificationItemProps {
   notification: Notification;
@@ -15,10 +13,7 @@ export const NotificationItem = ({
   onAccept,
   onReject,
 }: NotificationItemProps) => {
-  const queryClient = useQueryClient();
   const { mutateAsync: deleteNotification } = useDeleteNotification();
-  const { mutateAsync: sendAcceptNotification } =
-    useSendFriendAcceptNotification();
 
   const handleAccept = async () => {
     if (
@@ -29,30 +24,9 @@ export const NotificationItem = ({
     }
 
     try {
-      // 먼저 로컬 상태 업데이트
-      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
-        ...old,
-        content: old.content.map((n: Notification) =>
-          n.notificationId === notification.notificationId
-            ? { ...n, status: 'ACCEPTED' }
-            : n
-        ),
-      }));
-
-      // 그 다음 서버 요청들 처리
       await onAccept(notification);
-      await sendAcceptNotification(notification.senderUsername);
     } catch (error) {
       console.error('친구 수락 실패:', error);
-      // 실패시만 원래 상태로 복구
-      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
-        ...old,
-        content: old.content.map((n: Notification) =>
-          n.notificationId === notification.notificationId
-            ? { ...n, status: undefined }
-            : n
-        ),
-      }));
     }
   };
 
@@ -65,29 +39,9 @@ export const NotificationItem = ({
     }
 
     try {
-      // 먼저 로컬 상태 업데이트
-      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
-        ...old,
-        content: old.content.map((n: Notification) =>
-          n.notificationId === notification.notificationId
-            ? { ...n, status: 'REJECTED' }
-            : n
-        ),
-      }));
-
-      // 그 다음 서버 요청 처리
       await onReject(notification);
     } catch (error) {
       console.error('친구 거절 실패:', error);
-      // 실패시만 원래 상태로 복구
-      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
-        ...old,
-        content: old.content.map((n: Notification) =>
-          n.notificationId === notification.notificationId
-            ? { ...n, status: undefined }
-            : n
-        ),
-      }));
     }
   };
 
