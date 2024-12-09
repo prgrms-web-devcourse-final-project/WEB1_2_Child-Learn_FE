@@ -6,7 +6,6 @@ import { useArticle } from '@/features/article/model/useArticle';
 import ArticleCard from '@/features/article/ui/ArticleCard';
 import styled from 'styled-components';
 import { Stock, StockPrice } from '@/features/Advanced_chat/types/stock';
-import { Article } from '@/features/article/types/articleTypes';  
 
 const ArticleContent = styled.div`
  padding: 20px;
@@ -376,26 +375,27 @@ export const AdvancedArticlePage: React.FC<AdvancedArticlePageProps> = ({ stockI
     )}
   </SlideContainer>
 
-  <ArticleContent>
-    {filteredArticles.map((article) => (
-      <Content key={article.articleId}>
-        {article && article.articleId && (
-          <ArticleCard 
-            article={{
-              article_id: Number(article.articleId),
-              stock_symbol: article.stockSymbol || '',
-              mid_stock_id: article.stock_Id || 0,
-              trend_prediction: article.trendPrediction || '',
-              title: article.title || '',
-              created_at: article.createdAt || '',
-              content: article.content || '',
-              duration: Number(article.duration)
-            }} 
-          />
-        )}
-      </Content>
-    ))}
-  </ArticleContent>
+ 
+<ArticleContent>
+  {filteredArticles.map((article) => (
+    <Content key={article.articleId}>  
+      {article && article.articleId && (  // articleId -> article_id로 변경
+        <ArticleCard 
+          article={{
+            article_id: Number(article.articleId),
+            stock_symbol: article.stockSymbol || '',  // stockSymbol -> stock_symbol로 변경
+            mid_stock_id: article.stock_Id || 0,  // stock_Id -> mid_stock_id로 변경
+            trend_prediction: article.trendPrediction || '',  // trendPrediction -> trend_prediction로 변경
+            title: article.title || '',
+            created_at: article.createdAt || '',  // createdAt -> created_at로 변경
+            content: article.content || '',
+            duration: Number(article.duration)
+          }} 
+        />
+      )}
+    </Content>
+  ))}
+</ArticleContent>
 </Column>
  );
 };

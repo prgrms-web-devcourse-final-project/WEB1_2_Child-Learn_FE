@@ -1,6 +1,10 @@
-// pages/TradePages/AdvancedTradePage/StockSlider.tsx
-import { StockSlider as AdvancedGameStockSlider } from '@/features/Advanced_chat/ui/StockSlider/stockSlider';
+import { AdvancedArticlePage} from '@/pages/article/AdvancedArticlePage';
 
-export const StockSlider: React.FC = () => {
-  return <AdvancedGameStockSlider />;
+interface AdvancedArticlePageProps {
+  stockId: number;  // string에서 number로 변경
+  stockName: string;
+}
+
+export const StockSlider: React.FC<AdvancedArticlePageProps> = ({ stockId, stockName }) => {
+  return <AdvancedArticlePage stockId={stockId} stockName={stockName} />;
 };

@@ -15,7 +15,7 @@ const AdvancedTradePage = () => {
         </OutButton>
         <PointBadge/>
       </HeaderWrapper>
-      <StockSlider />
+      <StockSlider stockId={1} stockName="삼성전자" />
     </PageContainer>
   );
 };
