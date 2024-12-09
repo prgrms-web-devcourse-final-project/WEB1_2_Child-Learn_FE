@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { friendApi } from '@/features/freind/api/friendApi';
 import { Friend } from '@/features/freind/model/types';
 import showToast from '@/shared/lib/toast';
+import { notificationApi } from '@/features/notification/api/notificationApi';
+import { Notification } from '@/features/notification/model/types';
 
 interface FriendListResponse {
   content: Friend[];
@@ -12,6 +14,13 @@ interface FriendListResponse {
   size: number;
   empty: boolean;
 }
+
+// NOTIFICATION_KEYS 상수 정의 추가
+export const NOTIFICATION_KEYS = {
+  all: ['notifications'] as const,
+  list: (page: number) => ['notifications', 'list', page] as const,
+  friendRequests: ['notifications', 'friendRequests', 'received'] as const,
+};
 
 export const FRIEND_KEYS = {
   all: ['friends'] as const,
@@ -48,18 +57,48 @@ export const useRespondToFriendRequest = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: friendApi.respondToFriendRequest,
-    onSuccess: (_, { status }) => {
-      queryClient.invalidateQueries({ queryKey: FRIEND_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      showToast.success(
-        status === 'ACCEPTED'
-          ? '친구 요청을 수락했습니다.'
-          : '친구 요청을 거절했습니다.'
-      );
+    mutationFn: async ({
+      requestId,
+      status,
+      senderUsername,
+    }: {
+      requestId: number;
+      status: 'ACCEPTED' | 'REJECTED';
+      notificationId: number;
+      senderUsername: string;
+    }) => {
+      await friendApi.respondToFriendRequest({ requestId, status });
+      if (status === 'ACCEPTED') {
+        await notificationApi.sendFriendAcceptNotification(senderUsername);
+      }
     },
-    onError: () => {
-      showToast.error('친구 요청 처리에 실패했습니다.');
+    onMutate: async ({ notificationId, status }) => {
+      await queryClient.cancelQueries({ queryKey: NOTIFICATION_KEYS.list(0) });
+      const previousNotifications = queryClient.getQueryData(
+        NOTIFICATION_KEYS.list(0)
+      );
+
+      queryClient.setQueryData(NOTIFICATION_KEYS.list(0), (old: any) => ({
+        ...old,
+        content: old.content.map((n: Notification) =>
+          n.notificationId === notificationId ? { ...n, status } : n
+        ),
+      }));
+
+      return { previousNotifications };
+    },
+    onError: (_, __, context) => {
+      if (context?.previousNotifications) {
+        queryClient.setQueryData(
+          NOTIFICATION_KEYS.list(0),
+          context.previousNotifications
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['notifications', 'friends'],
+      });
     },
   });
 };
