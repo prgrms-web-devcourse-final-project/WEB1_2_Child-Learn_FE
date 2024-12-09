@@ -302,6 +302,7 @@ return (
         created_at: currentArticle.createdAt || currentArticle.created_at || '',
         content: currentArticle.content || '',
         duration: Number(currentArticle.duration),
+        title: currentArticle.title || '',
         mid_stock_id: currentArticle.mid_stock_id || 0
       }} 
     />
