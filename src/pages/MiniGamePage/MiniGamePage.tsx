@@ -207,28 +207,30 @@ const MiniGamePage = () => {
         </GreetingContainer>
         <PointBadge />
       </Header>
-
+    
       {/* 메인 콘텐츠 */}
       <MainContent>
-        <AvatarCard
+      <AvatarCard
         onClick={() => navigate('/avatar')}
         />
         <ExchangeCard points={todayPoints} />
-
         <GameGrid> 
           {/* 낱말 퀴즈 */}
           <GameCard onClick={() => openModal('낱말 퀴즈')}>
+          <GameEmoji>📝</GameEmoji>
             <CardTitle>낱말 퀴즈</CardTitle>
             <CardPoint>100 Point</CardPoint>
             </GameCard>
           {/* OX 퀴즈 */}
           <GameCard onClick={() => openModal('OX 퀴즈')}>
+          <GameEmoji>⭕❌</GameEmoji>
             <CardTitle>OX 퀴즈</CardTitle>
             <CardPoint>100 Point</CardPoint>
           </GameCard>
 
           {/* 카드 뒤집기 */}
           <GameCard onClick={() => openModal('카드 뒤집기')}>
+          <GameEmoji>🃏</GameEmoji>
             <CardTitle>카드 뒤집기</CardTitle>
             <CardPoint>100 Point</CardPoint>
           </GameCard>
@@ -391,6 +393,7 @@ const GreetingContainer = styled.div`
 const MainContent = styled.main`
   padding: 20px;
   position: relative;
+  gap: 10px;
   & > * {
     position: relative;
     z-index: 1; // 모든 직접적인 자식 요소들에 z-index 적용
@@ -434,6 +437,15 @@ const GameCard = styled.div`
     font-size: 0.8rem;
     color: #666;
   }
+`;
+
+const GameEmoji = styled.div`
+  font-size: 48px; /* 이모지 크기 */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 한가운데 정렬 */
+  z-index: 1; /* 텍스트와 중첩되지 않도록 */
 `;
 
 const CardTitle = styled.h2`
@@ -496,7 +508,7 @@ const ModalContent = styled.div`
   padding: 20px;
   border-radius: 10px;
   width: 80%;
-  max-width: 400px;
+  max-width: 350px;
   text-align: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   z-index: 1010;
