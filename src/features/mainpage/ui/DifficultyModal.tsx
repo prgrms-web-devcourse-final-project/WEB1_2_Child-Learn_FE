@@ -1,4 +1,3 @@
-
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,23 +14,7 @@ export const DifficultyModal = ({
 }: DifficultyModalProps) => {
   const navigate = useNavigate();
 
-  const checkPlayable = (level: string) => {
-    const lastPlayTime = localStorage.getItem(`lastPlay_${level}`);
-    if (!lastPlayTime) return true;
-
-    const now = new Date().getTime();
-    const lastPlay = parseInt(lastPlayTime);
-    const hoursPassed = (now - lastPlay) / (1000 * 60 * 60);
-
-    return hoursPassed >= 24;
-  };
-
   const handleDifficultySelect = (level: string) => {
-    if (!checkPlayable(level)) {
-      return;
-    }
-
-    localStorage.setItem(`lastPlay_${level}`, new Date().getTime().toString());
     onSelect(level);
     
     switch (level) {
@@ -50,10 +33,6 @@ export const DifficultyModal = ({
 
   if (!isOpen) return null;
 
-  const isLowPlayable = checkPlayable('low');
-  const isMediumPlayable = checkPlayable('medium');
-  const isHighPlayable = checkPlayable('high');
-
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -65,21 +44,18 @@ export const DifficultyModal = ({
           <DifficultyButton
             onClick={() => handleDifficultySelect('low')}
             $level="low"
-            disabled={!isLowPlayable}
           >
             초급
           </DifficultyButton>
           <DifficultyButton
             onClick={() => handleDifficultySelect('medium')}
             $level="medium"
-            disabled={!isMediumPlayable}
           >
             중급
           </DifficultyButton>
           <DifficultyButton
             onClick={() => handleDifficultySelect('high')}
             $level="high"
-            disabled={!isHighPlayable}
           >
             고급
           </DifficultyButton>
@@ -109,7 +85,7 @@ const ModalContent = styled.div`
   width: 90%;
   max-width: 320px;
   position: relative;
-  padding-top: 38px;
+  padding-top: 38px; // 상단 패딩 추가
 `;
 
 const CloseButton = styled.button`
@@ -130,7 +106,7 @@ const CloseButton = styled.button`
 const ModalTitle = styled.h2`
   text-align: center;
   margin-bottom: 24px;
-  margin-top: 5px;
+  margin-top: 5px; // 상단 마진 추가
   font-size: 16px;
   font-weight: 700;
 `;
@@ -141,39 +117,27 @@ const ButtonGroup = styled.div`
   gap: 15px;
 `;
 
-const DifficultyButton = styled.button<{ 
-  $level: 'low' | 'medium' | 'high';
-  disabled: boolean;
-}>`
+const DifficultyButton = styled.button<{ $level: 'low' | 'medium' | 'high' }>`
   padding: 9px;
   border: none;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  cursor: pointer;
   text-align: center;
-  background-color: ${({ $level, disabled }) =>
-    disabled 
-      ? '#cccccc'
-      : $level === 'low' 
-      ? '#9CDBA6' 
-      : $level === 'medium' 
-      ? '#50B498' 
-      : '#468585'};
-  color: ${({ disabled }) => (disabled ? '#666666' : 'white')};
-  opacity: ${({ disabled }) => (disabled ? 0.8 : 1)};
+  background-color: ${({ $level }) =>
+    $level === 'low' ? '#9CDBA6' : $level === 'medium' ? '#50B498' : '#468585'};
+  color: white;
   transition: all 0.2s ease;
 
   &:hover {
-    transform: ${({ disabled }) => (disabled ? 'none' : 'translateY(-2px)')};
-    box-shadow: ${({ disabled }) => (disabled ? 'none' : '0 4px 8px rgba(0, 0, 0, 0.1)')};
-    opacity: ${({ disabled }) => (disabled ? 0.8 : 0.9)};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0.9;
   }
 
   &:active {
-    transform: ${({ disabled }) => (disabled ? 'none' : 'translateY(0)')};
-    box-shadow: ${({ disabled }) => (disabled ? 'none' : '0 2px 4px rgba(0, 0, 0, 0.1)')};
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 `;
-
-export default DifficultyModal;

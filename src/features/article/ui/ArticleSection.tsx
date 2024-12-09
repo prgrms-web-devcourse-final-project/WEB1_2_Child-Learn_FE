@@ -14,7 +14,11 @@ interface ArticleSectionProps {
 }
 
 export const ArticleSection: React.FC<ArticleSectionProps> = ({ type, graphComponent }) => {
-  const { articles, loading, error } = useArticle(type);
+  const { articles, loading, error } = useArticle(type) as { 
+    articles: Article[], 
+    loading: boolean, 
+    error: string | null 
+  };
 
   return (
     <SectionContainer>
