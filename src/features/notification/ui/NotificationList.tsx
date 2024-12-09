@@ -9,8 +9,8 @@ import {
 } from '@/features/notification/lib/queries';
 
 export const NotificationList = () => {
-  const queryClient = useQueryClient(); // 추가
-  const { data, isLoading } = useNotifications(0);
+  const queryClient = useQueryClient();
+  const { data } = useNotifications(0);
   const { data: receivedRequests } = useReceivedFriendRequests();
   const respondToRequest = useRespondToFriendRequest();
 
@@ -29,13 +29,20 @@ export const NotificationList = () => {
         status: 'ACCEPTED',
       });
 
-      // 상태 업데이트를 위해 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
+        ...old,
+        content: old.content.map((n: Notification) =>
+          n.notificationId === notification.notificationId
+            ? { ...n, status: 'ACCEPTED' }
+            : n
+        ),
+      }));
     } catch (error) {
       console.error('친구 수락 실패:', error);
     }
   };
 
+  // notification 전체를 받도록 수정
   const handleReject = async (notification: Notification) => {
     try {
       const request = receivedRequests?.find(
@@ -51,18 +58,20 @@ export const NotificationList = () => {
         status: 'REJECTED',
       });
 
-      // 상태 업데이트를 위해 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
+        ...old,
+        content: old.content.map((n: Notification) =>
+          n.notificationId === notification.notificationId
+            ? { ...n, status: 'REJECTED' }
+            : n
+        ),
+      }));
     } catch (error) {
       console.error('친구 거절 실패:', error);
     }
   };
 
-  if (isLoading && !data) {
-    return <LoadingContainer>로딩중...</LoadingContainer>;
-  }
-
-  if (!data?.content?.length) {
+  if (!data || !data.content) {
     return <EmptyMessage>알림이 없습니다.</EmptyMessage>;
   }
 
@@ -83,12 +92,6 @@ export const NotificationList = () => {
 const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
-`;
-
-const LoadingContainer = styled.div`
-  padding: 20px;
-  text-align: center;
-  color: #666;
 `;
 
 const EmptyMessage = styled.div`
