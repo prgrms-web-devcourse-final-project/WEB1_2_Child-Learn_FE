@@ -12,7 +12,7 @@ const mockArticles: Record<ArticleType, Array<{
   duration: number;
   title: string;
 }>> = {
-  MID: [], // 초기값으로 빈 배열 설정
+  MID: [], 
   ADVANCED: []
 };
 
