@@ -31,3 +31,14 @@ export interface Article {
   title: string;
   mid_stock_id: number;
 }
+
+export interface ApiArticle {
+  articleId: number;
+  stockSymbol: string;
+  trendPrediction: string;
+  content: string;
+  createdAt: string;
+  duration: number;
+  stock_Id?: number;  // 추가
+  title: string;      // 추가
+}
