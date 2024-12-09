@@ -3,19 +3,17 @@ import { useUserInfo } from '@/entities/User/lib/queries';
 import { flipCardApi } from '@/shared/api/minigames';
 import { wordQuizApi } from '@/shared/api/minigames';
 import { walletApi } from '@/shared/api/wallets';
-import { oxQuizApi } from '@/shared/api/minigames';
-import { PointTransaction } from '@/features/minigame/points/types/pointTypes';
-import useOXQuizStore from './OXQuizGamePage/store/useOXQuizStore';
+import { MiniGameTransaction, PointTransaction } from '@/features/minigame/points/types/pointTypes';
+import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
 import { useLotteryStore } from '@/app/providers/state/zustand/useLotteryStore';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { AvatarCard } from '@/features/minigame/ui/AvatarCard';
 import { ExchangeCard } from '@/features/minigame/ui/ExchangeCard';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const MiniGamePage = () => {
   const { data: userInfo, isLoading, isError } = useUserInfo();
-  const { setQuizzes } = useOXQuizStore();
   const {
     setLotteries,
     isPlayable: isLotteryPlayable,
@@ -39,9 +37,9 @@ const MiniGamePage = () => {
   });  
 
   const [oxQuizAvailability, setOxQuizAvailability] = useState({
-    easy: false,
-    medium: false,
-    hard: false,
+    isEasyPlayAvailable: true,
+    isNormalPlayAvailable: true,
+    isHardPlayAvailable: true,
   });
   
   const [loading, setLoading] = useState(true); // 로딩 상태 추가
@@ -136,37 +134,6 @@ const MiniGamePage = () => {
     fetchAvailability();
     fetchWordQuizAvailability();
   }, [isLoading, isError, userInfo, setLotteries]);
-
-  useEffect(() => {
-    const fetchOxQuizAvailability = async () => {
-      if (!userInfo || !userInfo.id) return;
-
-      try {
-        const difficulties: ('easy' | 'medium' | 'hard')[] = ['easy', 'medium', 'hard'];
-        const availability = {
-          easy: false,
-          medium: false,
-          hard: false,
-        };
-
-        for (const difficulty of difficulties) {
-          const response = await oxQuizApi.startQuiz(userInfo.id, difficulty);
-
-          if (response.length > 0 && response[0].oxQuizDataId !== null) {
-            // 플레이 가능한 경우
-            availability[difficulty] = true;
-            setQuizzes(difficulty, response);
-          }
-        }
-
-        setOxQuizAvailability(availability);
-      } catch (error) {
-        console.error('Failed to fetch OX quiz availability:', error);
-      }
-    };
-
-    fetchOxQuizAvailability();
-  }, [userInfo, setQuizzes]);
 
   const handleFlipCardPlay = async (difficulty: 'begin' | 'mid' | 'adv') => {
     if (isPlayable[difficulty]) {
@@ -349,21 +316,21 @@ const MiniGamePage = () => {
                 <ModalButton
                   difficulty="begin"
                   onClick={() => handleOxQuizPlay('begin')}
-                  disabled={!oxQuizAvailability.easy}
+                  disabled={!oxQuizAvailability.isEasyPlayAvailable}
                 >
                   쉬움
                 </ModalButton>
                 <ModalButton
                   difficulty="mid"
                   onClick={() => handleOxQuizPlay('mid')}
-                  disabled={!oxQuizAvailability.medium}
+                  disabled={!oxQuizAvailability.isNormalPlayAvailable}
                 >
                   보통
                 </ModalButton>
                 <ModalButton
                   difficulty="adv"
                   onClick={() => handleOxQuizPlay('adv')}
-                  disabled={!oxQuizAvailability.hard}
+                  disabled={!oxQuizAvailability.isHardPlayAvailable}
                 >
                   어려움
                 </ModalButton>
