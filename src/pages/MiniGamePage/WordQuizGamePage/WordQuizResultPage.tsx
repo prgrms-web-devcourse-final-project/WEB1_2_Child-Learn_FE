@@ -53,7 +53,7 @@ const WordQuizResultPage = () => {
     };
 
     processPoints();
-  }, [earnedPoints, userInfo]);
+  }, []);
 
   const handleNavigate = () => {
     resetQuiz(); // 퀴즈 상태 초기화

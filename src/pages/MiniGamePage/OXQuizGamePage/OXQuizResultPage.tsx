@@ -52,7 +52,7 @@ const OXQuizResultPage = () => {
     };
 
     processPoints();
-  }, [totalPoints, userInfo]);
+  }, []);
 
   // 스타 표시 (완료된 문제 수를 기준으로)
   const stars = Array(3)
