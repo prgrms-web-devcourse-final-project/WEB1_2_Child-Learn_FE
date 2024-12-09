@@ -1,15 +1,77 @@
-// QuizModal.tsx
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { baseApi } from '@/shared/api/base';
 
-
+interface StockPointResponse {
+  memberId: number;
+  currentPoints: number;
+  currentCoins: number;
+}
 
 interface QuizModalProps {
   isOpen: boolean;
   onClose: () => void;
   isCorrect: boolean;
   earnedPoints?: number;
+  userId: number;
 }
+
+const addStockPoints = async (userId: number): Promise<StockPointResponse> => {
+  const response = await baseApi.post('/wallet/stock', {
+    memberId: userId,
+    transactionType: 'EARN',
+    points: 100,
+    pointType: 'STOCK',
+    stockType: 'BEGIN',
+    stockName: '초급 주식 퀴즈'
+  });
+
+  return response.data;
+};
+
+const QuizModal: React.FC<QuizModalProps> = ({
+  isOpen,
+  onClose,
+  isCorrect,
+  earnedPoints = 0,
+  userId
+}) => {
+  const navigate = useNavigate();
+
+  const handleConfirm = async () => {
+    if (isCorrect) {
+      try {
+        const response = await addStockPoints(userId);
+        console.log('Points added:', response);
+      } catch (error) {
+        console.error('Error adding points:', error);
+      }
+    }
+    onClose();
+    navigate('/');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <ModalOverlay>
+      <ModalContent>
+        <ModalText>
+          {isCorrect ? '정답입니다!' : '내일 다시 도전해봐요!'}
+        </ModalText>
+        {isCorrect && earnedPoints > 0 && (
+          <PointText>
+            100 포인트를 획득했습니다!
+          </PointText>
+        )}
+        <ConfirmButton onClick={handleConfirm}>
+          확인
+        </ConfirmButton>
+      </ModalContent>
+    </ModalOverlay>
+  );
+};
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -59,34 +121,5 @@ const ConfirmButton = styled.button`
     background-color: #6db5a7;
   }
 `;
-
-const QuizModal: React.FC<QuizModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  isCorrect,
-  earnedPoints = 0
-}) => {
-  if (!isOpen) return null;
-
-  console.log('Modal Props:', { isCorrect, earnedPoints });
-
-  return (
-    <ModalOverlay>
-      <ModalContent>
-        <ModalText>
-          {isCorrect ? '정답입니다!' : '내일 다시 도전해봐요!'}
-        </ModalText>
-        {isCorrect && earnedPoints > 0 && (
-          <PointText>
-            100 포인트를 획득했습니다!
-          </PointText>
-        )}
-        <ConfirmButton onClick={onClose}>
-          확인
-        </ConfirmButton>
-      </ModalContent>
-    </ModalOverlay>
-  );
-};
 
 export default QuizModal;

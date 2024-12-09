@@ -1,4 +1,3 @@
-
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,17 +16,21 @@ export const DifficultyModal = ({
 
   const checkPlayable = (level: string) => {
     const lastPlayTime = localStorage.getItem(`lastPlay_${level}`);
+    console.log(`Checking ${level}:`, { lastPlayTime });
+    
     if (!lastPlayTime) return true;
 
     const now = new Date().getTime();
     const lastPlay = parseInt(lastPlayTime);
     const hoursPassed = (now - lastPlay) / (1000 * 60 * 60);
-
+    
+    console.log(`Hours passed for ${level}:`, hoursPassed);
     return hoursPassed >= 24;
   };
 
   const handleDifficultySelect = (level: string) => {
     if (!checkPlayable(level)) {
+      // alert('24시간 후에 다시 도전할 수 있습니다!');
       return;
     }
 
@@ -142,15 +145,14 @@ const ButtonGroup = styled.div`
 `;
 
 const DifficultyButton = styled.button<{ 
-  $level: 'low' | 'medium' | 'high';
-  disabled: boolean;
+  $level: 'low' | 'medium' | 'high'
 }>`
   padding: 9px;
   border: none;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${props => (props.disabled ? 'not-allowed' : 'pointer')};
   text-align: center;
   background-color: ${({ $level, disabled }) =>
     disabled 
@@ -160,19 +162,19 @@ const DifficultyButton = styled.button<{
       : $level === 'medium' 
       ? '#50B498' 
       : '#468585'};
-  color: ${({ disabled }) => (disabled ? '#666666' : 'white')};
-  opacity: ${({ disabled }) => (disabled ? 0.8 : 1)};
+  color: ${props => (props.disabled ? '#666666' : 'white')};
+  opacity: ${props => (props.disabled ? 0.8 : 1)};
   transition: all 0.2s ease;
 
   &:hover {
-    transform: ${({ disabled }) => (disabled ? 'none' : 'translateY(-2px)')};
-    box-shadow: ${({ disabled }) => (disabled ? 'none' : '0 4px 8px rgba(0, 0, 0, 0.1)')};
-    opacity: ${({ disabled }) => (disabled ? 0.8 : 0.9)};
+    transform: ${props => (props.disabled ? 'none' : 'translateY(-2px)')};
+    box-shadow: ${props => (props.disabled ? 'none' : '0 4px 8px rgba(0, 0, 0, 0.1)')};
+    opacity: ${props => (props.disabled ? 0.8 : 0.9)};
   }
 
   &:active {
-    transform: ${({ disabled }) => (disabled ? 'none' : 'translateY(0)')};
-    box-shadow: ${({ disabled }) => (disabled ? 'none' : '0 2px 4px rgba(0, 0, 0, 0.1)')};
+    transform: ${props => (props.disabled ? 'none' : 'translateY(0)')};
+    box-shadow: ${props => (props.disabled ? 'none' : '0 2px 4px rgba(0, 0, 0, 0.1)')};
   }
 `;
 
