@@ -1,4 +1,6 @@
-export type ArticleType = 'MID' | 'ADVANCED';
+export enum ArticleType {
+  ADVANCED = 'ADVANCED'
+}
 
 export interface ApiArticle {
   articleId: number;
@@ -39,4 +41,6 @@ export interface ApiArticle {
   content: string;
   createdAt: string;
   duration: number;
+  stock_Id?: number;  // 추가
+  title: string;      // 추가
 }
