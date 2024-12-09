@@ -1,4 +1,3 @@
-이거 마지막에 
 
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
