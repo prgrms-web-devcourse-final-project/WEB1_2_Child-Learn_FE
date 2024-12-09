@@ -19,11 +19,11 @@ export interface Stock {
 
 export interface StockPrice {
   timestamp: string;
-  price: string;
-  open: string;
-  high: string;
-  low: string;
-  close: string;
+  price: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
   change: number;
   volume: number;
 }
