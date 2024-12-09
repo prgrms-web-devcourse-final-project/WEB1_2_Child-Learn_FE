@@ -14,6 +14,8 @@ import { WarningModal } from '@/features/Intermediate_chart/ui/components/modals
 import { MidArticlePage } from '@/pages/article/MidArticlePage';
 import StockChart from '@/shared/ui/Intermediate/StockChat';
 import { MidStock } from '@/features/Intermediate_chart/model/types/stock';
+import ArticleCard from '@/features/article/ui/ArticleCard';
+
 
 interface TradeResult {
   success: boolean;
@@ -23,13 +25,22 @@ interface TradeResult {
   price: number;
   quantity: number;
   totalPrice: number;
+  earnedPoints?: number;  // Added for sell transactions
+  totalPoints?: number;   // Added for sell transactions
 }
-
 export interface MidArticlePageProps {
-  stockId: number;
-  stockName: string;
-  stockPrice: number;
-  content: any;
+  articleId: number;
+  stockSymbol: string;
+  trendPrediction: string;
+  content: string;
+  createdAt: string;
+  duration: string;
+  title: string;
+  article_id?: number;
+  stock_symbol?: string;
+  trend_prediction?: string;
+  created_at?: string;
+  mid_stock_id?: number;
 }
 
 // const formatDate = (date: Date): string => {
@@ -55,6 +66,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
   const [userPoints, setUserPoints] = useState(2000);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
   const [hasSoldToday, setHasSoldToday] = useState(false);
+  const [currentArticle, setCurrentArticle] = useState<MidArticlePageProps | null>(null);
  
   const {
     fetchStockPrices,
@@ -96,7 +108,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
       );  
   
       if ('warning' in result) {
-        await baseApi.post('mid-stocks/{midStockId}/buy', {
+        await baseApi.post(`/mid-stocks/${currentStock.midStockId}/buy`, {
           memberId: parseInt(localStorage.getItem('userId') || '0'),
           transactionType: "MID",
           points: tradePoint,
@@ -146,49 +158,65 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
     if (!currentStock || !currentStockPrices.length) return;
     
     try {
+      // 1. 먼저 현재 보유 주식 정보를 확인
+      const holdingInfo = await baseApi.get(`/mid-stocks/${currentStock.midStockId}/holdings`);
+      
+      // 2. executeTrade 호출 시 실제 보유 포인트 전달
       const result = await executeTrade(
         currentStock.midStockId,
-        0,
+        holdingInfo.data.points || 0,  // 실제 보유 포인트
         'sell',
         currentStock.midName
       );
       
       if ('earnedPoints' in result) {
-        await baseApi.post('mid-stocks/{midStockId}/sell', {
+        const response = await baseApi.post(`/mid-stocks/${currentStock.midStockId}/sell`, {
           memberId: parseInt(localStorage.getItem('userId') || '0'),
           transactionType: "MID",
-          points: result.earnedPoints ?? 0,
+          points: result.earnedPoints,  // 이제 undefined가 될 수 없음
           pointType: "STOCK",
           stockType: "MID",
-          stockName: currentStock.midName
+          stockName: currentStock.midName,
+          holdingPoints: holdingInfo.data.points  // 보유 포인트 정보 추가
         });
+  
+        const { earnedPoints, totalPoints } = response.data;
   
         setTradeResult({
           success: true,
           message: '매도 완료',
           tradeType: 'sell',
           stockName: currentStock.midName,
-          totalPrice: result.earnedPoints ?? 0,
+          totalPrice: totalPoints,
           price: currentStockPrices[0]?.avgPrice || 0,
-          quantity: Math.floor(result.earnedPoints ?? 0 / (currentStockPrices[0]?.avgPrice || 1))
+          quantity: Math.floor(totalPoints / (currentStockPrices[0]?.avgPrice || 1)),
+          earnedPoints,
+          totalPoints
         });
   
-        setUserPoints(prev => prev + (result.earnedPoints ?? 0));
+        setUserPoints(prev => prev + totalPoints);
         setShowSellModal(false);
         setShowResultModal(true);
         setHasSoldToday(true);
       }
     } catch (error: any) {
       console.error('매도 처리 중 에러:', error);
+      
+      // 에러 메시지를 더 구체적으로 처리
+      const errorMessage = error.response?.data?.message || error.message || '매도 처리 중 오류가 발생했습니다.';
+      
       setTradeResult({
         success: false,
-        message: error.message,
+        message: errorMessage,
         tradeType: 'sell',
         stockName: currentStock.midName,
         totalPrice: 0,
         price: currentStockPrices[0]?.avgPrice || 0,
-        quantity: Math.floor(0 / (currentStockPrices[0]?.avgPrice || 1))
+        quantity: 0,
+        earnedPoints: 0,
+        totalPoints: 0
       });
+      
       setShowSellModal(false);
       setShowResultModal(true);
     }
@@ -260,17 +288,26 @@ return (
                     </HeaderDate>
                   </ArticleHeader>
                   <ArticleContent>
-                    <Column>
-                      <MidArticlePage 
-                        // articleId:
-                        // stockSymbol:
-                        // trendPrediction:
-                        // content: 
-                        // createdAt: 
-                        // duration: 
-                         // 백으로 넘어오는 데이터 
-                      />
-                    </Column>
+                  <Column>
+  <MidArticlePage 
+    stockId={currentStock.midStockId}
+    stockName={currentStock.midName}
+  />
+  {currentArticle && currentArticle.article_id && (
+    <ArticleCard 
+      article={{
+        article_id: Number(currentArticle.article_id),
+        stock_symbol: currentArticle.stockSymbol || currentArticle.stock_symbol || '',
+        trend_prediction: currentArticle.trendPrediction || currentArticle.trend_prediction || '',
+        created_at: currentArticle.createdAt || currentArticle.created_at || '',
+        content: currentArticle.content || '',
+        duration: Number(currentArticle.duration),
+        title: currentArticle.title || '',
+        mid_stock_id: currentArticle.mid_stock_id || 0
+      }} 
+    />
+  )}
+                </Column>
                   </ArticleContent>
                 </ArticleInner>
               </ArticleContainer>
@@ -284,7 +321,7 @@ return (
       isOpen={showBuyModal}
       onClose={() => setShowBuyModal(false)}
       onConfirm={async (tradePoint: number) => {
-        await handleBuyTrade(tradePoint);  // tradePoint만 전달
+        await handleBuyTrade(tradePoint);  
       }}
       stockId={currentStock?.midStockId || 0}
       stockName={currentStock?.midName || ''}
@@ -472,17 +509,20 @@ const ArticleSubtitle = styled.p`
 
 const ArticleContent = styled.div`
  background: #ffffff;
- padding: 24px 20px;
- display: grid;
- grid-template-columns: 1fr 1fr;
- gap: 24px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;  
+  width: 100%;  
 `;
 
 const Column = styled.div`
- font-size: 10px;
- line-height: 1.8;
- color: #333;
+ font-size: 14px;  // 글자 크기 증가
+  line-height: 1.8;
+  color: #333;
+  width: 100%;  // 전체 너비 사용
+  padding: 0 16px;  // 좌우 패딩 추가
 `;
+
 
 const NavigationButton = styled(Button)<{ $show?: boolean }>`
  position: absolute;

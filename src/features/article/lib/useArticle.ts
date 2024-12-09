@@ -1,9 +1,9 @@
-// lib/useArticle.ts
+// useArticle.ts
 import { useState, useEffect } from 'react';
-import { Article, ArticleType } from '../types/articleTypes';
+import { ArticleType, Article } from '../types/articleTypes';
 import { baseApi } from '@/shared/api/base';
 
-export const useArticle = (type: ArticleType) => {
+export function useArticle(type: ArticleType) {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -12,16 +12,10 @@ export const useArticle = (type: ArticleType) => {
     const fetchArticles = async () => {
       try {
         setLoading(true);
-        // URL 확인 및 Authorization 헤더 추가
-        const response = await baseApi.get(`/adv/aricles/${type}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}` // token이 localStorage에 저장되어 있다고 가정
-          }
-        });
-        console.log('API Response:', response); // 응답 확인용
+        const response = await baseApi.get(`/articles/${type}`);
         setArticles(response.data);
       } catch (err) {
-        console.error('Error fetching articles:', err); // 에러 로깅
+        console.error('Error fetching articles:', err);
         setError('기사를 불러오는데 실패했습니다.');
       } finally {
         setLoading(false);
@@ -31,5 +25,6 @@ export const useArticle = (type: ArticleType) => {
     fetchArticles();
   }, [type]);
 
-  return { articles, loading, error };
-};
+  return { articles, loading, error } as { articles: Article[], loading: boolean, error: string | null };
+}
+

@@ -102,17 +102,6 @@ export const BuyModal: React.FC<BuyModalProps> = ({
             <S.Label>현재가</S.Label>
             <div>{currentPrice.toLocaleString()}P</div>
           </S.FormGroup>
-
-          <S.FormGroup>
-            <S.Label>수량</S.Label>
-            <S.Input
-              type="text"
-              value={quantity}
-              onChange={handleQuantityChange}
-              placeholder="수량을 입력하세요"
-            />
-          </S.FormGroup>
-
           <S.FormGroup>
             <S.Label>투자 포인트</S.Label>
             <S.Input
