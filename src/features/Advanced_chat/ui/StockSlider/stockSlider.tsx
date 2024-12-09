@@ -19,7 +19,6 @@ import {
   Indicator
 } from './styled';
 
-// Custom Hook for Game Timer
 const useGameTimer = ({ 
   isPlaying, 
   onGameEnd 
@@ -103,68 +102,118 @@ export const StockSlider: React.FC = () => {
     isPlaying,
     onGameEnd: () => {
       setIsPlaying(false);
+      wsRef.current.sendMessage({
+        action: "END_GAME"
+      });
     }
   });
+
+  const processStockData = (data: any): StockPrice => {
+    return {
+      timestamp: new Date().toISOString(),
+      price: String(data.closePrice || 0),
+      open: String(data.openPrice || 0),
+      high: String(data.highPrice || 0),
+      low: String(data.lowPrice || 0),
+      close: String(data.closePrice || 0),
+      change: 0,
+      volume: 0
+    };
+  };
+
+  const handleInitialData = (data: any[]) => {
+    // 심볼별로 데이터 그룹화
+    const groupedData: Record<string, StockPrice[]> = {};
+    const uniqueStocks = new Set<string>();
+
+    data.forEach(item => {
+      uniqueStocks.add(item.symbol);
+      if (!groupedData[item.symbol]) {
+        groupedData[item.symbol] = [];
+      }
+      groupedData[item.symbol].push(processStockData(item));
+    });
+
+    // 사용 가능한 주식 목록 설정
+    const stocks = Array.from(uniqueStocks).map(symbol => ({
+      id: symbol === 'AAPL' ? 1 : 2,
+      symbol: symbol,
+      title: data.find(item => item.symbol === symbol)?.name || symbol
+    }));
+
+    console.log('그룹화된 데이터:', groupedData);
+    console.log('사용 가능한 주식:', stocks);
+
+    setAvailableStocks(stocks);
+    setStockData(groupedData);
+  };
+
+  const handleStockData = (data: any) => {
+    if (!data?.symbol) {
+      console.warn('유효하지 않은 주식 데이터:', data);
+      return;
+    }
+
+    setStockData(prevData => {
+      const newData = { ...prevData };
+      const processedPrice = processStockData(data);
+      
+      newData[data.symbol] = [
+        processedPrice,
+        ...(prevData[data.symbol] || [])
+      ].slice(0, 100);
+      
+      console.log(`${data.symbol} 데이터 업데이트:`, newData[data.symbol]);
+      return newData;
+    });
+  };
 
   useEffect(() => {
     const ws = wsRef.current;
     
     const messageHandler = (message: any) => {
-      console.log('Received message:', message);
-      
-      switch (message.action) {
-        case 'REFERENCE_DATA':
-          if (message.data?.stocks) {
-            setAvailableStocks(message.data.stocks);
-          }
-          if (message.data) {
-            handleStockData(message.data);
-          }
-          break;
+      try {
+        const data = typeof message === 'string' ? JSON.parse(message) : message;
+        console.log('받은 메시지:', data);
 
-        case 'LIVE_DATA':
-          if (message.data) {
-            handleStockData(message.data);
-          }
-          break;
-
-        case 'END_GAME':
+        // 배열 데이터 처리 (초기 데이터)
+        if (Array.isArray(data)) {
+          console.log('초기 데이터 처리:', data.length);
+          handleInitialData(data);
+        }
+        // 단일 데이터 업데이트 처리
+        else if (typeof data === 'object' && data.symbol) {
+          console.log('실시간 데이터 처리:', data);
+          handleStockData(data);
+        }
+        // 게임 종료 메시지 처리
+        else if (data === '게임이 종료되었습니다.') {
+          console.log('게임 종료');
           setIsPlaying(false);
-          break;
-      }
-    };
+        }
 
-    const handleStockData = (data: any) => {
-      if (!data) return;
-      
-      setStockData(prevData => {
-        const newData = { ...prevData };
-        const newPrice = {
-          timestamp: new Date(data.timestamp * 1000).toISOString(),
-          price: data.closePrice,
-          open: data.openPrice,
-          high: data.highPrice,
-          low: data.lowPrice,
-          close: data.closePrice,
-          change: data.change || 0,
-          volume: data.volume || 0
-        };
-        
-        newData[data.symbol] = newData[data.symbol] 
-          ? [newPrice, ...newData[data.symbol]]
-          : [newPrice];
-        
-        return newData;
-      });
+      } catch (error) {
+        console.error('메시지 처리 중 에러:', error);
+      }
     };
 
     ws.onMessage(messageHandler);
 
-    // START_GAME은 connect()시 자동으로 전송됨
-    ws.connect();
+    console.log('WebSocket 연결 시도');
+    ws.connect().catch(error => {
+      console.error('WebSocket 연결 실패:', error);
+    });
 
-    return () => ws.disconnect();
+    return () => {
+      console.log('WebSocket 연결 종료');
+      ws.disconnect();
+    };
   }, []);
+
+  useEffect(() => {
+    console.log('현재 stockData:', stockData);
+    console.log('사용 가능한 주식:', availableStocks);
+  }, [stockData, availableStocks]);
 
   const handlePrevSlide = () => {
     setCurrentSlide(prev => Math.max(0, prev - 1));
@@ -175,6 +224,15 @@ export const StockSlider: React.FC = () => {
   };
 
   const handlePlayClick = () => {
+    if (!isPlaying) {
+      wsRef.current.sendMessage({
+        action: "RESUME_GAME"
+      });
+    } else {
+      wsRef.current.sendMessage({
+        action: "PAUSE_GAME"
+      });
+    }
     setIsPlaying(!isPlaying);
   };
 
@@ -199,18 +257,21 @@ export const StockSlider: React.FC = () => {
       </NavigationButton>
 
       <ChartGrid style={{ transform: `translateX(-${currentSlide * 25}%)` }}>
-        {availableStocks.map((stock) => (
-          <ChartItem key={stock.id}>
-            <StockChart
-              stockId={stock.id}
-              title={stock.title}
-              data={stockData[stock.symbol] || []}
-              isSelected={selectedStock === stock.id}
-              onClick={() => setSelectedStock(stock.id)}
-              isPlaying={isPlaying}
-            />
-          </ChartItem>
-        ))}
+        {availableStocks.map((stock) => {
+          console.log(`${stock.symbol} 차트 데이터:`, stockData[stock.symbol]);
+          return (
+            <ChartItem key={stock.id}>
+              <StockChart
+                stockId={stock.id}
+                title={stock.title}
+                data={stockData[stock.symbol] || []}
+                isSelected={selectedStock === stock.id}
+                onClick={() => setSelectedStock(stock.id)}
+                isPlaying={isPlaying}
+              />
+            </ChartItem>
+          );
+        })}
       </ChartGrid>
 
       <NavigationButton 
@@ -241,14 +302,7 @@ export const StockSlider: React.FC = () => {
           onClose={() => setShowTradeModal(false)}
           stockName={availableStocks.find(s => s.id === selectedStock)?.title || ''}
           currentPrice={Number(stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || '']?.[0]?.close || '0')}
-          priceHistory={stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || '']?.map(price => ({
-            ...price,
-            price: Number(price.price),
-            open: Number(price.open),
-            high: Number(price.high),
-            low: Number(price.low),
-            close: Number(price.close)
-          })) || []}
+          priceHistory={stockData[availableStocks.find(s => s.id === selectedStock)?.symbol || ''] || []}
           isPlaying={isPlaying}
         />
       )}

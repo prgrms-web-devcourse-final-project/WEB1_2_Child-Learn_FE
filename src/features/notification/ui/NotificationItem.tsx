@@ -21,11 +21,15 @@ export const NotificationItem = ({
     useSendFriendAcceptNotification();
 
   const handleAccept = async () => {
-    try {
-      await onAccept(notification);
-      await sendAcceptNotification(notification.senderUsername);
+    if (
+      notification.status === 'ACCEPTED' ||
+      notification.status === 'REJECTED'
+    ) {
+      return;
+    }
 
-      // 로컬 상태 즉시 업데이트
+    try {
+      // 먼저 로컬 상태 업데이트
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
         ...old,
         content: old.content.map((n: Notification) =>
@@ -34,18 +38,34 @@ export const NotificationItem = ({
             : n
         ),
       }));
+
+      // 그 다음 서버 요청들 처리
+      await onAccept(notification);
+      await sendAcceptNotification(notification.senderUsername);
     } catch (error) {
       console.error('친구 수락 실패:', error);
-      // 에러 발생 시 상태 복구
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'list', 0] });
+      // 실패시만 원래 상태로 복구
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
+        ...old,
+        content: old.content.map((n: Notification) =>
+          n.notificationId === notification.notificationId
+            ? { ...n, status: undefined }
+            : n
+        ),
+      }));
     }
   };
 
   const handleReject = async () => {
-    try {
-      await onReject(notification);
+    if (
+      notification.status === 'ACCEPTED' ||
+      notification.status === 'REJECTED'
+    ) {
+      return;
+    }
 
-      // 로컬 상태 즉시 업데이트
+    try {
+      // 먼저 로컬 상태 업데이트
       queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
         ...old,
         content: old.content.map((n: Notification) =>
@@ -54,10 +74,20 @@ export const NotificationItem = ({
             : n
         ),
       }));
+
+      // 그 다음 서버 요청 처리
+      await onReject(notification);
     } catch (error) {
       console.error('친구 거절 실패:', error);
-      // 에러 발생 시 상태 복구
-      queryClient.invalidateQueries({ queryKey: ['notifications', 'list', 0] });
+      // 실패시만 원래 상태로 복구
+      queryClient.setQueryData(['notifications', 'list', 0], (old: any) => ({
+        ...old,
+        content: old.content.map((n: Notification) =>
+          n.notificationId === notification.notificationId
+            ? { ...n, status: undefined }
+            : n
+        ),
+      }));
     }
   };
 

@@ -190,7 +190,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     ),
     tooltip: {
       enabled: true,
-      custom: function({ seriesIndex, dataPointIndex, w }) {
+      custom: function({ seriesIndex, dataPointIndex, }) {
         const data = orderBookData[dataPointIndex];
         return `
           <div class="custom-tooltip">
