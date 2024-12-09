@@ -96,7 +96,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
       );  
   
       if ('warning' in result) {
-        await baseApi.post('/wallet/stock', {
+        await baseApi.post('mid-stocks/{midStockId}/buy', {
           memberId: parseInt(localStorage.getItem('userId') || '0'),
           transactionType: "MID",
           points: tradePoint,
@@ -154,7 +154,7 @@ const StockSlider: React.FC<{ stocks: MidStock[] }> = ({ stocks }) => {
       );
       
       if ('earnedPoints' in result) {
-        await baseApi.post('/wallet/stock', {
+        await baseApi.post('mid-stocks/{midStockId}/sell', {
           memberId: parseInt(localStorage.getItem('userId') || '0'),
           transactionType: "MID",
           points: result.earnedPoints ?? 0,
