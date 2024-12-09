@@ -259,15 +259,18 @@ const ItemPrice = styled.span`
 `;
 
 const CoinIcon = styled.img`
-  width: 30px; /* 아이콘 크기 */
+ width: 30px; /* 아이콘 크기 */
   height: 30px;
   margin-right: 5px; /* 숫자와 아이콘 사이의 간격 */
+  vertical-align: middle; /* 텍스트와 수직 정렬 */
+  margin-top: 5px; /* 아이콘을 아래로 약간 내림 */
 `;
 
 const ItemDescription = styled.p`
   font-size: 14px;
   text-align: left;
   margin-left: 20px;
+  margin-right: 20px;
   margin-top: 20px;
   color: #666;
 `;
