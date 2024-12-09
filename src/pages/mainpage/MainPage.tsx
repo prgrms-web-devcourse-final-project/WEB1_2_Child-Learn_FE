@@ -11,7 +11,7 @@ import { DifficultyModal } from '@/features/mainpage/ui/DifficultyModal';
 
 const MainPage = () => {
   const navigate = useNavigate();
-  const { data: userInfo, isLoading } = useUserInfo();
+  const { data: userInfo } = useUserInfo();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -65,7 +65,11 @@ const MainPage = () => {
           {/* 환영 메시지 & 포인트 */}
           <WelcomeSection>
             <WelcomeText>
-              반가워요, {userInfo?.username || '사용자'} 님! 😊
+              <Greeting>반가워요,</Greeting>
+              <Username>
+                <span>{userInfo?.username || '사용자'} 님!</span>
+                <UserIcon src="/img/flower.png" alt="꽃" />
+              </Username>
             </WelcomeText>
             <PointBadge />
           </WelcomeSection>
@@ -154,10 +158,30 @@ const WelcomeSection = styled.div`
   z-index: 1;
 `;
 
-const WelcomeText = styled.h1`
+const WelcomeText = styled.div`
+  color: #181818;
+  line-height: 1.5;
+  margin-left: 10px;
+`;
+
+const Greeting = styled.span`
+  display: block;
+  font-size: 17px;
+  font-weight: 500;
+`;
+
+const Username = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 5px; // 닉네임과 이미지 사이 간격
   font-size: 20px;
   font-weight: 700;
-  color: #333;
+`;
+
+const UserIcon = styled.img`
+  width: 30px; // 이미지 크기 조절
+  height: 30px;
+  object-fit: contain;
 `;
 
 const MenuGrid = styled.div`
