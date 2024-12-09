@@ -171,14 +171,6 @@ const MiniGamePage = () => {
     const handleOxQuizPlay = async (difficulty: 'begin' | 'mid' | 'adv') => {
       navigate(`/ox-quiz/${difficulty}`);
     };
-  
-  // 로또(숫자를 맞혀라) 플레이 핸들러
-  const handleLotteryPlay = () => {
-    if (isLotteryPlayable()) {
-      setLotteryLastPlayedDate(new Date());
-      navigate('/lottery');
-    }
-  };
 
   const openModal = (game: string) => {
     setSelectedGame(game);
@@ -217,22 +209,19 @@ const MiniGamePage = () => {
         <GameGrid> 
           {/* 낱말 퀴즈 */}
           <GameCard onClick={() => openModal('낱말 퀴즈')}>
-          <GameEmoji>📝</GameEmoji>
+          <GameImage src="/img/book.png" alt="낱말 퀴즈" />
             <CardTitle>낱말 퀴즈</CardTitle>
-            <CardPoint>100 Point</CardPoint>
             </GameCard>
           {/* OX 퀴즈 */}
           <GameCard onClick={() => openModal('OX 퀴즈')}>
-          <GameEmoji>⭕❌</GameEmoji>
+          <GameImage src="/img/Check.png" alt="OX 퀴즈" />
             <CardTitle>OX 퀴즈</CardTitle>
-            <CardPoint>100 Point</CardPoint>
           </GameCard>
 
           {/* 카드 뒤집기 */}
           <GameCard onClick={() => openModal('카드 뒤집기')}>
-          <GameEmoji>🃏</GameEmoji>
+          <GameImage src="/img/puzzle.png" alt="카드 뒤집기" />
             <CardTitle>카드 뒤집기</CardTitle>
-            <CardPoint>100 Point</CardPoint>
           </GameCard>
 
           {/* 로또 */}
@@ -241,7 +230,6 @@ const MiniGamePage = () => {
       <LockIcon src="/img/lock.png" alt="잠김" />
     </LockOverlay>
     <CardTitle>숫자를 맞혀라!</CardTitle>
-    <CardPoint>10~1000 Point</CardPoint>
   </GameCard>
         </GameGrid>
       </MainContent>
@@ -361,10 +349,10 @@ const Header = styled.header`
   position: relative;
   width: 100%;
   display: flex;
-  padding: 10px 20px;
+  padding: 10px 10px;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 `;
 
 const GreetingContainer = styled.div`
@@ -403,7 +391,7 @@ const MainContent = styled.main`
 const GameGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* 카드 크기에 맞게 고정 */
-  gap: 20px; /* 피그마의 카드 간격에 맞게 조정 */
+  gap: 10px; /* 피그마의 카드 간격에 맞게 조정 */
   justify-content: center; /* 화면 중앙 정렬 */
 `;
 
@@ -439,8 +427,10 @@ const GameCard = styled.div`
   }
 `;
 
-const GameEmoji = styled.div`
-  font-size: 48px; /* 이모지 크기 */
+const GameImage = styled.img`
+  width: 80; /* 이모지 크기 */
+  height: 80px;
+  object-fit: contain; /* 이미지 비율 유지 */
   position: absolute;
   top: 50%;
   left: 50%;
@@ -458,16 +448,6 @@ const CardTitle = styled.h2`
   margin: 0; /* 불필요한 여백 제거 */
 `;
 
-const CardPoint = styled.p`
-  font-size: 14px;
-  color: #666;
-  margin: 0; /* 불필요한 여백 제거 */
-  position: absolute;
-  bottom: 10px; /* CardTitle 위에 위치하도록 조정 */
-  left: 10px; /* 좌측 여백 CardTitle과 동일 */
-  text-align: left;
-`;
-
 const LockOverlay = styled.div`
   position: absolute;
   top: 0;
@@ -479,7 +459,8 @@ const LockOverlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 2; /* 카드 내용 위에 표시 */
-  border-radius: 10px; /* GameCard의 border-radius와 동일 */
+   border-radius: inherit; /* GameCard의 border-radius와 동일 */
+  box-sizing: border-box; /* 크기를 정확히 맞추기 위해 사용 */
 `;
 
 const LockIcon = styled.img`
