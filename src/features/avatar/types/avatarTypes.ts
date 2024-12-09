@@ -1,11 +1,16 @@
+import { Item } from "./itemTypes";
 // 아바타 상태
+export interface AvatarResponseDto {
+  memberId: number;
+  hat: any;
+  pet: any;
+  background: any;
+}
+
+// Avatar 타입
 export interface Avatar {
-    avatar_id: number;
-    member_id: number;
-    cur_background?: string; // 현재 배경
-    cur_pet?: string;        // 현재 펫
-    cur_hat?: string;        // 현재 모자
-    pre_background?: string; // 프리셋 배경
-    pre_pet?: string;        // 프리셋 펫
-    pre_hat?: string;        // 프리셋 모자
-  }
+  memberId: number; // 회원 ID
+  hat: Item | null; // 장착된 모자
+  pet: Item | null; // 장착된 펫
+  background: Item | null; // 장착된 배경
+}

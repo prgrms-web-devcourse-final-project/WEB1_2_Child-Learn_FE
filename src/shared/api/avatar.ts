@@ -1,128 +1,80 @@
 import { baseApi } from "./base";
-
-export interface Avatar {
-  id: number;
-  memberId: number;
-  hat: Item | null;
-  pet: Item | null;
-  background: Item | null;
-}
-
-export interface Item {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: "hat" | "pet" | "background";
-  isEquipped: boolean;
-}
+import { EquipRequestDto, EquipResponseDto } from "@/features/avatar/types/equipTypes";
+import { Item } from "@/features/avatar/types/itemTypes";
+import { ReadRequestDto, ReadResponseDto } from "@/features/avatar/types/readTypes";
+import { RemoveRequestDto, RemoveResponseDto } from "@/features/avatar/types/removeTypes";
+import { PurchaseRequestDto, PurchaseResponseDto } from "@/features/avatar/types/purchaseTypes";
 
 export const avatarApi = {
-  // 아바타 데이터 조회
-  getAvatar: async (): Promise<Avatar> => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await baseApi.get(`/member/avatar/read`, {
-        headers: {
-          Authorization: `Bearer ${token}`, // JWT 인증
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Failed to fetch avatar data:", error);
-      throw error;
-    }
-  },
 
   // 아이템 구매
-  purchaseItem: async (itemId: number): Promise<{ message: string }> => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await baseApi.post(
-        `/member/avatar/purchase`,
-        { itemId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // JWT 인증
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Failed to purchase item:", error);
-      throw error;
-    }
+  purchaseItem: async (dto: PurchaseRequestDto): Promise<PurchaseResponseDto> => {
+    const response = await baseApi.post(
+      `/member/avatar/purchase`,
+      dto,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data; // PurchaseResponseDto 반환
   },
 
   // 아이템 장착
-  equipItem: async (
-    memberId: number,
-    itemId: number
-  ): Promise<{ message: string }> => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await baseApi.post(
-        `/member/avatar/isEquipped`,
-        { memberId, itemId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // JWT 인증
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Failed to equip item:", error);
-      throw error;
-    }
+  equipItem: async (dto: EquipRequestDto): Promise<EquipResponseDto> => {
+    const response = await baseApi.post(
+      `/member/avatar/isEquipped`,
+      dto,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data; // EquipResponseDto 반환
   },
 
   // 아이템 해제
-  unequipItem: async (itemId: number): Promise<{ message: string }> => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await baseApi.post(
-        `/member/avatar/remove`,
-        { itemId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // JWT 인증
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Failed to unequip item:", error);
-      throw error;
-    }
+  removeItem: async (dto: RemoveRequestDto): Promise<RemoveResponseDto> => {
+    const response = await baseApi.post(
+      `/member/avatar/remove`,
+      dto,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data; // RemoveResponseDto 반환
   },
 
-  // 아이템 등록
-  registerItem: async (item: {
-    name: string;
-    description: string;
-    price: number;
-    category: "hat" | "pet" | "background";
-  }): Promise<{ message: string }> => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await baseApi.post(
-        `/member/avatar/register`,
-        item,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // JWT 인증
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Failed to register item:", error);
-      throw error;
-    }
+  // 아이템 조회
+  readItem: async (dto: ReadRequestDto): Promise<ReadResponseDto> => {
+    const response = await baseApi.post(
+      `/member/avatar/read`,
+      dto,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data; // ReadResponseDto 반환
   },
+
+  getAllItems: async (): Promise<
+  (Item & { isPurchased: boolean; isEquipped: boolean })[]
+> => {
+  const response = await baseApi.get(`/member/avatar/read-all`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  });
+  return response.data; // 모든 아이템 리스트 반환 (구매 및 장착 여부 포함)
+},
 };

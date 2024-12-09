@@ -1,10 +1,11 @@
 import { create } from "zustand";
-import { Avatar } from '../types/avatarTypes'
+import { Avatar } from "../types/avatarTypes";
+import { Item } from "../types/itemTypes";
 
 interface AvatarState {
-  avatar: Avatar | null;
+  avatar: Avatar | null; // 아바타 상태
   setAvatar: (avatar: Avatar | ((prevAvatar: Avatar | null) => Avatar)) => void;
-  updateAvatarItem: (itemType: "background" | "pet" | "hat", itemName: string) => void;
+  updateAvatarItem: (itemType: "background" | "pet" | "hat", item: Item) => void; // 아이템 업데이트
 }
 
 export const useAvatarStore = create<AvatarState>((set) => ({
@@ -17,17 +18,13 @@ export const useAvatarStore = create<AvatarState>((set) => ({
           : avatarOrUpdater; // 객체 업데이트
       return { avatar: newAvatar };
     }),
-  updateAvatarItem: (itemType, itemName) =>
+  updateAvatarItem: (itemType, item) =>
     set((state) => {
       if (!state.avatar) return state;
       return {
         avatar: {
           ...state.avatar,
-          [itemType === "background"
-            ? "cur_background"
-            : itemType === "pet"
-            ? "cur_pet"
-            : "cur_hat"]: itemName,
+          [itemType]: item,
         },
       };
     }),
