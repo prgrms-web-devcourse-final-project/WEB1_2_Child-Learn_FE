@@ -30,9 +30,11 @@ const CardContainer = styled.div`
   background-color: #4fae94; // 메인 배경색
   border-radius: 16px; // 둥근 모서리
   padding: 16px;
+  margin-bottom: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 130px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // 그림자
   position: relative;
   overflow: hidden;

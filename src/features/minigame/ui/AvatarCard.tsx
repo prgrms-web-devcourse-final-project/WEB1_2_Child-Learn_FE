@@ -24,12 +24,12 @@ const CardContainer = styled.div`
   background-color: #50b498;
   padding: 24px 20px;
   border-radius: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  height: 150px; // min-height 대신 height로 고정
+  height: 130px; // min-height 대신 height로 고정
   box-sizing: border-box; // padding이 height에 포함되도록
 `;
 
@@ -76,7 +76,7 @@ const ActionButton = styled.button`
   font-weight: 700;
   cursor: pointer;
   width: 100%;
-  margin-top: 30px; // 40px에서 축소
+  margin-top: 10px; // 40px에서 축소
   transition: opacity 0.2s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 

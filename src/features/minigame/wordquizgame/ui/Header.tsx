@@ -40,12 +40,14 @@ const HeaderContainer = styled.div`
   width: 100%;
   max-width: 390px;
   height: 40px;
+  margin: 0 auto;
   position: relative; /* 아이콘의 위치 조정 */
 `;
 
 const TimerContainer = styled.div`
   position: absolute;
   top: 30px;
+  display: flex;
   justify-content: center;
 `;
 
