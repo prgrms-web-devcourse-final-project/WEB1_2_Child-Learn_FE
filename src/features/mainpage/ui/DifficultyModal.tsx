@@ -27,7 +27,7 @@ export const DifficultyModal = ({
     }
 
     // 플레이 기록 저장
-    localStorage.setItem(`played_${level}`, 'true');
+    localStorage.setItem(`played_${level}`, 'false');
     onSelect(level);
     
     switch (level) {

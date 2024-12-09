@@ -7,6 +7,7 @@ import ArticleCard from '@/features/article/ui/ArticleCard';
 import styled from 'styled-components';
 import { Stock, StockPrice } from '@/features/Advanced_chat/types/stock';
 import { Article } from '@/features/article/types/articleTypes';  
+import { StockSlider } from '@/pages/TradePages/AdvancedTradePage/StockSlider';
 
 const ArticleContent = styled.div`
  padding: 20px;
@@ -375,7 +376,7 @@ export const AdvancedArticlePage: React.FC<AdvancedArticlePageProps> = ({ stockI
       />
     )}
   </SlideContainer>
-
+<StockSlider/>
   <ArticleContent>
     {filteredArticles.map((article) => (
       <Content key={article.articleId}>

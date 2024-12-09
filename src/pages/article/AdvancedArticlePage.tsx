@@ -36,5 +36,3 @@ export const AdvancedArticlePage = ({ stockId, stockName }: AdvancedArticlePageP
     </ArticleContent>
   );
 };
-
-// ADVANCED

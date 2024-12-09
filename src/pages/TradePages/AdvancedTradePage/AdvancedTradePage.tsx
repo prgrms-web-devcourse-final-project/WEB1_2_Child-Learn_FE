@@ -1,9 +1,8 @@
 // pages/TradePages/AdvancedTradePage/AdvancedTradePage.tsx
-import { useNavigate } from 'react-router-dom';
-import { StockSlider } from '@/pages/TradePages/AdvancedTradePage/StockSlider'; // 경로 수정
+import { useNavigate } from 'react-router-dom';// 경로 수정
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { PageContainer, HeaderWrapper, OutButton } from './AdvancedTradeStyled';
-
+import { StockSlider } from '@/pages/TradePages/AdvancedTradePage/StockSlider';
 const AdvancedTradePage = () => {
   const navigate = useNavigate();
 
