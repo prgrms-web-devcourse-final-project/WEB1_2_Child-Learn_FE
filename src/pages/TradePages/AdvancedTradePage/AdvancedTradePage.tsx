@@ -4,12 +4,7 @@ import { StockSlider } from '@/pages/TradePages/AdvancedTradePage/StockSlider'; 
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { PageContainer, HeaderWrapper, OutButton } from './AdvancedTradeStyled';
 
-interface AdvancedArticlePageProps {
-  stockId: string;
-  stockName: string;
-}
-
-const AdvancedTradePage: React.FC<AdvancedArticlePageProps> = ({ stockId, stockName }) => {
+const AdvancedTradePage = () => {
   const navigate = useNavigate();
 
   return (
@@ -20,7 +15,7 @@ const AdvancedTradePage: React.FC<AdvancedArticlePageProps> = ({ stockId, stockN
         </OutButton>
         <PointBadge/>
       </HeaderWrapper>
-      <StockSlider stockId={stockId} stockName={stockName} />
+      <StockSlider />
     </PageContainer>
   );
 };
