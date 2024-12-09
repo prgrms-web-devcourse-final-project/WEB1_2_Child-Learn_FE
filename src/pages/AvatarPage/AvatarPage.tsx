@@ -5,6 +5,7 @@ import { useAvatarStore } from "@/features/avatar/model/avatarStore";
 import { useItemStore } from "@/features/avatar/model/itemStore";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "@/app/providers/state/zustand/userStore";
+import { avatarApi } from "@/shared/api/avatar";
 import AvatarPreview from "@/features/avatar/ui/AvatarPreview";
 import ItemGrid from "@/features/avatar/ui/ItemGrid";
 import Tabs from "@/features/avatar/ui/Tabs";
@@ -13,46 +14,43 @@ import Modal from "@/features/avatar/ui/Modal";
 function AvatarPage() {
   const { data: userInfo, isLoading, error } = useUserInfo();
   const { avatar, setAvatar } = useAvatarStore();
-  const { marketItems, fetchMarketItems } = useItemStore();
+  const { marketItems } = useItemStore();
   const { gameCount } = useUserStore();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<"BACKGROUND" | "PET" | "HAT">("BACKGROUND");
-  const [isRestrictedModalOpen, setIsRestrictedModalOpen] = useState(false);
-
-   // 페이지 접근 제약 조건 확인
-  /*
-  useEffect(() => {
-    if (gameCount < 5) {
-      setIsRestrictedModalOpen(true); // 모달 열기
-    }
-  }, [gameCount]);
-  */
-
-  // API로부터 데이터 가져오기
-  useEffect(() => {
-    fetchMarketItems(); // 아이템 목록 가져오기
-  }, [fetchMarketItems]);
-
-  // 아바타 초기 데이터 설정
-  useEffect(() => {
-    if (userInfo) {
-      setAvatar((prevAvatar) => ({
-        memberId: userInfo.id, // 유저 ID
-        background: marketItems.find((item) => item.category === "BACKGROUND" && item.purchased) || null,
-        pet: marketItems.find((item) => item.category === "PET" && item.purchased) || null,
-        hat: marketItems.find((item) => item.category === "HAT" && item.purchased) || null,
-      }));
-    }
-  }, [userInfo, marketItems, setAvatar]);  
+  const [activeTab, setActiveTab] = useState<"background" | "pet" | "hat">("background");
+  const [isRestrictedModalOpen, setIsRestrictedModalOpen] = useState(false); 
 
   if (isLoading) return <div>Loading...</div>;
   if (error || !userInfo) return <div>Error loading user info.</div>;
 
-  const filteredItems = marketItems.filter((item) => item.category === activeTab);
+   // 페이지 접근 제약 조건 확인
+   /*
+   useEffect(() => {
+    if (gameCount < 5) {
+      setIsRestrictedModalOpen(true); // 모달 열기
+    }
+  }, [gameCount]);
+    */
 
-  // 모달 확인 버튼 클릭 핸들러
-  const handleRestrictedModalClose = () => {
+  // 초기 데이터 설정
+  useEffect(() => {
+    setAvatar({
+      avatar_id: 1,
+      member_id: userInfo.id,
+      cur_background: avatar?.cur_background || undefined,
+      cur_pet: avatar?.cur_pet || undefined,
+      cur_hat: avatar?.cur_hat || undefined,
+      pre_background: avatar?.pre_background || undefined,
+      pre_pet: avatar?.pre_pet || undefined,
+      pre_hat: avatar?.pre_hat || undefined,
+    });
+  }, [setAvatar]);
+
+  const filteredItems = marketItems.filter((item) => item.prd_type === activeTab);
+
+   // 모달 확인 버튼 클릭 핸들러
+   const handleRestrictedModalClose = () => {
     setIsRestrictedModalOpen(false); // 모달 닫기
     navigate(-1); // 이전 페이지로 이동
   };
@@ -61,7 +59,7 @@ function AvatarPage() {
     <Container>
       <Title>내 캐릭터 꾸미기</Title>
       <AvatarPreviewWrapper>
-        <AvatarPreview />
+      <AvatarPreview />
       </AvatarPreviewWrapper>
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
       <Divider />
@@ -69,13 +67,13 @@ function AvatarPage() {
       <Footer>더 많은 아이템이 추가될 예정입니다!</Footer>
       {isRestrictedModalOpen && (
         <Modal
-          title={
-            <>
-              [초급] 난이도의<br />
-              모의투자를 5회 이상<br />
-              진행해야 이용하실 수 있습니다.
-            </>
-          }
+        title={
+          <>
+            [초급] 난이도의<br />
+            모의투자를 5회 이상<br />
+            진행해야 이용하실 수 있습니다.
+          </>
+        }
           onClose={handleRestrictedModalClose}
         />
       )}
