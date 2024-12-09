@@ -39,6 +39,4 @@ export interface ApiArticle {
   content: string;
   createdAt: string;
   duration: number;
-  stock_Id?: number;  // 추가
-  title: string;      // 추가
 }
