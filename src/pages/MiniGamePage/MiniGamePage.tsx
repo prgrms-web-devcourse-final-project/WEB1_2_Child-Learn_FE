@@ -209,18 +209,18 @@ const MiniGamePage = () => {
         <GameGrid> 
           {/* 낱말 퀴즈 */}
           <GameCard onClick={() => openModal('낱말 퀴즈')}>
-          <GameEmoji>📝</GameEmoji>
+          <GameImage src="/img/book.png" alt="낱말 퀴즈" />
             <CardTitle>낱말 퀴즈</CardTitle>
             </GameCard>
           {/* OX 퀴즈 */}
           <GameCard onClick={() => openModal('OX 퀴즈')}>
-          <GameEmoji>⭕❌</GameEmoji>
+          <GameImage src="/img/Check.png" alt="OX 퀴즈" />
             <CardTitle>OX 퀴즈</CardTitle>
           </GameCard>
 
           {/* 카드 뒤집기 */}
           <GameCard onClick={() => openModal('카드 뒤집기')}>
-          <GameEmoji>🃏</GameEmoji>
+          <GameImage src="/img/puzzle.png" alt="카드 뒤집기" />
             <CardTitle>카드 뒤집기</CardTitle>
           </GameCard>
 
@@ -427,8 +427,10 @@ const GameCard = styled.div`
   }
 `;
 
-const GameEmoji = styled.div`
-  font-size: 48px; /* 이모지 크기 */
+const GameImage = styled.img`
+  width: 80; /* 이모지 크기 */
+  height: 80px;
+  object-fit: contain; /* 이미지 비율 유지 */
   position: absolute;
   top: 50%;
   left: 50%;
@@ -457,7 +459,8 @@ const LockOverlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 2; /* 카드 내용 위에 표시 */
-  border-radius: 10px; /* GameCard의 border-radius와 동일 */
+   border-radius: inherit; /* GameCard의 border-radius와 동일 */
+  box-sizing: border-box; /* 크기를 정확히 맞추기 위해 사용 */
 `;
 
 const LockIcon = styled.img`
