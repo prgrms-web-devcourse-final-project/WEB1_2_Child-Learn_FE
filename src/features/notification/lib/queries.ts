@@ -91,10 +91,11 @@ export const useRespondToFriendRequest = () => {
       await friendApi.respondToFriendRequest({ requestId, status });
     },
     onSuccess: () => {
+      // NOTIFICATION_KEYS.all 쿼리 무효화를 제거하고 friendRequests만 무효화
       queryClient.invalidateQueries({
         queryKey: NOTIFICATION_KEYS.friendRequests,
       });
-      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
+      // queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all }); // 이 줄을 제거
     },
     onError: () => {
       console.error('친구 요청 처리 실패');
