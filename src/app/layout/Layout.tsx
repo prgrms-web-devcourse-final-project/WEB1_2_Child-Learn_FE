@@ -20,6 +20,7 @@ const HIDDEN_HEADER_PATHS = [
   '/avatar',
   '/auth/find-id',
   '/notifications',
+  '*',
 ];
 
 // GNB를 숨길 페이지 경로들
@@ -52,7 +53,10 @@ const SHOW_BACK_BUTTON_PATHS = [
 ];
 
 // BackButton을 숨길 페이지 경로 추가
-const HIDDEN_BACK_BUTTON_PATHS = [/^\/word-quiz\/result\/[^/]+$/, /^\/ox-quiz\/result\/[^/]+$/,];
+const HIDDEN_BACK_BUTTON_PATHS = [
+  /^\/word-quiz\/result\/[^/]+$/,
+  /^\/ox-quiz\/result\/[^/]+$/,
+];
 
 // 정확한 경로 매칭을 위한 함수
 const isExactPath = (currentPath: string, targetPath: string | RegExp) => {

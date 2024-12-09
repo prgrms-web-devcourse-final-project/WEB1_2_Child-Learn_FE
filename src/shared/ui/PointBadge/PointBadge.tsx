@@ -18,7 +18,7 @@ export const PointBadge: React.FC<PointBadgeProps> = ({ className }) => {
   return (
     <Container className={className}>
       <PointIconWrapper>
-        <PointIcon src="/img/coins.png" alt="포인트" />
+        <PointIcon src="/img/dollar.png" alt="포인트" />
       </PointIconWrapper>
       {formatPoints(userInfo?.currentPoints)}
     </Container>

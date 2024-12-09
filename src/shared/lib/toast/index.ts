@@ -1,4 +1,4 @@
-import { toast, ToastOptions } from 'react-toastify';
+import { toast, ToastOptions, Slide } from 'react-toastify';
 
 const commonOptions: ToastOptions = {
   position: 'top-center',
@@ -8,6 +8,7 @@ const commonOptions: ToastOptions = {
   pauseOnHover: true,
   draggable: false,
   closeButton: false,
+  transition: Slide,
 };
 
 const showToast = {
@@ -15,18 +16,21 @@ const showToast = {
     toast.error(message, {
       ...commonOptions,
       ...options,
+      toastId: 'error',
     });
   },
   success: (message: string, options?: ToastOptions) => {
     toast.success(message, {
       ...commonOptions,
       ...options,
+      toastId: 'success',
     });
   },
   info: (message: string, options?: ToastOptions) => {
     toast.info(message, {
       ...commonOptions,
       ...options,
+      toastId: 'info',
     });
   },
 };

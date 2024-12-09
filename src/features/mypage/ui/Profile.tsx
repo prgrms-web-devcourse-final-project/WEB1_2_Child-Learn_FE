@@ -75,7 +75,7 @@ const ProfileInfo = styled.div`
 `;
 
 const Username = styled.h2`
-  font-size: 35px;
+  font-size: 28px;
   font-weight: 500;
   margin: 0;
   color: #181818;
