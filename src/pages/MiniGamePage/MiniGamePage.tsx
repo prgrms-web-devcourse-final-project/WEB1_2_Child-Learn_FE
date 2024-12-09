@@ -3,13 +3,12 @@ import { useUserInfo } from '@/entities/User/lib/queries';
 import { flipCardApi } from '@/shared/api/minigames';
 import { wordQuizApi } from '@/shared/api/minigames';
 import { walletApi } from '@/shared/api/wallets';
-import { MiniGameTransaction, PointTransaction } from '@/features/minigame/points/types/pointTypes';
-import { useWordQuizStore } from '@/features/minigame/wordquizgame/model/wordQuizStore';
+import { PointTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useLotteryStore } from '@/app/providers/state/zustand/useLotteryStore';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { AvatarCard } from '@/features/minigame/ui/AvatarCard';
 import { ExchangeCard } from '@/features/minigame/ui/ExchangeCard';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const MiniGamePage = () => {
@@ -220,33 +219,28 @@ const MiniGamePage = () => {
           {/* 낱말 퀴즈 */}
           <GameCard onClick={() => openModal('낱말 퀴즈')}>
             <CardTitle>낱말 퀴즈</CardTitle>
-            <p>100 Point</p>
-          </GameCard>
-
+            <CardPoint>100 Point</CardPoint>
+            </GameCard>
           {/* OX 퀴즈 */}
           <GameCard onClick={() => openModal('OX 퀴즈')}>
             <CardTitle>OX 퀴즈</CardTitle>
-            <p>0~100 Point</p>
+            <CardPoint>100 Point</CardPoint>
           </GameCard>
 
           {/* 카드 뒤집기 */}
           <GameCard onClick={() => openModal('카드 뒤집기')}>
             <CardTitle>카드 뒤집기</CardTitle>
-            <p>100 Point</p>
+            <CardPoint>100 Point</CardPoint>
           </GameCard>
 
           {/* 로또 */}
-          <GameCard
-            onClick={() => isLotteryPlayable() && handleLotteryPlay()}
-            style={
-              !isLotteryPlayable()
-                ? { backgroundColor: 'gray', cursor: 'not-allowed' }
-                : {}
-            }
-          >
-            <CardTitle>숫자를 맞혀라!</CardTitle>
-            <p>10~1000 Point</p>
-          </GameCard>
+          <GameCard>
+    <LockOverlay>
+      <LockIcon src="/img/lock.png" alt="잠김" />
+    </LockOverlay>
+    <CardTitle>숫자를 맞혀라!</CardTitle>
+    <CardPoint>10~1000 Point</CardPoint>
+  </GameCard>
         </GameGrid>
       </MainContent>
 
@@ -419,8 +413,8 @@ const GameCard = styled.div`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start; /* 왼쪽 정렬 */
+  justify-content: flex-end; /* 아래쪽으로 정렬 */
   text-align: center;
   position: relative;
   cursor: pointer; /* 클릭 가능 표시 */
@@ -446,6 +440,40 @@ const CardTitle = styled.h2`
   font-size: 16px;
   font-weight: bold;
   color: #468585;
+  position: absolute; /* 위치 지정 */
+  bottom: 10px; /* 카드 맨 밑에서 10px 위로 */
+  left: 10px; /* 카드 왼쪽에서 10px 오른쪽으로 */
+  margin: 0; /* 불필요한 여백 제거 */
+`;
+
+const CardPoint = styled.p`
+  font-size: 14px;
+  color: #666;
+  margin: 0; /* 불필요한 여백 제거 */
+  position: absolute;
+  bottom: 10px; /* CardTitle 위에 위치하도록 조정 */
+  left: 10px; /* 좌측 여백 CardTitle과 동일 */
+  text-align: left;
+`;
+
+const LockOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(6, 6, 6, 0.7); /* 반투명 검정색 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2; /* 카드 내용 위에 표시 */
+  border-radius: 10px; /* GameCard의 border-radius와 동일 */
+`;
+
+const LockIcon = styled.img`
+  width: 50px; /* 잠금 아이콘 크기 */
+  height: 50px;
+  object-fit: contain;
 `;
 
 const ModalOverlay = styled.div`
