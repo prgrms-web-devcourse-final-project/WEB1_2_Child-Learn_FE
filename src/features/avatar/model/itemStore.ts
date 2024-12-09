@@ -46,6 +46,7 @@ export const useItemStore = create<ItemStore>((set) => ({
             imageUrl: item.imageUrl,
             description: item.description,
             purchased: item.isPurchased,
+            equipped: item.isEquipped
           };
         });
         set({ marketItems });
