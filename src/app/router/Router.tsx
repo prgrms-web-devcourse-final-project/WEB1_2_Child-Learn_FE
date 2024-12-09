@@ -22,6 +22,7 @@ import SearchPage from '@/pages/searchPage/SearchPage';
 import FriendPage from '@/pages/friendPage/FriendPage';
 import LandingPage from '@/pages/LandingPage/LandingPage';
 import NotificationPage from '@/pages/notificationPage/NotificationPage';
+import NotFoundPage from '@/pages/NotFoundPage/NotFoundPage';
 
 export default function Router() {
   return (
@@ -204,7 +205,7 @@ export default function Router() {
         }
       />
       {/* 404 페이지 */}
-      <Route path="*" element={<div>Page not found</div>} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

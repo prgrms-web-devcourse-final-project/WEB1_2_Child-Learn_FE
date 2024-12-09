@@ -11,7 +11,7 @@ const UserPoints = ({ coins = 0, points = 0 }: UserPointsProps) => {
       <PointCard>
         <CardContent>
           <IconWrapper>
-            <PointIcon src="/icons/coins 1.png" alt="포인트" />
+            <PointIcon src="/img/dollar.png" alt="포인트" />
           </IconWrapper>
           <TextContainer>
             <PointValue>{(points || 0).toLocaleString()}</PointValue>
