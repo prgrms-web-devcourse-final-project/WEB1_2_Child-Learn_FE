@@ -266,9 +266,9 @@ return (
                     <Column>
                       <MidArticlePage 
                       //  midStockId={currentStock.midStockId}
-                        stockSymbol={currentStock.midName}
+                        // stockSymbol={currentStock.midName}
                       //  trendPrediction={currentStock.midName}
-                        content={currentStock.midName}
+                        // content={currentStock.midName}
                       //  createdAt={currentStock.midName}
                       //  duration={currentStock.midName}
                       //  title={currentStock.midName}
