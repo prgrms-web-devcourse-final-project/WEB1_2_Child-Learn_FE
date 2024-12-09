@@ -81,7 +81,7 @@ export const SellModal: React.FC<SellModalProps> = ({
             <div>매도 수익: {sellResponse ? sellResponse.totalPoints.toLocaleString() : currentPrice.toLocaleString()}P</div>
             <div>예상 수익: {sellResponse ? sellResponse.earnedPoints.toLocaleString() : '계산 중...'}P</div>
           </S.StockInfo>
-          {error && <S.ErrorMessage>{error}</S.ErrorMessage>}
+          <div>예상 수익: {sellResponse ? sellResponse.earnedPoints.toLocaleString() : '다음날 부터 매도를 할 수 있습니다.'}P</div>
           <S.CompletionMessage>
             {stockName}을(를) 매도하시겠습니까?
           </S.CompletionMessage>

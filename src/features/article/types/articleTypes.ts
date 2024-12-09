@@ -7,7 +7,6 @@ export interface ApiArticle {
   content: string;
   createdAt: string;
   duration: number;
-  title: string;
 }
 
 export enum TrendPrediction {
@@ -31,4 +30,15 @@ export interface Article {
   duration: number;
   title: string;
   mid_stock_id: number;
+}
+
+export interface ApiArticle {
+  articleId: number;
+  stockSymbol: string;
+  trendPrediction: string;
+  content: string;
+  createdAt: string;
+  duration: number;
+  stock_Id?: number;  // 추가
+  title: string;      // 추가
 }
