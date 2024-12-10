@@ -3,7 +3,7 @@ import { useUserInfo } from '@/entities/User/lib/queries';
 import { flipCardApi } from '@/shared/api/minigames';
 import { wordQuizApi } from '@/shared/api/minigames';
 import { walletApi } from '@/shared/api/wallets';
-import { PointTransaction } from '@/features/minigame/points/types/pointTypes';
+import { MiniGameTransaction, PointTransaction } from '@/features/minigame/points/types/pointTypes';
 import { useLotteryStore } from '@/app/providers/state/zustand/useLotteryStore';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import { AvatarCard } from '@/features/minigame/ui/AvatarCard';
