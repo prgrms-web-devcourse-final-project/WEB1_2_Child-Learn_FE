@@ -66,9 +66,9 @@
 ## 🍀 팀 소개
 
 ### FRONTEND
-|                           👑 이희주                           |                           📋 박우현                           |                  류민주                  |
+|                           📋 박우현                        |                          👑 이희주                           |                  류민주                  |
 |:----------------------------------------------------------:|:----------------------------------------------------------:|:-------------------------------------:|
-|                       FE TeamLeader                        |                             PM                             |               Git_Admin               |
+|                       PM                        |                             FE TeamLeader                             |               Git_Admin               |
 |          [tree0000](https://github.com/tree0000)           |         [hjlee2778](https://github.com/hjlee2778)          | [minij02](https://github.com/minij02) |
 | ![](https://avatars.githubusercontent.com/u/141895600?v=4) | ![](https://avatars.githubusercontent.com/u/144092849?v=4) | ![](https://avatars.githubusercontent.com/u/135093109?v=4)|
 
