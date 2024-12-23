@@ -1,6 +1,4 @@
-export enum ArticleType {
-  ADVANCED = 'ADVANCED'
-}
+export type ArticleType = 'MID' | 'ADVANCED';
 
 export interface ApiArticle {
   articleId: number;

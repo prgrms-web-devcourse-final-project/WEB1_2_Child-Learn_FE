@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { FastGraph } from '@/features/beginner_chart/ui/fast-graph/fast-graph';
@@ -7,8 +7,126 @@ import { useQuizStore } from '@/features/beginner_chart/model/store/quiz.store';
 import { PointBadge } from '@/shared/ui/PointBadge/PointBadge';
 import QuizModal from '@/features/beginner_chart/ui/quiz-widget/QuizModal';
 
-// Styled components를 컴포넌트 밖으로 이동
-const PageContainer = styled.div`
+
+
+const QuizGraphPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [showArticle, setShowArticle] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string>();
+  const [showModal, setShowModal] = useState(false);
+  const [earnedPoints, setEarnedPoints] = useState<number>(0);
+  const [userId, setUserId] = useState<number>(0);
+  
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isPageVisible = useRef(true);
+
+  const { stockData, fetchStockData, isLoading } = useGraphStore();
+  const { currentQuiz, submitAnswer, fetchQuizzes } = useQuizStore();
+
+  // BFCache 최적화를 위한 페이지 이벤트 핸들러
+  const handlePageShow = useCallback((event: PageTransitionEvent) => {
+    isPageVisible.current = true;
+    if (event.persisted) {
+      // bfcache에서 복원된 경우 데이터 새로고침
+      fetchStockData();
+      fetchQuizzes();
+    }
+  }, [fetchStockData, fetchQuizzes]);
+
+  const handlePageHide = useCallback(() => {
+    isPageVisible.current = false;
+    // 진행 중인 요청 취소
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }, []);
+
+  // 초기 데이터 로드 및 이벤트 리스너 설정
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadInitialData = async () => {
+      try {
+        // 이전 요청 취소
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+
+        // 새로운 AbortController 생성
+        abortControllerRef.current = new AbortController();
+
+        // 병렬로 데이터 로드
+        await Promise.all([
+          fetchStockData(),
+          fetchQuizzes()
+        ]);
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log('Request was cancelled');
+          return;
+        }
+        console.error('Failed to load initial data:', error);
+      }
+    };
+
+    // 이벤트 리스너 등록
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('visibilitychange', () => {
+      isPageVisible.current = document.visibilityState === 'visible';
+    });
+
+    // UserId 초기화
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId && isMounted) {
+      setUserId(Number(storedUserId));
+    }
+
+    if (isMounted) {
+      loadInitialData();
+    }
+
+    // 클린업 함수
+    return () => {
+      isMounted = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [handlePageShow, handlePageHide]);
+
+  const handleChartClick = () => {
+    setShowArticle(true);
+  };
+
+  const handleAnswer = async (answer: string) => {
+    try {
+      setSelectedAnswer(answer);
+      const result = await submitAnswer(answer);
+      
+      if (result.isCorrect) {
+        setEarnedPoints(result.points || 0);
+      } else {
+        setEarnedPoints(0);
+      }
+      
+      setShowModal(true);
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+      setEarnedPoints(0);
+      setShowModal(true);
+    }
+  };
+
+  const handleModalClose = useCallback(() => {
+    setShowModal(false);
+    setShowArticle(false);
+    setSelectedAnswer(undefined);
+    setEarnedPoints(0);
+  }, []);
+  const PageContainer = styled.div`
   padding: 20px;
   background-color: #ffffff;
   min-height: 100vh;
@@ -44,7 +162,7 @@ const CardWrapper = styled.div`
   padding: 16px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;  // 추가
+  overflow: hidden;
 `;
 
 const ArticleContainer = styled.div`
@@ -142,58 +260,23 @@ const AnswerText = styled.span`
   padding-top: 2px;
 `;
 
-const QuizGraphPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [showArticle, setShowArticle] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<string>();
-  const [showModal, setShowModal] = useState(false);
-  const [earnedPoints, setEarnedPoints] = useState<number>(0);
-  const [userId, setUserId] = useState<number>(0);
-  
-  const { stockData, fetchStockData, isLoading } = useGraphStore();
-  const { currentQuiz, submitAnswer, fetchQuizzes } = useQuizStore();
-
-  useEffect(() => {
-    fetchStockData();
-    fetchQuizzes();
-  }, []);
-
-  const handleChartClick = () => {
-    setShowArticle(true);
-  };
-  const handleAnswer = async (answer: string) => {
-    try {
-      setSelectedAnswer(answer);
-      const result = await submitAnswer(answer);
-      
-      if (result.isCorrect) {
-        setEarnedPoints(result.points || 0);
-        // 필요한 경우 현재 포인트와 코인을 상태에 저장
-        if ('currentPoints' in result) {
-          // updateCurrentPoints(result.currentPoints);
-          // updateCurrentCoins(result.currentCoins);
-        }
-      } else {
-        setEarnedPoints(0);
-      }
-      
-      setShowModal(true);
-    } catch (error) {
-      console.error('Error submitting answer:', error);
-      setEarnedPoints(0);
-      setShowModal(true);
-    }
-  };
-
-  const handleModalClose = () => {
-    setShowModal(false);
-    setShowArticle(false);
-    setSelectedAnswer(undefined); // 답변 초기화
-    setEarnedPoints(0); // 획득 포인트 초기화
-  };
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 20px;
+  color: #666;
+`;
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <PageContainer>
+        <TopBar>
+          <OutButton onClick={() => navigate('/')}>
+            <img src="/img/out.png" alt="나가기" />
+          </OutButton>
+        </TopBar>
+        <LoadingMessage>데이터를 불러오는 중...</LoadingMessage>
+      </PageContainer>
+    );
   }
 
   return (
@@ -206,18 +289,21 @@ const QuizGraphPage: React.FC = () => {
       </TopBar>
 
       <CardWrapper>
-        <FastGraph data={stockData} onChartClick={handleChartClick} />
+        <FastGraph 
+          data={stockData} 
+          onChartClick={handleChartClick}
+        />
       </CardWrapper>
 
-      {showArticle && (
+      {showArticle && currentQuiz && (
         <ArticleContainer>
           <ArticleHeader>
             <ArticleTitle>Child-Learn News</ArticleTitle>
           </ArticleHeader>
-          <ArticleDate>2024.12.3</ArticleDate>
+          <ArticleDate>{new Date().toLocaleDateString()}</ArticleDate>
           <QuizContent>
             <QuizQuestion>
-              {currentQuiz?.content}
+              {currentQuiz.content}
             </QuizQuestion>
             
             <AnswerButton 
@@ -227,7 +313,7 @@ const QuizGraphPage: React.FC = () => {
               disabled={!!selectedAnswer}
             >
               <AnswerCircle $type="O">O</AnswerCircle>
-              <AnswerText>{currentQuiz?.oContent}</AnswerText>
+              <AnswerText>{currentQuiz.oContent}</AnswerText>
             </AnswerButton>
             
             <AnswerButton 
@@ -237,20 +323,21 @@ const QuizGraphPage: React.FC = () => {
               disabled={!!selectedAnswer}
             >
               <AnswerCircle $type="X">X</AnswerCircle>
-              <AnswerText>{currentQuiz?.xContent}</AnswerText>
+              <AnswerText>{currentQuiz.xContent}</AnswerText>
             </AnswerButton>
           </QuizContent>
         </ArticleContainer>
       )}
 
-<QuizModal
-  isOpen={showModal}
-  onClose={handleModalClose}
-  earnedPoints={earnedPoints}
-  isCorrect={earnedPoints > 0}
-  userId={userId}
-/>
+      <QuizModal
+        isOpen={showModal}
+        onClose={handleModalClose}
+        earnedPoints={earnedPoints}
+        isCorrect={earnedPoints > 0}
+        userId={userId}
+      />
     </PageContainer>
   );
-};  
+};
+
 export default QuizGraphPage;
