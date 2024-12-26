@@ -21,7 +21,6 @@ export const useGraphStore = create<GraphStore>((set) => ({
       const response = await baseApi.get<BeginStockResponse>('/begin-stocks');
       
       if (response.data.stockData) {
-        // 오늘 날짜를 중간으로 재배열
         const today = new Date().getDay();
         const daysOrder = ['월', '화', '수', '목', '금', '토', '일'];
         const adjustedToday = today === 0 ? 6 : today - 1;

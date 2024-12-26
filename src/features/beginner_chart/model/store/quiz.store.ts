@@ -1,3 +1,4 @@
+// features/beginner_chart/model/store/quiz.store.ts
 import { create } from 'zustand';
 import { baseApi } from '@/shared/api/base';
 import { BeginQuiz } from '@/features/beginner_chart/model/types/quiz';
@@ -19,7 +20,6 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   isLoading: false,
   error: null,
 
-  
   fetchQuizzes: async () => {
     try {
       set({ isLoading: true, error: null });
@@ -29,7 +29,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         },
       });
 
-      const { quiz, stockData } = response.data;
+      const { quiz } = response.data;
       if (quiz?.[0]) {
         set({
           quizzes: quiz,
@@ -65,8 +65,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     set({ selectedAnswer: answer });
 
     try {
-      
-      await baseApi.post(
+      const submitResponse = await baseApi.post(
         '/begin-stocks/submissions',
         { answer },
         {
@@ -76,22 +75,20 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         }
       );
 
-     
       if (isCorrect) {
         const memberId = Number(localStorage.getItem('memberId'));
         const points = await updateUserPoints(100, memberId);
-        return { isCorrect, points };
+        return { isCorrect: true, points };
       }
 
-      return { isCorrect, points: 0 };
+      return { isCorrect: false, points: 0 };
     } catch (error) {
       console.error('Submission error:', error);
       set({ error: '정답 제출 중 오류가 발생했습니다.' });
-      return { isCorrect, points: 0 };
+      return { isCorrect: false, points: 0 };
     }
   },
 }));
-
 
 const updateUserPoints = async (additionalPoints: number, memberId: number): Promise<number> => {
   try {
@@ -99,11 +96,11 @@ const updateUserPoints = async (additionalPoints: number, memberId: number): Pro
       '/wallet/stock',
       {
         memberId,
-        transactionType: 'ADD', 
+        transactionType: 'ADD',
         points: additionalPoints,
         pointType: 'STOCK',
-        stockType: 'BONUS', 
-        stockName: 'QUIZ_REWARD', 
+        stockType: 'BONUS',
+        stockName: 'QUIZ_REWARD',
       },
       {
         headers: {
@@ -113,7 +110,7 @@ const updateUserPoints = async (additionalPoints: number, memberId: number): Pro
       }
     );
 
-    return response.data.currentPoints; 
+    return response.data.currentPoints;
   } catch (error) {
     console.error('포인트 업데이트 실패:', error);
     return 0;
