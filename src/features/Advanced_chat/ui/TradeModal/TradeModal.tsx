@@ -93,7 +93,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     };
   }, [currentPrice, isPlaying]);
 
-  // 호가창 데이터 생성 (실제로는 API에서 받아와야 함)
+  // 호가창 데이터 생성 (실제로는 API에서 아와야 함)
   const generateOrderBookData = (currentPrice: number) => {
     const orderBook = [];
     
@@ -147,7 +147,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     },
     dataLabels: {
       enabled: true,
-      formatter: function(val, opt) {
+      formatter: function(_val, opt) {
         const data = orderBookData[opt.dataPointIndex];
         return `${data.price.toLocaleString()}원 (${data.volume})`;
       },
@@ -190,7 +190,7 @@ export const TradeModal: React.FC<TradeModalProps> = ({
     ),
     tooltip: {
       enabled: true,
-      custom: function({ seriesIndex, dataPointIndex, }) {
+      custom: function({ dataPointIndex }) {
         const data = orderBookData[dataPointIndex];
         return `
           <div class="custom-tooltip">

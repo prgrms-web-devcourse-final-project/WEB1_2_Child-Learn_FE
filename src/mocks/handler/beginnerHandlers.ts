@@ -1,10 +1,55 @@
-// mocks/handler/beginUserHandlers.ts
-import { http } from 'msw';
+// src/mocks/handlers/beginnerHandlers.ts
+import { http, HttpResponse, delay } from 'msw';
+import { API_CONFIG } from '@/shared/config';
 
-const BASE_URL = '/api/v1';
+// 타입 정의
+interface StockData {
+  tradeDay: string;
+  price: number;
+}
 
-// 초기 모의 데이터
-const mockStockData = {
+interface Quiz {
+  content: string;
+  oContent: string;
+  xContent: string;
+  answer: string;
+}
+
+interface BeginStockResponse {
+  stockData: StockData[];
+  quiz: Quiz[];
+}
+
+interface SubmissionRequest {
+  answer: string;
+}
+
+interface PointRequest {
+  memberId: number;
+  transactionType: string;
+  points: number;
+  pointType: string;
+  stockType: string;
+  stockName: string;
+}
+
+interface SubmissionResponse {
+  success: boolean;
+  message: string;
+  isCorrect: boolean;
+  points?: number;
+}
+
+interface PointResponse {
+  id: number;
+  currentPoints: number;
+  currentCoins: number;
+  success: boolean;
+  message: string;
+}
+
+// Mock 데이터
+const mockStockData: BeginStockResponse = {
   stockData: [
     { tradeDay: "화", price: 600 },
     { tradeDay: "수", price: 500 },
@@ -24,61 +69,70 @@ const mockStockData = {
   ]
 };
 
-// 요청 본문 타입 정의
-interface SubmissionBody {
-  answer: string;
-}
+// 사용자 포인트 저장소
+let userPoints: { [key: number]: number } = {};
 
 export const beginUserHandlers = [
-  // GET: 초급 그래프 데이터 조회
-  http.get(`${BASE_URL}/begin-stocks`, ({ request }) => {
-    // 인증 헤더 확인
-    const authHeader = request.headers.get('Authorization');
-    
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: '로그인이 필요합니다' 
-        }),
-        {
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-    }
-
-    return new Response(
-      JSON.stringify(mockStockData),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+  // GET: 초급 그래프 데이터 및 퀴즈 조회
+  http.get(`${API_CONFIG.baseURL}/begin-stocks`, async () => {
+    await delay(300);
+    return HttpResponse.json(mockStockData);
   }),
 
-  // POST: 사용자 답변 제출
-  http.post(`${BASE_URL}/begin-stocks/submissions`, async ({ request }) => {
-    const { answer } = await request.json() as SubmissionBody;
+  // POST: 퀴즈 답변 제출
+  http.post(`${API_CONFIG.baseURL}/begin-stocks/submissions`, async ({ request }) => {
+    await delay(500);
+    const { answer } = await request.json() as SubmissionRequest;
+    const correctAnswer = mockStockData.quiz[0].answer;
+    const isCorrect = answer === correctAnswer;
     
-    const isCorrect = answer === mockStockData.quiz[0].answer;
+    console.log('Answer submitted:', { answer, correctAnswer, isCorrect }); // 디버깅용
     
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: isCorrect ? '정답입니다!' : '틀렸습니다.',
-        correct: isCorrect
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const response: SubmissionResponse = {
+      success: true,
+      message: isCorrect 
+        ? '정답입니다!' // 정답인 경우
+        : '오답입니다! 내일 다시 도전해 주세요', // 오답인 경우
+      isCorrect,
+      points: isCorrect ? 100 : 0
+    };
+    
+    return HttpResponse.json(response);
+  }),
+
+  // POST: 포인트 적립
+  http.post(`${API_CONFIG.baseURL}/wallet/stock`, async ({ request }) => {
+    await delay(300);
+    const body = await request.json() as PointRequest;
+    const { memberId, points } = body;
+    
+    userPoints[memberId] = (userPoints[memberId] || 0) + points;
+
+    const response: PointResponse = {
+      id: memberId,
+      currentPoints: userPoints[memberId],
+      currentCoins: 35,
+      success: true,
+      message: '포인트가 성공적으로 적립되었습니다.'
+    };
+
+    return HttpResponse.json(response);
+  }),
+
+  // GET: 포인트 조회
+  http.get(`${API_CONFIG.baseURL}/wallet/stock`, async () => {
+    await delay(200);
+    const memberId = Number(localStorage.getItem('memberId')) || 1;
+    
+    return HttpResponse.json({
+      id: memberId,
+      currentPoints: userPoints[memberId] || 0,
+      currentCoins: 35
+    });
   })
 ];
+
+// 테스트를 위한 포인트 초기화 함수
+export const resetPoints = () => {
+  userPoints = {};
+};
