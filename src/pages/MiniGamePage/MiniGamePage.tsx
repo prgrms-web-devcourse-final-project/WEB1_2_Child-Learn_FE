@@ -401,7 +401,7 @@ const GameCard = styled.div`
   background-color: #fff;
   border: 1px solid #f2f0f8;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* 왼쪽 정렬 */
@@ -411,7 +411,8 @@ const GameCard = styled.div`
   cursor: pointer; /* 클릭 가능 표시 */
 
   &:hover {
-    background-color: #f0f0f0; /* 호버 효과 */
+    transform: translateY(-4px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15); 
   }
 
   h2 {
