@@ -225,12 +225,10 @@ const MiniGamePage = () => {
           </GameCard>
 
           {/* 로또 */}
-          <GameCard>
-    <LockOverlay>
-      <LockIcon src="/img/lock.png" alt="잠김" />
-    </LockOverlay>
-    <CardTitle>숫자를 맞혀라!</CardTitle>
-  </GameCard>
+          <GameCard isLocked={true}>
+  <LockIcon src="/img/lock.png" alt="잠김" />
+  <CardTitle>숫자를 맞혀라!</CardTitle>
+</GameCard>
         </GameGrid>
       </MainContent>
 
@@ -395,10 +393,11 @@ const GameGrid = styled.div`
   justify-content: center; /* 화면 중앙 정렬 */
 `;
 
-const GameCard = styled.div`
+const GameCard = styled.div<{ isLocked?: boolean }>`
   width: 179px;
   height: 177px;
-  background-color: #fff;
+  background-color: ${({ isLocked }) =>
+    isLocked ? "rgba(6, 6, 6, 0.7)" : "#fff"}; /* 잠긴 경우 반투명 검정, 아니면 기본 색 */
   border: 1px solid #f2f0f8;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -408,23 +407,24 @@ const GameCard = styled.div`
   justify-content: flex-end; /* 아래쪽으로 정렬 */
   text-align: center;
   position: relative;
-  cursor: pointer; /* 클릭 가능 표시 */
+  cursor: ${({ isLocked }) => (isLocked ? "not-allowed" : "pointer")}; /* 잠긴 경우 클릭 금지 */
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15); 
+    transform: ${({ isLocked }) => (isLocked ? "none" : "translateY(-4px)")};
+    box-shadow: ${({ isLocked }) =>
+      isLocked ? "none" : "0 8px 12px rgba(0, 0, 0, 0.15)"};
   }
 
   h2 {
     font-size: 1rem;
     margin: 10px 0;
     font-weight: bold;
-    color: #468585;
+    color: ${({ isLocked }) => (isLocked ? "#ccc" : "#468585")}; /* 잠긴 경우 회색 텍스트 */
   }
 
   p {
     font-size: 0.8rem;
-    color: #666;
+    color: ${({ isLocked }) => (isLocked ? "#999" : "#666")}; /* 잠긴 경우 회색 텍스트 */
   }
 `;
 
@@ -449,25 +449,15 @@ const CardTitle = styled.h2`
   margin: 0; /* 불필요한 여백 제거 */
 `;
 
-const LockOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(6, 6, 6, 0.7); /* 반투명 검정색 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2; /* 카드 내용 위에 표시 */
-   border-radius: inherit; /* GameCard의 border-radius와 동일 */
-  box-sizing: border-box; /* 크기를 정확히 맞추기 위해 사용 */
-`;
-
 const LockIcon = styled.img`
   width: 50px; /* 잠금 아이콘 크기 */
   height: 50px;
   object-fit: contain;
+  position: absolute; /* 카드 가운데에 위치 */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* 정확히 가운데 정렬 */
+  z-index: 1;
 `;
 
 const ModalOverlay = styled.div`
